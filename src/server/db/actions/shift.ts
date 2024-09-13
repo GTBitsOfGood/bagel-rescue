@@ -13,8 +13,7 @@ export async function getShift(shiftId: ObjectId): Promise<Shift | null> {
         return data;
     } catch (error) {
         const err = error as Error;
-        console.error(`Error has occurred obtaining shift: ${err.message}`);
-        return null;
+        throw new Error(`Error has occurred when getting shift: ${err.message}`);
     }
     
 }
@@ -28,8 +27,7 @@ export async function updateRoute(shiftId: ObjectId, routeObject: Route): Promis
     }
     catch (error) {
         const err = error as Error;
-        console.error(`Error has occurred when updating routeId: ${err.message}`);
-        return null;
+        throw new Error(`Error has occurred when updating route: ${err.message}`);
     }
 
 }
@@ -42,8 +40,7 @@ export async function updateDate(shiftId: ObjectId, newDate: Date): Promise<Shif
         return data;
     } catch (error) {
         const err = error as Error;
-        console.error(`Error has occurred when updating shiftDate: ${err.message}`);
-        return null;
+        throw new Error(`Error has occurred when updating date: ${err.message}`);
     }
 
 }
@@ -61,8 +58,7 @@ export async function updateCapacity(shiftId: ObjectId, newCapacity: number): Pr
         return data;
     } catch (error) {
         const err = error as Error;
-        console.error(`Error has occurred when updating capacity: ${err.message}`);
-        return null;
+        throw new Error(`Error has occurred when updating capacity: ${err.message}`);
     }
 }
 
@@ -83,7 +79,6 @@ export async function newSignUp(shiftId: ObjectId): Promise<boolean> {
 
     } catch (error) {
         const err = error as Error;
-        console.error(`Error has occurred for newSignUp: ${err.message}`);
-        return false;
+        throw new Error(`Error has occurred for newSignUp: ${err.message}`);
     }
 }
