@@ -1,15 +1,18 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, Document, Model } from "mongoose";
 
-const { Schema } = mongoose;
-const { ObjectId } = mongoose.Types;
+const { ObjectId } = Schema.Types;
 
-const shiftSchema = new Schema({
-    id: {
-        type: ObjectId,
-        required: true
-    },
+interface Shift extends Document {
+    routeId: mongoose.Types.ObjectId;
+    shiftDate: Date;
+    capacity: number;
+    currSignedUp: number;
+}
+
+const shiftSchema: Schema = new Schema({
     routeId: {
         type: ObjectId,
+        ref: "Route"
     },
     shiftDate: {
         type: Date,
@@ -24,4 +27,7 @@ const shiftSchema = new Schema({
     },
 })
 
-export default mongoose.models?.Shift || mongoose.model("Shift", shiftSchema);
+const ShiftModel: Model<Shift> = mongoose.models?.Shift || mongoose.model<Shift>("Shift", shiftSchema);
+
+export { ShiftModel };
+export type { Shift };
