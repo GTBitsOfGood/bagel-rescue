@@ -5,6 +5,18 @@ import dbConnect from '../dbConnect';
 import { Shift, ShiftModel } from '../models/shift';
 import { Route } from '../models/route';
 
+export async function createShift(shiftObject: Shift): Promise<Shift> {
+    try {
+        await dbConnect();
+
+        await shiftObject.save()
+        return shiftObject;
+    } catch (error) {
+        const err = error as Error;
+        throw new Error(`Error has occurred when creating shift: ${err.message}`);
+    }
+}
+
 export async function getShift(shiftId: ObjectId): Promise<Shift | null> {
     try {
         await dbConnect();
