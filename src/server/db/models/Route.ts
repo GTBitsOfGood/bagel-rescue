@@ -7,7 +7,6 @@ export interface ILocation {
 }
 
 export interface IRoute extends Document {
-    _id?: ObjectId;
     routeName: string;
     locationDescription: string;
     locations: ILocation[];

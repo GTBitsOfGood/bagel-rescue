@@ -30,11 +30,11 @@ export async function getShift(shiftId: ObjectId): Promise<Shift | null> {
     
 }
 
-export async function updateRoute(shiftId: ObjectId, routeObject: IRoute): Promise<Shift | null> {
+export async function updateRoute(shiftId: ObjectId, routeId: ObjectId): Promise<Shift | null> {
     try {
         await dbConnect();
 
-        const data = await ShiftModel.findByIdAndUpdate(shiftId, {routeId: routeObject._id}, {new: true});
+        const data = await ShiftModel.findByIdAndUpdate(shiftId, {routeId: routeId}, {new: true});
         return data;
     }
     catch (error) {
