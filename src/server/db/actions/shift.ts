@@ -3,7 +3,7 @@
 import { ObjectId } from 'mongoose';
 import dbConnect from '../dbConnect';
 import { Shift, ShiftModel } from '../models/shift';
-import { Route } from '../models/Route';
+import { IRoute } from '../models/Route';
 
 export async function createShift(shiftObject: Shift): Promise<Shift> {
     try {
@@ -30,7 +30,7 @@ export async function getShift(shiftId: ObjectId): Promise<Shift | null> {
     
 }
 
-export async function updateRoute(shiftId: ObjectId, routeObject: Route): Promise<Shift | null> {
+export async function updateRoute(shiftId: ObjectId, routeObject: IRoute): Promise<Shift | null> {
     try {
         await dbConnect();
 
