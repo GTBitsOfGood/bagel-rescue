@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
+import { ObjectId } from "mongoose";
 
 export interface ILocation {
     location: mongoose.Types.ObjectId;
