@@ -1,0 +1,74 @@
+import { ObjectId } from 'mongodb';
+import Route, { ILocation, IRoute } from '../models/Route';
+
+export async function getRoute(id: string): Promise<IRoute | null> {
+  try {
+    return await Route.findById(id);
+  } catch (error) {
+    console.error('Error fetching route:', error);
+    throw new Error('Failed to fetch route');
+  }
+}
+
+export async function createRoute(name: string, locations: ILocation[]): Promise<IRoute> {
+  try {
+    const newRoute = new Route({
+      routeName: name,
+      locations: locations
+    });
+    return await newRoute.save();
+  } catch (error) {
+    console.error('Error creating route:', error);
+    throw new Error('Failed to create route');
+  }
+}
+
+export async function updateRouteName(id: string, newRouteName: string): Promise<IRoute | null> {
+  try {
+    return await Route.findByIdAndUpdate(id, { routeName: newRouteName }, { new: true });
+  } catch (error) {
+    console.error('Error updating route name:', error);
+    throw new Error('Failed to update route name');
+  }
+}
+
+export async function getLocations(id: string): Promise<ILocation[] | null> {
+  try {
+    const route = await Route.findById(id);
+    return route ? route.locations : null;
+  } catch (error) {
+    console.error('Error fetching locations:', error);
+    throw new Error('Failed to fetch locations');
+  }
+}
+
+export async function addLocation(id: string, locationId: string, index: number): Promise<IRoute | null> {
+  try {
+    const route = await Route.findById(id);
+    if (!route) return null;
+
+    const newLocation: ILocation = {
+      location: new ObjectId(locationId),
+      type: 'pickup' // Default to pickup, you may want to make this configurable
+    };
+
+    route.locations.splice(index, 0, newLocation);
+    return await route.save();
+  } catch (error) {
+    console.error('Error adding location:', error);
+    throw new Error('Failed to add location');
+  }
+}
+
+export async function removeLocation(id: string, index: number): Promise<IRoute | null> {
+  try {
+    const route = await Route.findById(id);
+    if (!route) return null;
+
+    route.locations.splice(index, 1);
+    return await route.save();
+  } catch (error) {
+    console.error('Error removing location:', error);
+    throw new Error('Failed to remove location');
+  }
+}
