@@ -1,17 +1,22 @@
 "use client";
 
 import "./stylesheet.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faGripVertical,
   faAngleLeft,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
+import { getAllLocations } from "@/server/db/actions/location";
+import { Location } from "@/server/db/models/location";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 function RouteCreationPage() {
+  const [routeName, setRouteName] = useState("");
+  const [routeArea, setRouteArea] = useState("");
+  const [additionalInfo, setAdditionalInfo] = useState("");
   const [isAddingLocation, setIsAddingLocation] = useState(false);
-  const [inputsFilled, setInputsFilled] = useState([false, false]);
   const [locations, setLocations] = useState([
     {
       locationName: "mattjzhou's HOUSE.",
@@ -41,27 +46,7 @@ function RouteCreationPage() {
       },
     },
     {
-      locationName: "mattjzhou's HOUSE. searching.",
-      notes: "",
-      address: {
-        street: "Catalyst",
-        city: "A City",
-        zipCode: 12345,
-        state: "VA",
-      },
-    },
-    {
-      locationName: "mattjzhou's HOUSE. searching.",
-      notes: "",
-      address: {
-        street: "Catalyst",
-        city: "A City",
-        zipCode: 12345,
-        state: "VA",
-      },
-    },
-    {
-      locationName: "mattjzhou's HOUSE. searching.",
+      locationName: "aishu's HOUSE. searching.",
       notes: "",
       address: {
         street: "Catalyst",
@@ -107,52 +92,96 @@ function RouteCreationPage() {
     setLocations(newLocations);
   }
 
-  function handleInputChange(
-    index: number,
-    e: React.ChangeEvent<HTMLInputElement>
-  ) {
-    const newInputsFilled = [...inputsFilled];
-    newInputsFilled[index] = e.target.value != "";
-    setInputsFilled(newInputsFilled);
+  function saveRoute() {
+    const route = {
+      routeName: routeName,
+      locationDescription: routeArea,
+      locations: locations,
+    };
+    console.log(route);
   }
 
   function locationCards() {
+    function handleOnDragEnd(result: any) {
+      if (!result.destination) return;
+
+      const items = Array.from(locations);
+      const [reorderedItem] = items.splice(result.source.index, 1);
+      items.splice(result.destination.index, 0, reorderedItem);
+
+      setLocations(items);
+    }
+
     return (
-      <div
-        className="location-cards-list"
-        style={{ display: isAddingLocation ? "none" : "flex" }}
-      >
-        {locations.map((location, ind) => {
-          return (
-            <div className="location-card">
-              <div className="location-card-section">
-                <FontAwesomeIcon icon={faGripVertical} />
-                <p className="location-number">{ind + 1}</p>
-                <p className="location-name">{location["locationName"]}</p>
-              </div>
-              <div className="location-card-section">
-                <button
-                  className="location-pick-drop"
-                  onClick={() => changeIsPickUp(ind)}
-                  style={{
-                    backgroundColor: locationsIsPickUp[ind]
-                      ? "#a4f4b6"
-                      : "#f4c6a4",
-                  }}
-                >
-                  {locationsIsPickUp[ind] ? "Pick Up" : "Drop Off"}
-                </button>
-                <button
-                  className="exit-btn"
-                  onClick={() => removeLocation(ind)}
-                >
-                  <FontAwesomeIcon icon={faXmark} />
-                </button>
-              </div>
+      <DragDropContext onDragEnd={handleOnDragEnd}>
+        <Droppable droppableId="location-cards-list">
+          {(provided) => (
+            <div
+              className="location-cards-list"
+              style={{
+                display: isAddingLocation
+                  ? "none"
+                  : locations.length > 0
+                  ? "flex"
+                  : "none",
+              }}
+              {...provided.droppableProps}
+              ref={provided.innerRef}
+            >
+              {locations.map((location, ind) => {
+                return (
+                  <Draggable
+                    key={location["locationName"]}
+                    draggableId={location["locationName"]}
+                    index={ind}
+                  >
+                    {(provided) => (
+                      <div
+                        key={ind}
+                        className={location["locationName"] + " location-card"}
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                      >
+                        <div className="location-card-section">
+                          <FontAwesomeIcon
+                            icon={faGripVertical}
+                            className="drag-drop-icon"
+                          />
+                          <p className="location-number">{ind + 1}</p>
+                          <p className="location-name">
+                            {location["locationName"]}
+                          </p>
+                        </div>
+                        <div className="location-card-section">
+                          <button
+                            className="location-pick-drop"
+                            onClick={() => changeIsPickUp(ind)}
+                            style={{
+                              backgroundColor: locationsIsPickUp[ind]
+                                ? "#a4f4b6"
+                                : "#f4c6a4",
+                            }}
+                          >
+                            {locationsIsPickUp[ind] ? "Pick Up" : "Drop Off"}
+                          </button>
+                          <button
+                            className="exit-btn"
+                            onClick={() => removeLocation(ind)}
+                          >
+                            <FontAwesomeIcon icon={faXmark} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </Draggable>
+                );
+              })}
+              {provided.placeholder}
             </div>
-          );
-        })}
-      </div>
+          )}
+        </Droppable>
+      </DragDropContext>
     );
   }
 
@@ -164,7 +193,11 @@ function RouteCreationPage() {
       >
         {searchLocations.map((location, ind) => {
           return (
-            <div className="search-location" onClick={() => addLocation(ind)}>
+            <div
+              key={ind}
+              className="search-location"
+              onClick={() => addLocation(ind)}
+            >
               <div className="search-location-section">
                 <p className="search-location-name">
                   {location["locationName"]}
@@ -201,13 +234,14 @@ function RouteCreationPage() {
         <p className="header-text">Create a Route</p>
         <button
           className="complete-route-btn"
+          onClick={saveRoute}
           style={{
             backgroundColor:
-              !inputsFilled.includes(false) && locations.length > 0
+              routeName != "" && routeArea != "" && locations.length > 0
                 ? "#3d97ff"
                 : "#a3a3a3",
             cursor:
-              !inputsFilled.includes(false) && locations.length > 0
+              routeName != "" && routeArea != "" && locations.length > 0
                 ? "pointer"
                 : "default",
           }}
@@ -224,7 +258,7 @@ function RouteCreationPage() {
               className="field-input"
               type="text"
               placeholder="Add a Route Name Here"
-              onChange={(e) => handleInputChange(0, e)}
+              onChange={(e) => setRouteName(e.target.value)}
             />
           </div>
           <div className="route-area field-container">
@@ -233,7 +267,7 @@ function RouteCreationPage() {
               className="field-input"
               type="text"
               placeholder="ie. Atlanta, Norcross, Marietta"
-              onChange={(e) => handleInputChange(1, e)}
+              onChange={(e) => setRouteArea(e.target.value)}
             />
           </div>
           <div className="additional-info field-container">
@@ -242,6 +276,7 @@ function RouteCreationPage() {
               className="field-input additional-info-field-input"
               type="text"
               placeholder="Enter additional information here"
+              onChange={(e) => setAdditionalInfo(e.target.value)}
             />
           </div>
         </div>

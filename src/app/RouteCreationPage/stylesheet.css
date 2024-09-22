@@ -111,6 +111,7 @@
   border-radius: 12px;
   font-size: 16px;
   font-weight: 700;
+  /* color: rgb(var(--background-rgb)); */
 }
 
 .location-cards-list {
@@ -131,6 +132,7 @@
   padding: 16px;
   border-radius: 8px;
   border: 1px solid var(--Bagel-Rescue-Blue, #3d97ff);
+  /* background-color: white; */
 }
 
 .location-card-section {
@@ -140,6 +142,10 @@
   align-items: center;
 }
 
+/* .drag-drop-icon {
+  color: rgb(var(--background-rgb));
+} */
+
 .location-number {
   border-radius: 50%;
   background: #cce3ff;
@@ -148,6 +154,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  /* color: rgb(32, 33, 36); */
 }
 
 .location-name {
@@ -160,6 +167,7 @@
   border-radius: 83px;
   background: #a4f4b6;
   padding: 4px 12px;
+  /* color: rgb(32, 33, 36); */
 }
 
 .search-location-list {
