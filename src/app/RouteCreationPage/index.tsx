@@ -17,7 +17,8 @@ function RouteCreationPage() {
   const [routeArea, setRouteArea] = useState("");
   const [additionalInfo, setAdditionalInfo] = useState("");
   const [isAddingLocation, setIsAddingLocation] = useState(false);
-  const [locations, setLocations] = useState([
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [searchLocations, setSearchLocations] = useState<Location[]>([
     {
       locationName: "mattjzhou's HOUSE.",
       notes: "",
@@ -33,8 +34,6 @@ function RouteCreationPage() {
       notes: "",
       address: { street: "A St", city: "A City", zipCode: 12345, state: "VA" },
     },
-  ]);
-  const [searchLocations, setSearchLocations] = useState([
     {
       locationName: "mattjzhou's HOUSE. searching.",
       notes: "",
@@ -61,15 +60,26 @@ function RouteCreationPage() {
       address: { street: "A St", city: "A City", zipCode: 12345, state: "VA" },
     },
   ]);
-  const [locationsIsPickUp, setLocationsIsPickUp] = useState([true, true]);
+  const [locationsIsPickUp, setLocationsIsPickUp] = useState<
+    Map<string, boolean>
+  >(new Map());
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      const data = await getAllLocations();
+      setLocations(data || []);
+    };
+
+    fetchLocations();
+  }, []);
 
   function changeIsAddingLocation() {
     setIsAddingLocation(!isAddingLocation);
   }
 
-  function changeIsPickUp(index: number) {
-    const newIsPickUp = [...locationsIsPickUp];
-    newIsPickUp[index] = !newIsPickUp[index];
+  function changeIsPickUp(locationName: string) {
+    const newIsPickUp = new Map(locationsIsPickUp);
+    newIsPickUp.set(locationName, !newIsPickUp.get(locationName));
     setLocationsIsPickUp(newIsPickUp);
   }
 
@@ -77,9 +87,9 @@ function RouteCreationPage() {
     const newLocations = [...locations];
     newLocations.push(searchLocations[index]);
     setLocations(newLocations);
-    const newLocationsIsPickup = [...locationsIsPickUp];
-    newLocationsIsPickup.push(true);
-    setLocationsIsPickUp(newLocationsIsPickup);
+    const newIsPickUp = new Map(locationsIsPickUp);
+    newIsPickUp.set(searchLocations[index]["locationName"], true);
+    setLocationsIsPickUp(newIsPickUp);
     const newSearchLocations = [...searchLocations];
     newSearchLocations.splice(index, 1);
     setSearchLocations(newSearchLocations);
@@ -87,6 +97,10 @@ function RouteCreationPage() {
   }
 
   function removeLocation(index: number) {
+    const newSearchLocations = [...searchLocations];
+    newSearchLocations.push(locations[index]);
+    setSearchLocations(newSearchLocations);
+
     const newLocations = [...locations];
     newLocations.splice(index, 1);
     setLocations(newLocations);
@@ -156,14 +170,20 @@ function RouteCreationPage() {
                         <div className="location-card-section">
                           <button
                             className="location-pick-drop"
-                            onClick={() => changeIsPickUp(ind)}
+                            onClick={() =>
+                              changeIsPickUp(location["locationName"])
+                            }
                             style={{
-                              backgroundColor: locationsIsPickUp[ind]
+                              backgroundColor: locationsIsPickUp.get(
+                                location["locationName"]
+                              )
                                 ? "#a4f4b6"
                                 : "#f4c6a4",
                             }}
                           >
-                            {locationsIsPickUp[ind] ? "Pick Up" : "Drop Off"}
+                            {locationsIsPickUp.get(location["locationName"])
+                              ? "Pick Up"
+                              : "Drop Off"}
                           </button>
                           <button
                             className="exit-btn"
