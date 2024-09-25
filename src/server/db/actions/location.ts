@@ -1,3 +1,5 @@
+'use server';
+
 import { LocationModel, Location, Address } from "../models/location";
 import dbConnect from "../dbConnect";
 
@@ -67,11 +69,11 @@ export async function updateAddress(
   }
 }
 
-export async function getAllLocations(): Promise<Location[] | null> {
+export async function getAllLocations(): Promise<string | null> {
   try {
     await dbConnect();
     const locations = await LocationModel.find();
-    return locations;
+    return JSON.stringify(locations);
   } catch (error) {
     const err = error as Error;
     throw new Error(`Error getting all locations: ${err.message}`);

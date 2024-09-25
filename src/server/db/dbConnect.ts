@@ -1,6 +1,10 @@
+"use server";
 import mongoose, { Mongoose } from "mongoose";
+import dotenv from "dotenv";
 
-export const DB_URL = process.env.MONGODB_URI;
+dotenv.config();
+
+const DB_URL = process.env.MONGODB_URI;
 
 if (!DB_URL) {
   throw new Error(
@@ -26,7 +30,8 @@ if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
 }
 
-async function dbConnect() {
+export async function dbConnect() {
+  console.log("dbConnect");
   if (cached.conn) {
     return cached.conn;
   }

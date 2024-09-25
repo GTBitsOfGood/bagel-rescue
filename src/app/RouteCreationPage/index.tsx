@@ -66,7 +66,8 @@ function RouteCreationPage() {
 
   useEffect(() => {
     const fetchLocations = async () => {
-      const data = await getAllLocations();
+      const response = await getAllLocations();
+      const data = JSON.parse(response || "[]");
       setLocations(data || []);
     };
 
