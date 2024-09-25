@@ -1,89 +1,85 @@
 .container {
-  padding: 24px;
+  padding: 1.5em 4em;
 }
 
 .back-btn {
-  color: var(--AAU-Blue, #57a0d5);
+  color: var(--Bagel-Rescue-Blue);
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 12px;
+  gap: 0.75em;
 }
 
 .header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  padding: 24px 0px;
+  padding: 1.5em 0em;
 }
 
 .header-text {
-  font-size: 36px;
-  font-weight: 700;
+  font-size: 2.25em;
+  font-weight: bold;
 }
 
 .complete-route-btn {
   border-radius: 16px;
-  background: #a3a3a3;
-  font-size: 16px;
-  font-weight: 700;
+  background: gray;
+  font-size: 1em;
+  font-weight: bold;
   color: white;
-  padding: 16px;
+  padding: 1em;
 }
 
 .separator {
-  border-top: 1px solid #cce3ff;
+  border-top: 1px solid var(--Bagel-Rescue-Light-Blue);
 }
 
 .route-creation-form {
   display: flex;
   flex-direction: row;
-  margin-top: 24px;
-  gap: 48px;
+  margin-top: 1.5em;
+  gap: 3em;
 }
 
 .route-info {
   width: 40%;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 2em;
+}
+
+.field-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+}
+
+.field-title {
+  font-size: 1.25em;
+  font-weight: bold;
+}
+
+.field-input {
+  padding: 1em;
+  border-radius: 12px;
+  border: 1px solid var(--Bagel-Rescue-Blue);
+  width: 100%;
 }
 
 .locations {
   width: 60%;
 }
 
-.field-container {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.field-title {
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.location-input {
-  width: 100%;
-}
-
-.field-input {
-  padding: 16px;
-  border-radius: 12px;
-  border: 1px solid var(--Bagel-Rescue-Blue, #3d97ff);
-  width: 100%;
-}
-
 .locations-box {
   border-radius: 12px;
-  border: 1px solid var(--Bagel-Rescue-Blue, #3d97ff);
+  border: 1px solid var(--Bagel-Rescue-Blue);
   height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px;
-  gap: 16px;
+  padding: 1em;
+  gap: 1em;
 }
 
 .location-input {
@@ -91,34 +87,21 @@
   position: relative;
 }
 
-.exit-btn {
+.x-btn {
   color: red;
 }
 
 .exit-add-location-btn {
   position: absolute;
-  top: 18px;
-  right: 16px;
-}
-
-.add-location-btn {
-  width: 100%;
-  border: 1px solid var(--Bagel-Rescue-Blue, #3d97ff);
-  background: var(--Bagel-Rescue-Light-Blue, #dbe7f7);
-  padding: 16px 0px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 700;
-  /* color: rgb(var(--background-rgb)); */
+  top: 1.1em;
+  right: 1em;
 }
 
 .location-cards-list {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 1em;
   max-height: 300px;
   overflow-y: auto;
 }
@@ -129,56 +112,49 @@
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
+  padding: 1em;
   border-radius: 8px;
-  border: 1px solid var(--Bagel-Rescue-Blue, #3d97ff);
-  /* background-color: white; */
+  border: 1px solid var(--Bagel-Rescue-Blue);
 }
 
 .location-card-section {
   display: flex;
   flex-direction: row;
-  gap: 16px;
+  gap: 1em;
   align-items: center;
 }
 
-/* .drag-drop-icon {
-  color: rgb(var(--background-rgb));
-} */
-
 .location-number {
   border-radius: 50%;
-  background: #cce3ff;
-  width: 36px;
-  height: 36px;
+  background: var(--Bagel-Rescue-Light-Blue);
+  width: 2.25em;
+  height: 2.25em;
   display: flex;
   justify-content: center;
   align-items: center;
-  /* color: rgb(32, 33, 36); */
 }
 
 .location-name {
   color: #00377a;
-  font-size: 16px;
+  font-size: 1em;
   font-weight: 700;
 }
 
 .location-pick-drop {
-  border-radius: 83px;
+  border-radius: 84px;
   background: #a4f4b6;
-  padding: 4px 12px;
-  /* color: rgb(32, 33, 36); */
+  padding: 0.25em 0.75em;
 }
 
 .search-location-list {
   display: flex;
   flex-direction: column;
   width: 100%;
-  padding: 16px;
+  padding: 1em;
   border-radius: 12px;
-  border: 1px solid var(--Bagel-Rescue-Blue, #3d97ff);
+  border: 1px solid var(--Bagel-Rescue-Blue);
   width: 100%;
-  gap: 24px;
+  gap: 1.5em;
   max-height: 300px;
   overflow-y: auto;
 }
@@ -191,5 +167,17 @@
 }
 
 .search-location-name {
-  font-weight: 700;
+  font-weight: bold;
+}
+
+.add-location-btn {
+  width: 100%;
+  border: 1px solid var(--Bagel-Rescue-Blue);
+  background: var(--Bagel-Rescue-Light-Blue);
+  padding: 1em 0em;
+  justify-content: center;
+  align-items: center;
+  border-radius: 12px;
+  font-size: 1em;
+  font-weight: bold;
 }

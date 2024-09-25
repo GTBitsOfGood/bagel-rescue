@@ -17,8 +17,6 @@ export async function createRoute(route: string): Promise<string | null> {
   try {
     await dbConnect();
     const newRoute = new Route(JSON.parse(route || "{}"));
-    console.log(newRoute);
-
     return JSON.stringify(await newRoute.save());
   } catch (error) {
     console.error("Error creating route:", error);

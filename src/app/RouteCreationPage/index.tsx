@@ -1,25 +1,26 @@
 "use client";
 
 import "./stylesheet.css";
+import mongoose from "mongoose";
 import { useEffect, useState } from "react";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faGripVertical,
   faAngleLeft,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
+
 import { getAllLocations } from "@/server/db/actions/location";
 import { Location } from "@/server/db/models/location";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { ILocation } from "@/server/db/models/Route";
 import { createRoute } from "@/server/db/actions/Route";
-import mongoose from "mongoose";
 
 function RouteCreationPage() {
-  const [routeName, setRouteName] = useState("");
-  const [routeArea, setRouteArea] = useState("");
-  const [additionalInfo, setAdditionalInfo] = useState("");
-  const [isAddingLocation, setIsAddingLocation] = useState(false);
+  const [routeName, setRouteName] = useState<string>("");
+  const [routeArea, setRouteArea] = useState<string>("");
+  const [additionalInfo, setAdditionalInfo] = useState<string>("");
+  const [isAddingLocation, setIsAddingLocation] = useState<boolean>(false);
   const [locations, setLocations] = useState<Location[]>([]);
   const [searchLocations, setSearchLocations] = useState<Location[]>([]);
   const [locationsIsPickUp, setLocationsIsPickUp] = useState<
@@ -32,34 +33,32 @@ function RouteCreationPage() {
       const data = JSON.parse(response || "[]");
       setSearchLocations(data || []);
     };
-
     fetchLocations();
   }, []);
 
-  function changeIsAddingLocation() {
-    setIsAddingLocation(!isAddingLocation);
-  }
-
-  function changeIsPickUp(locationName: string) {
+  function changeIsPickUp(locationName: string): void {
     const newIsPickUp = new Map(locationsIsPickUp);
     newIsPickUp.set(locationName, !newIsPickUp.get(locationName));
     setLocationsIsPickUp(newIsPickUp);
   }
 
-  function addLocation(index: number) {
+  function addLocation(index: number): void {
     const newLocations = [...locations];
     newLocations.push(searchLocations[index]);
     setLocations(newLocations);
+
     const newIsPickUp = new Map(locationsIsPickUp);
     newIsPickUp.set(searchLocations[index]["locationName"], true);
     setLocationsIsPickUp(newIsPickUp);
+
     const newSearchLocations = [...searchLocations];
     newSearchLocations.splice(index, 1);
     setSearchLocations(newSearchLocations);
+
     setIsAddingLocation(!isAddingLocation);
   }
 
-  function removeLocation(index: number) {
+  function removeLocation(index: number): void {
     const newSearchLocations = [...searchLocations];
     newSearchLocations.push(locations[index]);
     setSearchLocations(newSearchLocations);
@@ -69,7 +68,7 @@ function RouteCreationPage() {
     setLocations(newLocations);
   }
 
-  function completeRoute() {
+  function completeRoute(): void {
     const locs: ILocation[] = locations.map((item) => ({
       location: new mongoose.Types.ObjectId(item["_id"]!),
       type: locationsIsPickUp.get(item["locationName"]) ? "pickup" : "dropoff",
@@ -153,7 +152,7 @@ function RouteCreationPage() {
                               : "Drop Off"}
                           </button>
                           <button
-                            className="exit-btn"
+                            className="x-btn"
                             onClick={() => removeLocation(ind)}
                           >
                             <FontAwesomeIcon icon={faXmark} />
@@ -200,7 +199,7 @@ function RouteCreationPage() {
                 </p>
               </div>
               <div className="search-location-section">
-                <p>{500}</p>
+                <p>Data here</p>
               </div>
             </div>
           );
@@ -211,12 +210,10 @@ function RouteCreationPage() {
 
   return (
     <div className="container">
-      <div>
-        <button className="back-btn">
-          <FontAwesomeIcon icon={faAngleLeft} />
-          <p>Back</p>
-        </button>
-      </div>
+      <button className="back-btn">
+        <FontAwesomeIcon icon={faAngleLeft} />
+        <p>Back</p>
+      </button>
       <div className="header">
         <p className="header-text">Create a Route</p>
         <button
@@ -239,7 +236,7 @@ function RouteCreationPage() {
       <hr className="separator" />
       <div className="route-creation-form">
         <div className="route-info">
-          <div className="route-name field-container">
+          <div className="field-container">
             <p className="field-title">Route Name</p>
             <input
               className="field-input"
@@ -248,7 +245,7 @@ function RouteCreationPage() {
               onChange={(e) => setRouteName(e.target.value)}
             />
           </div>
-          <div className="route-area field-container">
+          <div className="field-container">
             <p className="field-title">Route Area</p>
             <input
               className="field-input"
@@ -257,11 +254,10 @@ function RouteCreationPage() {
               onChange={(e) => setRouteArea(e.target.value)}
             />
           </div>
-          <div className="additional-info field-container">
+          <div className="field-container">
             <p className="field-title">Additional Information</p>
-            <input
-              className="field-input additional-info-field-input"
-              type="text"
+            <textarea
+              className="field-input"
               placeholder="Enter additional information here"
               onChange={(e) => setAdditionalInfo(e.target.value)}
             />
@@ -280,8 +276,8 @@ function RouteCreationPage() {
                 placeholder="Start typing here"
               />
               <button
-                className="exit-add-location-btn exit-btn"
-                onClick={changeIsAddingLocation}
+                className="exit-add-location-btn x-btn"
+                onClick={() => setIsAddingLocation(!isAddingLocation)}
               >
                 <FontAwesomeIcon icon={faXmark} />
               </button>
@@ -290,7 +286,7 @@ function RouteCreationPage() {
             {searchLocationsList()}
             <button
               className="add-location-btn"
-              onClick={changeIsAddingLocation}
+              onClick={() => setIsAddingLocation(!isAddingLocation)}
               style={{ display: isAddingLocation ? "none" : "flex" }}
             >
               Add a Location
