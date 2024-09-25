@@ -8,7 +8,7 @@ const DB_URL = process.env.MONGODB_URI;
 
 if (!DB_URL) {
   throw new Error(
-    "Please define the DB_URL environment variable inside .env*.local",
+    "Please define the DB_URL environment variable inside .env*.local"
   );
 }
 

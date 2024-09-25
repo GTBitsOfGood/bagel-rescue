@@ -8,6 +8,7 @@ interface Address {
 }
 
 interface Location {
+  _id?: string;
   locationName: string;
   notes: string;
   address: Address;

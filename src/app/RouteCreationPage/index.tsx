@@ -11,6 +11,9 @@ import {
 import { getAllLocations } from "@/server/db/actions/location";
 import { Location } from "@/server/db/models/location";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { ILocation } from "@/server/db/models/Route";
+import { createRoute } from "@/server/db/actions/Route";
+import mongoose from "mongoose";
 
 function RouteCreationPage() {
   const [routeName, setRouteName] = useState("");
@@ -18,48 +21,7 @@ function RouteCreationPage() {
   const [additionalInfo, setAdditionalInfo] = useState("");
   const [isAddingLocation, setIsAddingLocation] = useState(false);
   const [locations, setLocations] = useState<Location[]>([]);
-  const [searchLocations, setSearchLocations] = useState<Location[]>([
-    {
-      locationName: "mattjzhou's HOUSE.",
-      notes: "",
-      address: {
-        street: "Catalyst",
-        city: "A City",
-        zipCode: 12345,
-        state: "VA",
-      },
-    },
-    {
-      locationName: "Loc2",
-      notes: "",
-      address: { street: "A St", city: "A City", zipCode: 12345, state: "VA" },
-    },
-    {
-      locationName: "mattjzhou's HOUSE. searching.",
-      notes: "",
-      address: {
-        street: "Catalyst",
-        city: "A City",
-        zipCode: 12345,
-        state: "VA",
-      },
-    },
-    {
-      locationName: "aishu's HOUSE. searching.",
-      notes: "",
-      address: {
-        street: "Catalyst",
-        city: "A City",
-        zipCode: 12345,
-        state: "VA",
-      },
-    },
-    {
-      locationName: "LocSearch",
-      notes: "",
-      address: { street: "A St", city: "A City", zipCode: 12345, state: "VA" },
-    },
-  ]);
+  const [searchLocations, setSearchLocations] = useState<Location[]>([]);
   const [locationsIsPickUp, setLocationsIsPickUp] = useState<
     Map<string, boolean>
   >(new Map());
@@ -68,7 +30,7 @@ function RouteCreationPage() {
     const fetchLocations = async () => {
       const response = await getAllLocations();
       const data = JSON.parse(response || "[]");
-      setLocations(data || []);
+      setSearchLocations(data || []);
     };
 
     fetchLocations();
@@ -107,13 +69,17 @@ function RouteCreationPage() {
     setLocations(newLocations);
   }
 
-  function saveRoute() {
+  function completeRoute() {
+    const locs: ILocation[] = locations.map((item) => ({
+      location: new mongoose.Types.ObjectId(item["_id"]!),
+      type: locationsIsPickUp.get(item["locationName"]) ? "pickup" : "dropoff",
+    }));
     const route = {
       routeName: routeName,
       locationDescription: routeArea,
-      locations: locations,
+      locations: locs,
     };
-    console.log(route);
+    createRoute(JSON.stringify(route));
   }
 
   function locationCards() {
@@ -255,7 +221,7 @@ function RouteCreationPage() {
         <p className="header-text">Create a Route</p>
         <button
           className="complete-route-btn"
-          onClick={saveRoute}
+          onClick={completeRoute}
           style={{
             backgroundColor:
               routeName != "" && routeArea != "" && locations.length > 0
