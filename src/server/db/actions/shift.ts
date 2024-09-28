@@ -131,8 +131,7 @@ export async function updateRecurrenceRule(shiftId: ObjectId, newRule: string): 
 * If capacity is reached, then the user is not signed up and false is returned
 * 
 * 
-* If a shiftDate is provided and is validated against the recurrence rule, then the user is signed up for that specific date
-* it will also updates the number of people signed up for that specific date.
+* If a shiftDate is provided and is validated against the recurrence rule, then currSignedUp is incremented for that specific recurrence.
 * 
 * If capacity is reached for that specific date, then false is returned
 */
