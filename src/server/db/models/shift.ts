@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
+import { RRule } from "rrule";
 
 const { ObjectId } = Schema.Types;
 
@@ -51,7 +52,17 @@ const shiftSchema: Schema = new Schema({
     },
     recurrenceRule: {
         type: String,
-        default: ""
+        default: "",
+        validate : {
+            validator: function(str: string) {
+                try {
+                    RRule.fromString(str);
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            }       
+     }
     },
     recurrences: { 
         type: [recurrenceSchema],
