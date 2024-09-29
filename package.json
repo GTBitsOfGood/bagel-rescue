@@ -9,9 +9,18 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.6.0",
+    "@fortawesome/free-solid-svg-icons": "^6.6.0",
+    "@fortawesome/react-fontawesome": "^0.2.2",
+    "@types/react-beautiful-dnd": "^13.1.8",
+    "dotenv": "^16.4.5",
+    "mongodb": "^6.9.0",
     "mongoose": "^8.6.1",
     "next": "14.2.7",
     "react": "^18",
+    "react-beautiful-dnd": "^13.1.1",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18",
     "rrule": "^2.8.1"
   },
