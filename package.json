@@ -12,30 +12,15 @@
     "child_process": false
   },
   "dependencies": {
-<<<<<<< HEAD
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/react-fontawesome": "^0.2.2",
     "fortawesome": "^0.0.1-security",
-=======
-    "@fortawesome/fontawesome-svg-core": "^6.6.0",
-    "@fortawesome/free-solid-svg-icons": "^6.6.0",
-    "@fortawesome/react-fontawesome": "^0.2.2",
-    "@types/react-beautiful-dnd": "^13.1.8",
-    "dotenv": "^16.4.5",
-    "mongodb": "^6.9.0",
->>>>>>> cc0e4bf9c2d9fa00bda4aec93515fd9f895c6be1
     "mongoose": "^8.6.1",
     "next": "14.2.7",
     "react": "^18",
     "react-beautiful-dnd": "^13.1.1",
-<<<<<<< HEAD
-    "react-dom": "^18"
-=======
-    "react-dnd": "^16.0.1",
-    "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18",
     "rrule": "^2.8.1"
->>>>>>> cc0e4bf9c2d9fa00bda4aec93515fd9f895c6be1
   },
   "devDependencies": {
     "@types/node": "^20",
