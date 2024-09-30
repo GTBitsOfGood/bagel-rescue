@@ -31,8 +31,9 @@
 .searchInput {
   width: 300px;
   padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  border: 1px solid #0F7AFF;
+  border-radius: 69px;
+  padding-left: 20px;
 }
 
 .filterControls {
@@ -43,15 +44,15 @@
 
 .sortSelect {
   padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  border: 1px solid #0F7AFF;
+  border-radius: 69px;
 }
 
 .filterButton {
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
+  background-color: #C6E3F9;
+  border: 1px solid #0F7AFF;
   padding: 10px 15px;
-  border-radius: 5px;
+  border-radius: 69px;
   cursor: pointer;
 }
 
@@ -61,13 +62,14 @@
 
 .tableHeader {
   display: grid;
-  grid-template-columns: 2fr 2fr 1fr 1fr 3fr 0.5fr;
+  grid-template-columns: 2fr 1.5fr 1fr 1fr 3fr 0.5fr;
   background-color: #C6E3FF;
-  border-radius: 16px;
-  padding: 10px;
+  border-radius: 8px;
+  padding: 16px;
   font-weight: bold;
-  color: #002f5f;
+  color: #072B68;
   margin-bottom: 10px;
+  padding-left: 20px;
 }
 
 .columnHeader {
@@ -84,35 +86,38 @@
   background-color: #fff;
   border: 1px solid #ddd;
   border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border-color: #C6E3FF;
+  padding: 10px;
+  color: #072B68;
 }
 
 .locationDetails {
   display: grid;
-  grid-template-columns: 2fr 2fr 1fr 1fr 3fr 0.5fr;
-  gap: 10px;
+  grid-template-columns: 2fr 1.5fr 1fr 1fr 3fr 0.5fr;
+  gap: 16px;
   align-items: center;
 }
 
 .locationInfo {
   display: flex;
   flex-direction: column;
+  padding-left: 20px;
+  
 }
 
 .pickUp {
-  background-color: #d4edda;
-  color: #155724;
+  background-color: #A4F4B6;
+  color: #072B68;
   padding: 5px 10px;
-  border-radius: 5px;
+  border-radius: 12px;
   text-align: center;
 }
 
 .dropOff {
-  background-color: #ffeeba;
-  color: #856404;
+  background-color: #F4C6A4;
+  color: #072B68;
   padding: 5px 10px;
-  border-radius: 5px;
+  border-radius: 12px;
   text-align: center;
 }
 
