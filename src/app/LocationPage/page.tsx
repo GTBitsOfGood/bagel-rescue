@@ -2,51 +2,22 @@
 
 import React, { useEffect, useState } from 'react';
 import styles from './page.module.css';
-import mongoose from 'mongoose';
 
 
 import { getAllLocations } from "@/server/db/actions/location";
 import { Location } from "@/server/db/models/location";
 
 
-// const locations = [
-//   {
-//     name: 'Location Name',
-//     contact: '123-456-7890',
-//     address: '1234 Address Name, Apt. 56, Atlanta, GA',
-//     type: 'Drop-Off',
-//     bags: 1234,
-//     notes: 'Additional Notes are placed here, and will include info about that in case it’s necessary, so this is where that...',
-//   },
-//   {
-//     name: 'Location Name',
-//     contact: '123-456-7890',
-//     address: '1234 Address Name, Apt. 56, Atlanta, GA',
-//     type: 'Pick-Up',
-//     bags: 1234,
-//     notes: 'Additional Notes are placed here, and will include info about that in case it’s necessary, so this is where that...',
-//   },
-// ];
 
 function LocationDashboardPage() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [sortOption, setSortOption] = useState<string>('alphabetically');
+  
 
   useEffect(() => {
     const fetchLocations = async () => {
       const response = await getAllLocations();
       const data = JSON.parse(response || "[]");
-
-      if (sortOption === 'alphabetically') {
-        data.sort((a: Location, b: Location) => a.locationName.localeCompare(b.locationName));
-      } else if (sortOption === 'byType') {
-        data.sort((a: Location, b: Location) => {
-          if (a.type === b.type) {
-            return 0;
-          }
-          return a.type === 'Drop-Off' ? -1 : 1;
-        });
-      }
 
       setLocations(data || []);
     };
@@ -54,17 +25,29 @@ function LocationDashboardPage() {
   }, [sortOption]);
 
 
-  const handleSortChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSortOption(event.target.value);
+  const handleSortChange = () => {
+    const sortedLocations = [...locations];
+    if (sortOption === 'alphabetically') {
+      sortedLocations.sort((a: Location, b: Location) => a.locationName.localeCompare(b.locationName));
+    } else if (sortOption === 'byType') {
+      sortedLocations.sort((a: Location, b: Location) => {
+        if (a.type === b.type) {
+          return 0;
+        }
+        return a.type === 'Drop-Off' ? -1 : 1;
+      });
+    }
+    setLocations(sortedLocations);
   };
 
+  const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortOption(event.target.value);
+
+  };
   
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <h1>Locations</h1>
-        <button className={styles.newLocationButton}>+ New Location</button>
-      </div>
+     
       <div className={styles.searchAndSort}>
         <input
           type="text"
@@ -73,11 +56,11 @@ function LocationDashboardPage() {
         />
         <div className={styles.filterControls}>
           <h1>Sorted:</h1>
-          <select className={styles.sortSelect} value={sortOption} onChange={handleSortChange}>
+          <select className={styles.sortSelect} value={sortOption} onChange={handleFilterChange}>
             <option value="alphabetically">Alphabetically</option>
             <option value="byType">By Type</option>
           </select>
-          <button className={styles.filterButton}>Filter</button>
+          <button className={styles.filterButton} onClick={handleSortChange}>Filter</button>
         </div>
       </div>
       <div className={styles.tableContainer}>
