@@ -1,0 +1,124 @@
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.newLocationButton {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.searchAndSort {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.searchInput {
+  width: 300px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.filterControls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.sortSelect {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.filterButton {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.tableContainer {
+  margin-top: 20px;
+}
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr 1fr 3fr 0.5fr;
+  background-color: #C6E3FF;
+  border-radius: 16px;
+  padding: 10px;
+  font-weight: bold;
+  color: #002f5f;
+  margin-bottom: 10px;
+}
+
+.columnHeader {
+  padding: 5px 10px;
+}
+
+.locationList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.locationCard {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.locationDetails {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr 1fr 3fr 0.5fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.locationInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.pickUp {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 5px 10px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.dropOff {
+  background-color: #ffeeba;
+  color: #856404;
+  padding: 5px 10px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.moreOptionsButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+}

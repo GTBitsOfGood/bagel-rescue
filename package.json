@@ -8,16 +8,25 @@
     "start": "next start",
     "lint": "next lint"
   },
+  "browser":{
+"child_process": false
+},
   "dependencies": {
+    "@fortawesome/free-solid-svg-icons": "^6.6.0",
+    "@fortawesome/react-fontawesome": "^0.2.2",
+    "fortawesome": "^0.0.1-security",
     "mongoose": "^8.6.1",
     "next": "14.2.7",
     "react": "^18",
+    "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18"
   },
   "devDependencies": {
     "@types/node": "^20",
-    "@types/react": "^18",
+    "@types/react": "^18.3.10",
+    "@types/react-beautiful-dnd": "^13.1.8",
     "@types/react-dom": "^18",
+    "@types/react-fontawesome": "^1.6.8",
     "eslint": "^8",
     "eslint-config-next": "14.2.7",
     "postcss": "^8",
