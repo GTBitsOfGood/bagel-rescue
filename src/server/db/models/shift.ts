@@ -1,13 +1,38 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
+import { RRule } from "rrule";
 
 const { ObjectId } = Schema.Types;
+
+interface Recurrence {
+    date: Date;
+    capacity: number;
+    currSignedUp: number;
+}
+
 
 interface Shift extends Document {
     routeId: mongoose.Types.ObjectId;
     shiftDate: Date;
     capacity: number;
     currSignedUp: number;
+    recurrenceRule: string;
+    recurrences: Recurrence[];
 }
+
+const recurrenceSchema: Schema = new Schema({
+    date: {
+        type: Date,
+        required: true
+    },
+    capacity: {
+        type: Number,
+        default: 0
+    },
+    currSignedUp: {
+        type: Number,
+        default: 0
+    }
+});
 
 const shiftSchema: Schema = new Schema({
     routeId: {
@@ -25,9 +50,28 @@ const shiftSchema: Schema = new Schema({
         type: Number,
         default: 0
     },
+    recurrenceRule: {
+        type: String,
+        default: "",
+        validate : {
+            validator: function(str: string) {
+                try {
+                    RRule.fromString(str);
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            }       
+     }
+    },
+    recurrences: { 
+        type: [recurrenceSchema],
+        default: []
+    }
 })
 
 const ShiftModel: Model<Shift> = mongoose.models?.Shift || mongoose.model<Shift>("Shift", shiftSchema);
+const RecurrenceModel: Model<Recurrence> = mongoose.models?.Recurrence || mongoose.model<Recurrence>("Recurrence", recurrenceSchema);
 
-export { ShiftModel };
-export type { Shift };
+export { ShiftModel, RecurrenceModel };
+export type { Shift, Recurrence };

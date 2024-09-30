@@ -34,9 +34,9 @@
 }
 
 .sortSelect {
-  padding: 10px;
   border: 1px solid #0F7AFF;
   border-radius: 69px;
+  padding: 10px 10px 10px 30px;
 }
 
 .filterButton {
