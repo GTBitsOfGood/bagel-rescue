@@ -27,14 +27,6 @@
   margin-bottom: 20px;
 }
 
-.searchInput {
-  width: 300px;
-  padding: 10px;
-  border: 1px solid #0F7AFF;
-  border-radius: 69px;
-  padding-left: 20px;
-}
-
 .filterControls {
   display: flex;
   gap: 10px;
@@ -127,4 +119,30 @@
   border: none;
   cursor: pointer;
   font-size: 20px;
+}
+
+.searchInputContainer {
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
+  width: 300px;
+  padding: 10px 15px; 
+  border: 1px solid #0F7AFF;
+  border-radius: 69px;
+  overflow: hidden;
+}
+
+.searchIcon {
+  color: #0F7AFF;
+  font-size: 20px;
+  width: 20px; 
+  height: 20px; 
+}
+
+.searchInput {
+  border: none;
+  outline: none;
+  background-color: transparent;
+  padding-left: 10px;
+  flex-grow: 1; 
 }

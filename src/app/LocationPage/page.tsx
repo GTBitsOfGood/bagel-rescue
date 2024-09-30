@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import styles from './page.module.css';
 
 
@@ -49,11 +51,14 @@ function LocationDashboardPage() {
     <div className={styles.container}>
      
       <div className={styles.searchAndSort}>
+      <div className={styles.searchInputContainer}>
+        <FontAwesomeIcon icon={faMagnifyingGlass} className={styles.searchIcon} />
         <input
           type="text"
           placeholder="Search for route"
           className={styles.searchInput}
         />
+      </div>
         <div className={styles.filterControls}>
           <h1>Sorted:</h1>
           <select className={styles.sortSelect} value={sortOption} onChange={handleFilterChange}>
