@@ -11,7 +11,10 @@ interface Location {
   _id?: string;
   locationName: string;
   notes: string;
+  contact: string;
   address: Address;
+  type: "Pick-Up" | "Drop-Off";
+  bags: number | "All Bags";
 }
 
 const AddressSchema: Schema = new Schema({
@@ -24,7 +27,10 @@ const AddressSchema: Schema = new Schema({
 const LocationSchema: Schema = new Schema({
   locationName: { type: String, required: true },
   notes: { type: String, default: "" },
+  contact: { type: String, default: "" },
   address: { type: AddressSchema, required: true },
+  type: { type: String, enum: ["Pick-Up", "Drop-Off"], required: true },
+  bags: { type: Number, default: 0 },
 });
 
 const LocationModel: Model<Location> =

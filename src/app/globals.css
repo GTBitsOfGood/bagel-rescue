@@ -9,10 +9,10 @@
   --Bagel-Rescue-Light-Blue: #dbe7f7;
 }
 
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: light) {
   :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-rgb: 32, 33, 36;
+    --foreground-rgb: 0, 0, 0;
+    --background-rgb: 255, 255, 255;
   }
 }
 
