@@ -1,0 +1,113 @@
+.container {
+  padding: 1.5em 4em;
+  background-color: var(--Bagel-Rescue-Light-Blue);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5em;
+  min-height: 100vh;
+}
+
+.search-settings {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  position: relative;
+}
+
+.sort-by-btn {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5em;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  color: var(--Bagel-Rescue-Light-Text);
+  padding: 0.75em 1em;
+  border: 1px solid var(--Bagel-Rescue-Light-Grey);
+  border-radius: 12px;
+}
+
+.shift-search-input {
+  padding: 1em 0.75em 1em 3em;
+  border-radius: 40px;
+  border: 1px solid var(--Bagel-Rescue-Light-Grey);
+  width: 400px;
+}
+
+.shift-search-icon {
+  position: absolute;
+  right: 365px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--Bagel-Rescue-Light-Text);
+}
+
+.routes-list {
+  border-radius: 8px;
+  background-color: white;
+  border: 1px solid var(--Bagel-Rescue-Light-Grey);
+}
+
+.route-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  border-bottom: 1px solid var(--Bagel-Rescue-Light-Grey);
+  padding: 1.25em 1.5em;
+}
+
+.route-card:last-child {
+  border-bottom: none;
+}
+
+.route-card-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.route-card-name {
+  color: var(--Bagel-Rescue-Dark-Blue);
+  font-weight: bold;
+}
+
+.route-card-header-right-section {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75em;
+}
+
+.route-card-time {
+  color: var(--Bagel-Rescue-Dark-Blue);
+}
+
+.route-card-ellipsis-icon {
+  color: var(--Bagel-Rescue-Light-Text);
+}
+
+.route-card-body {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.route-card-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625em;
+}
+
+.route-card-section:not(:last-child) {
+  flex: 1;
+}
+
+.route-card-section:last-child {
+  min-width: 8em;
+}
+
+.route-card-section-header {
+  font-size: 0.75em;
+  font-weight: bold;
+}

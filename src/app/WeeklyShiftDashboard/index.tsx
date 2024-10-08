@@ -1,0 +1,227 @@
+"use client";
+
+import "./stylesheet.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faArrowUpShortWide,
+  faMagnifyingGlass,
+  faEllipsis,
+} from "@fortawesome/free-solid-svg-icons";
+import { useEffect, useState } from "react";
+import { RRule } from "rrule";
+
+import { Shift } from "@/server/db/models/shift";
+import { IRoute } from "@/server/db/models/Route";
+import { getAllShifts } from "@/server/db/actions/shift";
+import { getAllRoutes } from "@/server/db/actions/Route";
+
+function WeeklyShiftDashboard() {
+  const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+  const [shiftSearchText, setShiftSearchText] = useState("");
+  const [routes, setRoutes] = useState<IRoute[]>([]);
+  const [shiftsPerRoute, setShiftsPerRoute] = useState<Map<string, Shift[]>>(
+    new Map()
+  );
+
+  useEffect(() => {
+    const fetchRoutes = async () => {
+      const routes_response = await getAllRoutes();
+      const routes_data = JSON.parse(routes_response || "[]");
+      setRoutes(routes_data || []);
+    };
+
+    const fetchShifts = async () => {
+      const shift_response = await getAllShifts();
+      const shift_data: Shift[] = JSON.parse(shift_response || "[]");
+      const routeToShiftsMap = new Map<string, Shift[]>();
+      shift_data.forEach((s) => {
+        if (routeToShiftsMap.has(s["routeId"].toString())) {
+          routeToShiftsMap.get(s["routeId"].toString())?.push(s);
+        } else {
+          routeToShiftsMap.set(s["routeId"].toString(), [s]);
+        }
+      });
+      setShiftsPerRoute(routeToShiftsMap);
+    };
+
+    fetchRoutes();
+    fetchShifts();
+  }, []);
+
+  console.log(shiftsPerRoute);
+  function routesList() {
+    return (
+      <div className="routes-list">
+        {routes.map((route) => {
+          const getTimesHeader = (r: IRoute) => {
+            const dates = getDatesHelper(r)
+              .flat()
+              .sort((a: Date, b: Date) => a.getTime() - b.getTime());
+            if (dates.length == 0) return "";
+            const minTime = dates.at(0);
+            const maxTime = dates.at(dates.length - 1);
+            const options: Intl.DateTimeFormatOptions = {
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            };
+            return (
+              minTime?.toLocaleTimeString("en-US", options) +
+              " - " +
+              maxTime?.toLocaleTimeString("en-US", options)
+            );
+          };
+
+          const getDaysHeader = (r: IRoute) => {
+            return getDatesHelper(r)
+              .flat()
+              .sort((a: Date, b: Date) => a.getTime() - b.getTime())
+              .map((d: Date) => {
+                return d.toLocaleDateString("en-US", {
+                  weekday: "short",
+                });
+              })
+              .join(", ");
+          };
+
+          const getVolunteers = (r: IRoute) => {
+            return (
+              shiftsPerRoute
+                .get(r["_id"].toString())
+                ?.map((s) => "Volunteer") || []
+            );
+          };
+
+          const getDays = (r: IRoute) => {
+            return (
+              getDatesHelper(r).map((s: Date[]) => {
+                return s
+                  .sort((a, b) => a.getTime() - b.getTime())
+                  .map((d) => {
+                    return d.toLocaleDateString("en-US", {
+                      weekday: "short",
+                    });
+                  })
+                  .join(", ");
+              }) || []
+            );
+          };
+
+          const getDatesHelper = (r: IRoute) => {
+            return (
+              shiftsPerRoute.get(r["_id"].toString())?.map((s) => {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const nextWeek = new Date(today);
+                nextWeek.setDate(today.getDate() + 7);
+                return s["recurrences"]
+                  .filter((r) => {
+                    const recurrenceDate = new Date(r["date"]);
+                    return recurrenceDate >= today && recurrenceDate < nextWeek;
+                  })
+                  .map((r) => {
+                    return new Date(r["date"]);
+                  });
+              }) || []
+            );
+          };
+
+          const getAreas = (r: IRoute) => {
+            return (
+              shiftsPerRoute.get(r["_id"].toString())?.map((s) => "Area") || []
+            );
+          };
+
+          const getNextShifts = (r: IRoute) => {
+            return (
+              shiftsPerRoute.get(r["_id"].toString())?.map((s) => {
+                const firstShift = s["recurrences"].sort().at(0);
+                const options: Intl.DateTimeFormatOptions = {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                };
+                return firstShift
+                  ? new Intl.DateTimeFormat("en-US", options).format(
+                      new Date(firstShift["date"])
+                    )
+                  : "";
+              }) || []
+            );
+          };
+
+          return (
+            <div className="route-card">
+              <div className="route-card-header">
+                <p className="route-card-name">{route["routeName"]}</p>
+                <div className="route-card-header-right-section">
+                  <p className="route-card-time">
+                    {getTimesHeader(route)} {getDaysHeader(route)}
+                  </p>
+                  <button>
+                    <FontAwesomeIcon
+                      icon={faEllipsis}
+                      className="route-card-ellipsis-icon"
+                    />
+                  </button>
+                </div>
+              </div>
+              <div className="route-card-body">
+                <div className="route-card-section">
+                  <p className="route-card-section-header">Volunteer</p>
+                  {getVolunteers(route).map((s) => (
+                    <p className="route-card-section-body">{s}</p>
+                  ))}
+                </div>
+                <div className="route-card-section">
+                  <p className="route-card-section-header">Days</p>
+                  {getDays(route).map((s) => (
+                    <p className="route-card-section-body">{s}</p>
+                  ))}
+                </div>
+                <div className="route-card-section">
+                  <p className="route-card-section-header">Area</p>
+                  {getAreas(route).map((s) => (
+                    <p className="route-card-section-body">{s}</p>
+                  ))}
+                </div>
+                <div className="route-card-section">
+                  <p className="route-card-section-header">Next Shift</p>
+                  {getNextShifts(route).map((s) => (
+                    <p className="route-card-section-body">{s}</p>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  return (
+    <div className="container">
+      <div style={{ height: "50px" }}></div>
+      <div className="search-settings">
+        <button className="sort-by-btn">
+          <FontAwesomeIcon icon={faArrowUpShortWide} />
+          <p>Sort By</p>
+        </button>
+        <input
+          className="shift-search-input"
+          type="text"
+          placeholder="Search for a shift"
+          onChange={(e) => setShiftSearchText(e.target.value)}
+        />
+        <FontAwesomeIcon
+          icon={faMagnifyingGlass}
+          className="shift-search-icon"
+        />
+      </div>
+      {routesList()}
+    </div>
+  );
+}
+
+export default WeeklyShiftDashboard;
