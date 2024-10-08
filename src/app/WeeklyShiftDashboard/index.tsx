@@ -8,7 +8,6 @@ import {
   faEllipsis,
 } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
-import { RRule } from "rrule";
 
 import { Shift } from "@/server/db/models/shift";
 import { IRoute } from "@/server/db/models/Route";
@@ -16,8 +15,6 @@ import { getAllShifts } from "@/server/db/actions/shift";
 import { getAllRoutes } from "@/server/db/actions/Route";
 
 function WeeklyShiftDashboard() {
-  const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
   const [shiftSearchText, setShiftSearchText] = useState("");
   const [routes, setRoutes] = useState<IRoute[]>([]);
   const [shiftsPerRoute, setShiftsPerRoute] = useState<Map<string, Shift[]>>(
@@ -49,7 +46,6 @@ function WeeklyShiftDashboard() {
     fetchShifts();
   }, []);
 
-  console.log(shiftsPerRoute);
   function routesList() {
     return (
       <div className="routes-list">
@@ -57,7 +53,9 @@ function WeeklyShiftDashboard() {
           const getTimesHeader = (r: IRoute) => {
             const dates = getDatesHelper(r)
               .flat()
-              .sort((a: Date, b: Date) => a.getTime() - b.getTime());
+              .sort((a: Date, b: Date) => {
+                return a.toTimeString().localeCompare(b.toTimeString());
+              });
             if (dates.length == 0) return "";
             const minTime = dates.at(0);
             const maxTime = dates.at(dates.length - 1);
@@ -76,7 +74,7 @@ function WeeklyShiftDashboard() {
           const getDaysHeader = (r: IRoute) => {
             return getDatesHelper(r)
               .flat()
-              .sort((a: Date, b: Date) => a.getTime() - b.getTime())
+              .sort((a: Date, b: Date) => a.getDay() - b.getDay())
               .map((d: Date) => {
                 return d.toLocaleDateString("en-US", {
                   weekday: "short",
@@ -94,18 +92,18 @@ function WeeklyShiftDashboard() {
           };
 
           const getDays = (r: IRoute) => {
-            return (
-              getDatesHelper(r).map((s: Date[]) => {
-                return s
-                  .sort((a, b) => a.getTime() - b.getTime())
+            return getDatesHelper(r).map((s: Date[]) => {
+              return (
+                s
+                  .sort((a, b) => a.getDay() - b.getDay())
                   .map((d) => {
                     return d.toLocaleDateString("en-US", {
                       weekday: "short",
                     });
                   })
-                  .join(", ");
-              }) || []
-            );
+                  .join(", ") || "-"
+              );
+            });
           };
 
           const getDatesHelper = (r: IRoute) => {
@@ -136,7 +134,13 @@ function WeeklyShiftDashboard() {
           const getNextShifts = (r: IRoute) => {
             return (
               shiftsPerRoute.get(r["_id"].toString())?.map((s) => {
-                const firstShift = s["recurrences"].sort().at(0);
+                const firstShift = s["recurrences"]
+                  .sort(
+                    (a, b) =>
+                      new Date(a["date"]).getTime() -
+                      new Date(b["date"]).getTime()
+                  )
+                  .at(0);
                 const options: Intl.DateTimeFormatOptions = {
                   year: "numeric",
                   month: "2-digit",
@@ -146,7 +150,7 @@ function WeeklyShiftDashboard() {
                   ? new Intl.DateTimeFormat("en-US", options).format(
                       new Date(firstShift["date"])
                     )
-                  : "";
+                  : "-";
               }) || []
             );
           };
