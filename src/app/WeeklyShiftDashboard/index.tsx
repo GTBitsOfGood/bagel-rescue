@@ -49,7 +49,7 @@ function WeeklyShiftDashboard() {
   function routesList() {
     return (
       <div className="routes-list">
-        {routes.map((route) => {
+        {routes.map((route, routeInd) => {
           const getTimesHeader = (r: IRoute) => {
             const dates = getDatesHelper(r)
               .flat()
@@ -156,7 +156,7 @@ function WeeklyShiftDashboard() {
           };
 
           return (
-            <div className="route-card">
+            <div key={routeInd} className="route-card">
               <div className="route-card-header">
                 <p className="route-card-name">{route["routeName"]}</p>
                 <div className="route-card-header-right-section">
@@ -174,26 +174,34 @@ function WeeklyShiftDashboard() {
               <div className="route-card-body">
                 <div className="route-card-section">
                   <p className="route-card-section-header">Volunteer</p>
-                  {getVolunteers(route).map((s) => (
-                    <p className="route-card-section-body">{s}</p>
+                  {getVolunteers(route).map((s, sInd) => (
+                    <p key={sInd} className="route-card-section-body">
+                      {s}
+                    </p>
                   ))}
                 </div>
                 <div className="route-card-section">
                   <p className="route-card-section-header">Days</p>
-                  {getDays(route).map((s) => (
-                    <p className="route-card-section-body">{s}</p>
+                  {getDays(route).map((s, sInd) => (
+                    <p key={sInd} className="route-card-section-body">
+                      {s}
+                    </p>
                   ))}
                 </div>
                 <div className="route-card-section">
                   <p className="route-card-section-header">Area</p>
-                  {getAreas(route).map((s) => (
-                    <p className="route-card-section-body">{s}</p>
+                  {getAreas(route).map((s, sInd) => (
+                    <p key={sInd} className="route-card-section-body">
+                      {s}
+                    </p>
                   ))}
                 </div>
                 <div className="route-card-section">
                   <p className="route-card-section-header">Next Shift</p>
-                  {getNextShifts(route).map((s) => (
-                    <p className="route-card-section-body">{s}</p>
+                  {getNextShifts(route).map((s, sInd) => (
+                    <p key={sInd} className="route-card-section-body">
+                      {s}
+                    </p>
                   ))}
                 </div>
               </div>
