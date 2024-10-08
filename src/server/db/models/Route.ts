@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document } from "mongoose";
-import { ObjectId } from "mongoose";
 
 export interface ILocation {
   location: mongoose.Types.ObjectId;
@@ -7,6 +6,7 @@ export interface ILocation {
 }
 
 export interface IRoute extends Document {
+  _id: mongoose.Types.ObjectId;
   routeName: string;
   locationDescription: string;
   locations: ILocation[];

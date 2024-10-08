@@ -7,6 +7,9 @@
   --background-rgb: 255, 255, 255;
   --Bagel-Rescue-Blue: #3d97ff;
   --Bagel-Rescue-Light-Blue: #dbe7f7;
+  --Bagel-Rescue-Dark-Blue: #072b68;
+  --Bagel-Rescue-Light-Text: #6c7d93;
+  --Bagel-Rescue-Light-Grey: #d3d8de;
 }
 
 @media (prefers-color-scheme: light) {
