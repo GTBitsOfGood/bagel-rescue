@@ -1,0 +1,58 @@
+.sidebar {
+    height: 100vh;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    transition: width 0.3s ease;
+    border-right: 1px solid #D3D8DE;
+  }
+  
+  .open {
+    width: 16rem; /* Expanded sidebar width */
+  }
+  
+  .closed {
+    width: 5rem; /* Collapsed sidebar width */
+  }
+  
+  .toggleButton {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+  }
+  
+  .nav {
+    flex: 1;
+  }
+  
+  .navItem {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    color: #000;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .navItem:hover {
+    background-color: #374151;
+  }
+  
+  .active {
+    background-color: #4b5563;
+  }
+  
+  .icon {
+    font-size: 1.5rem;
+  }
+  
+  .navText {
+    margin-left: 1rem;
+  }
+  
