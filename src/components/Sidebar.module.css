@@ -9,26 +9,49 @@
   }
   
   .open {
-    width: 16rem; /* Expanded sidebar width */
+    width: 15rem; 
   }
   
   .closed {
-    width: 5rem; /* Collapsed sidebar width */
+    width: 5rem; 
   }
   
   .toggleButton {
     background: none;
     border: none;
-    color: white;
+    color: #000;
     cursor: pointer;
     margin-bottom: 2rem;
-    font-size: 1rem;
+    font-size: 3rem;
   }
   
   .nav {
     flex: 1;
   }
   
+  .navIcon {
+    font-size: 3rem;
+  }
+
+  .navHeaderText {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0F7AFF;
+  }
+
+  .navTitleText {  
+    font-size: 1rem;
+    font-weight: 400;
+    color:#808080;
+
+  }
+
+  .navHeader {
+    text-align: left;
+    margin-bottom: 1rem;
+    font-weight: bold;
+  }
+
   .navItem {
     display: flex;
     align-items: center;
@@ -54,5 +77,40 @@
   
   .navText {
     margin-left: 1rem;
+    font-size: 0.875rem;
   }
+
+
+  .profile {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    margin-top: auto; 
+    background-color: #e5e7eb;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+  }
+  
+  .avatar {
+    width: 40px;
+    height: 40px;
+    background-color: #0F7AFF;
+    border-radius: 8px;
+  }
+  
+  .profileInfo {
+    margin-left: 1rem;
+  }
+  
+  .name {
+    font-weight: bold;
+    margin: 0;
+    color: #0F7AFF;
+  }
+  
+  .role {
+    margin: 0;
+    color: #000;
+  }
+  
   

@@ -26,9 +26,11 @@ const Sidebar: React.FC = () => {
 
   return (
     <div className={`${styles.sidebar} ${isOpen ? styles.open : styles.closed}`}>
-      <button onClick={toggleSidebar} className={styles.toggleButton}>
-        {isOpen ? 'Collapse' : 'Expand'}
-      </button>
+      <div className={styles.navHeader}>
+        <div className={styles.navIcon}>🥯</div>
+        <div className={styles.navHeaderText}>Bagel Rescue</div>
+        <div className={styles.navTitleText}>Volunteer Portal</div>
+      </div>
       <nav className={styles.nav}>
         {navItems.map((item) => (
           <Link key={item.name} href={item.href}>
@@ -43,6 +45,15 @@ const Sidebar: React.FC = () => {
           </Link>
         ))}
       </nav>
+      <div className={styles.profile}>
+          <div className={styles.avatar}></div>
+          {isOpen && (
+            <div className={styles.profileInfo}>
+              <p className={styles.name}>Jane Doe</p>
+              <p className={styles.role}>Volunteer</p>
+            </div>
+          )}
+        </div>
     </div>
   );
 };
