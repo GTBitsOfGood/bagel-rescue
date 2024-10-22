@@ -4,7 +4,6 @@ import { ObjectId } from 'mongoose';
 import dbConnect from '../dbConnect';
 import { RecurrenceModel, Shift, ShiftModel } from '../models/shift';
 import { RRule } from 'rrule';
-import { rule } from 'postcss';
 
 export async function createShift(shiftObject: Shift): Promise<Shift> {
     try {
@@ -160,6 +159,25 @@ export async function newSignUp(shiftId: ObjectId, shiftDate?: Date): Promise<bo
     }
 }
 
+export async function getAllShifts(targetDate: Date): Promise<string | null> {
+    try {
+        await dbConnect();
+
+        const startOfDay = new Date(targetDate);
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date(targetDate);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const data = await ShiftModel.find({shiftDate: {$gte: startOfDay, $lt: endOfDay}});
+        return JSON.stringify(data);
+    } catch (error) {
+        const err = error as Error;
+        throw new Error(`Error has occurred when getting all shifts: ${err.message}`);
+    }
+}
+
+
 
 /* 
     Helper function for newSignUp
@@ -186,7 +204,7 @@ async function recurrenceSignup(data: Shift, shiftDate: Date): Promise<boolean> 
     }
 
     await ShiftModel.findByIdAndUpdate(data._id, data);
-    return true;
-
-    
+    return true;  
 }
+
+
