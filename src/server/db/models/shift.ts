@@ -4,11 +4,10 @@ import { RRule } from "rrule";
 const { ObjectId } = Schema.Types;
 
 interface Recurrence {
-    date: Date;
-    capacity: number;
-    currSignedUp: number;
+  date: Date;
+  capacity: number;
+  currSignedUp: number;
 }
-
 
 interface Shift extends Document {
     routeId: mongoose.Types.ObjectId;
@@ -21,18 +20,18 @@ interface Shift extends Document {
 }
 
 const recurrenceSchema: Schema = new Schema({
-    date: {
-        type: Date,
-        required: true
-    },
-    capacity: {
-        type: Number,
-        default: 0
-    },
-    currSignedUp: {
-        type: Number,
-        default: 0
-    }
+  date: {
+    type: Date,
+    required: true,
+  },
+  capacity: {
+    type: Number,
+    default: 0,
+  },
+  currSignedUp: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const shiftSchema: Schema = new Schema({
@@ -74,8 +73,11 @@ const shiftSchema: Schema = new Schema({
     }
 })
 
-const ShiftModel: Model<Shift> = mongoose.models?.Shift || mongoose.model<Shift>("Shift", shiftSchema);
-const RecurrenceModel: Model<Recurrence> = mongoose.models?.Recurrence || mongoose.model<Recurrence>("Recurrence", recurrenceSchema);
+const ShiftModel: Model<Shift> =
+  mongoose.models?.Shift || mongoose.model<Shift>("Shift", shiftSchema);
+const RecurrenceModel: Model<Recurrence> =
+  mongoose.models?.Recurrence ||
+  mongoose.model<Recurrence>("Recurrence", recurrenceSchema);
 
 export { ShiftModel, RecurrenceModel };
 export type { Shift, Recurrence };
