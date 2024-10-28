@@ -87,3 +87,14 @@ export async function removeLocation(
     throw new Error("Failed to remove location");
   }
 }
+
+export async function getAllRoutes(): Promise<string | null> {
+  try {
+    await dbConnect();
+    const routes = await Route.find();
+    return JSON.stringify(routes);
+  } catch (error) {
+    const err = error as Error;
+    throw new Error(`Error getting all routes: ${err.message}`);
+  }
+}
