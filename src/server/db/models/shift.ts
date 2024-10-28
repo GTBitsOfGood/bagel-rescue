@@ -10,12 +10,13 @@ interface Recurrence {
 }
 
 interface Shift extends Document {
-  routeId: mongoose.Types.ObjectId;
-  shiftDate: Date;
-  capacity: number;
-  currSignedUp: number;
-  recurrenceRule: string;
-  recurrences: Recurrence[];
+    routeId: mongoose.Types.ObjectId;
+    shiftDate: Date;
+    shiftEndDate: Date;
+    capacity: number;
+    currSignedUp: number;
+    recurrenceRule: string;
+    recurrences: Recurrence[];
 }
 
 const recurrenceSchema: Schema = new Schema({
@@ -34,40 +35,43 @@ const recurrenceSchema: Schema = new Schema({
 });
 
 const shiftSchema: Schema = new Schema({
-  routeId: {
-    type: ObjectId,
-    ref: "Route",
-  },
-  shiftDate: {
-    type: Date,
-  },
-  capacity: {
-    type: Number,
-    default: 0,
-  },
-  currSignedUp: {
-    type: Number,
-    default: 0,
-  },
-  recurrenceRule: {
-    type: String,
-    default: "",
-    validate: {
-      validator: function (str: string) {
-        try {
-          RRule.fromString(str);
-          return true;
-        } catch (e) {
-          return false;
-        }
-      },
+    routeId: {
+        type: ObjectId,
+        ref: "Route"
     },
-  },
-  recurrences: {
-    type: [recurrenceSchema],
-    default: [],
-  },
-});
+    shiftDate: {
+        type: Date,
+    },
+    shiftEndDate: {
+        type: Date,
+    },
+    capacity: {
+        type: Number,
+        default: 0
+    },
+    currSignedUp: {
+        type: Number,
+        default: 0
+    },
+    recurrenceRule: {
+        type: String,
+        default: "",
+        validate : {
+            validator: function(str: string) {
+                try {
+                    RRule.fromString(str);
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            }       
+     }
+    },
+    recurrences: { 
+        type: [recurrenceSchema],
+        default: []
+    }
+})
 
 const ShiftModel: Model<Shift> =
   mongoose.models?.Shift || mongoose.model<Shift>("Shift", shiftSchema);

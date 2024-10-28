@@ -247,3 +247,5 @@ export async function getAllShifts(): Promise<string | null> {
     throw new Error(`Error getting all shifts: ${err.message}`);
   }
 }
+
+
