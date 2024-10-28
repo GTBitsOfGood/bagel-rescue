@@ -20,6 +20,7 @@ function RouteCreationPage() {
   const [routeName, setRouteName] = useState<string>("");
   const [routeArea, setRouteArea] = useState<string>("");
   const [additionalInfo, setAdditionalInfo] = useState<string>("");
+  const [searchText, setSearchText] = useState<string>("");
   const [isAddingLocation, setIsAddingLocation] = useState<boolean>(false);
   const [locations, setLocations] = useState<Location[]>([]);
   const [searchLocations, setSearchLocations] = useState<Location[]>([]);
@@ -183,6 +184,13 @@ function RouteCreationPage() {
               key={ind}
               className="search-location"
               onClick={() => addLocation(ind)}
+              style={{
+                display: location["locationName"]
+                  .toLowerCase()
+                  .includes(searchText.toLowerCase())
+                  ? "flex"
+                  : "none",
+              }}
             >
               <div className="search-location-section">
                 <p className="search-location-name">
@@ -274,6 +282,7 @@ function RouteCreationPage() {
                 className="field-input"
                 type="text"
                 placeholder="Start typing here"
+                onChange={(e) => setSearchText(e.target.value)}
               />
               <button
                 className="exit-add-location-btn x-btn"
