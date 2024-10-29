@@ -20,7 +20,7 @@ function DailyShiftDashboardPage() {
 
     useEffect(() => {
         const fetchShifts = async () => {
-            const response = await getAllShifts(date);
+            const response = await getAllShifts();
             const data = JSON.parse(response || "[]");
 
             setShifts(data || []);
