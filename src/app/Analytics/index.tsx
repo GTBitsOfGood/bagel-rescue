@@ -1,7 +1,58 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import "./stylesheet.css";
+import { getAllUserStats, UserStats } from "@/server/db/actions/User";
 
 function Analytics() {
-  const leaderboardStats = ["Bagels Delivered", "Other"];
+  const leaderboardFields = ["Bagels Delivered", "Total Deliveries"];
+  const fieldDisplayNametoQueryNameMapping = new Map([
+    ["Bagels Delivered", "bagelsDelivered"],
+    ["Total Deliveries", "totalDeliveries"],
+  ]);
+  const [currLeaderboardField, setCurrLeaderboardField] =
+    useState<string>("Bagels Delivered");
+  const [allUserStats, setAllUserStats] = useState<LeaderboardStats[]>([]);
+  const [leaderboardUsers, setLeaderboardUsers] = useState<LeaderboardStats[]>(
+    []
+  );
+
+  type LeaderboardStats = {
+    firstName: string;
+    lastName: string;
+    bagelsDelivered: number;
+    totalDeliveries: number;
+  };
+
+  useEffect(() => {
+    const fetchAllUserStats = async () => {
+      const response = await getAllUserStats();
+      const data: LeaderboardStats[] = JSON.parse(response || "[]");
+      setAllUserStats(data || []);
+      updateLeaderboard(currLeaderboardField);
+    };
+    fetchAllUserStats();
+  }, []);
+
+  useEffect(() => {
+    updateLeaderboard(
+      fieldDisplayNametoQueryNameMapping.get(currLeaderboardField) || ""
+    );
+  }, [allUserStats, currLeaderboardField]);
+
+  function updateLeaderboard(field: string) {
+    if (field == "") {
+      return;
+    }
+    const leaderboard = allUserStats
+      .sort(
+        (a: LeaderboardStats, b: LeaderboardStats) =>
+          (b[field as keyof LeaderboardStats] as number) -
+          (a[field as keyof LeaderboardStats] as number)
+      )
+      .slice(0, 3);
+    setLeaderboardUsers(leaderboard);
+  }
 
   function Overview() {
     const categories = ["Bagels", "Shifts", "Hours"];
@@ -13,7 +64,7 @@ function Analytics() {
           <p className="bagels-rescued-unit">Bagels</p>
         </div>
         {categories.map((c) => (
-          <div className="category-overview" key={c}>
+          <div className="category-overview" key={c + "-category"}>
             <p className="category-overview-title">{c}</p>
             <div className="category-overview-row">
               <div className="category-overview-card">
@@ -38,13 +89,13 @@ function Analytics() {
       <div className="rescue-records-list">
         {categories.map((c, ind) => {
           return (
-            <div className="rescue-records-section" key={c}>
+            <div className="rescue-records-section" key={c + "-rescue-record"}>
               <p className="rescue-record-title">{c}</p>
               <div className="rescue-record-stat-box">
                 <p className="rescue-record-stat">350</p>
                 <p>{units[ind]}</p>
               </div>
-              {CompactTable()}
+              {AnalyticsTable()}
             </div>
           );
         })}
@@ -53,7 +104,7 @@ function Analytics() {
   }
 
   function RecentShifts() {
-    return <div>{CompactTable()}</div>;
+    return <div>{AnalyticsTable()}</div>;
   }
 
   function Leaderboard() {
@@ -63,29 +114,38 @@ function Analytics() {
           <thead>
             <tr>
               <th>Name</th>
-              <th>Bagels Delivered</th>
+              <th>{currLeaderboardField}</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>Apples</td>
-              <td>$1.50</td>
-            </tr>
-            <tr>
-              <td>Bananas</td>
-              <td>$0.75</td>
-            </tr>
-            <tr>
-              <td>Cherries</td>
-              <td>$3.00</td>
-            </tr>
+            {leaderboardUsers.map((u, ind) => {
+              return (
+                <tr key={u.firstName + u.lastName}>
+                  <td>
+                    <div className="leaderboard-entry-name">
+                      <p className="bold">{ind + 1}</p>
+                      <p>{u.firstName + " " + u.lastName}</p>
+                    </div>
+                  </td>
+                  <td>
+                    {
+                      u[
+                        fieldDisplayNametoQueryNameMapping.get(
+                          currLeaderboardField
+                        ) as keyof LeaderboardStats
+                      ]
+                    }
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
     );
   }
 
-  function CompactTable() {
+  function AnalyticsTable() {
     return (
       <table className="compact-table">
         <thead>
@@ -139,9 +199,18 @@ function Analytics() {
           <div className="analytics-card leaderboard">
             <div className="leaderboard-header">
               <p className="analytics-card-title">Leaderboard</p>
-              <select className="leaderboard-stat" id="leaderboard-stat">
-                {leaderboardStats.map((s) => (
-                  <option value="s" key="s">
+              <select
+                className="leaderboard-stat"
+                id="leaderboard-stat"
+                onChange={(e) => {
+                  setCurrLeaderboardField(e.target.value);
+                  updateLeaderboard(
+                    fieldDisplayNametoQueryNameMapping.get(e.target.value) || ""
+                  );
+                }}
+              >
+                {leaderboardFields.map((s) => (
+                  <option value={s} key={s}>
                     {s}
                   </option>
                 ))}

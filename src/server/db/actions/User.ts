@@ -1,6 +1,9 @@
+"use server";
+
 import mongoose from "mongoose";
 import { ClientSession, UpdateQuery } from "mongoose";
 import User, { IUser } from "../models/User";
+import dbConnect from "../dbConnect";
 
 export type UserStats = {
   bagelsDelivered: number;
@@ -18,6 +21,8 @@ async function createUser(
     newUser.totalDeliveries = 0;
   }
 
+  await dbConnect();
+
   const document = new User(newUser);
   const {
     _doc: { _id, __v, ...userDocument },
@@ -30,6 +35,8 @@ async function getUser(
   id: mongoose.Types.ObjectId,
   session?: ClientSession
 ): Promise<IUser | null> {
+  await dbConnect();
+
   const document = await User.findById(
     id,
     { __v: 0 },
@@ -48,6 +55,8 @@ async function updateUser(
   updated: UpdateQuery<IUser>,
   session?: ClientSession
 ): Promise<IUser | null> {
+  await dbConnect();
+
   const document = await User.findByIdAndUpdate(id, updated, {
     projection: { __v: 0 },
     session: session,
@@ -62,6 +71,8 @@ async function getUserStats(
   id: mongoose.Types.ObjectId,
   session?: ClientSession
 ): Promise<UserStats | null> {
+  await dbConnect();
+
   const document = await User.findById(
     id,
     { __v: 0 },
@@ -78,4 +89,19 @@ async function getUserStats(
   };
 }
 
-export { createUser, getUser, updateUser, getUserStats };
+async function getAllUserStats(
+  session?: ClientSession
+): Promise<string | null> {
+  await dbConnect();
+
+  const documents = await User.find(
+    {},
+    { firstName: 1, lastName: 1, bagelsDelivered: 1, totalDeliveries: 1 },
+    {
+      session: session,
+    }
+  );
+  return JSON.stringify(documents);
+}
+
+export { createUser, getUser, updateUser, getUserStats, getAllUserStats };
