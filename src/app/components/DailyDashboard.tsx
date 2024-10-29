@@ -1,6 +1,7 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleDown, faAngleLeft, faAngleRight, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { useRouter } from 'next/navigation';
 
 interface DashboardHeaderProps {
     date: Date;
@@ -8,8 +9,20 @@ interface DashboardHeaderProps {
 }
 
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({ date, AddDays }) => {
-    const debouncedAddDays = useCallback(debounce(AddDays, 300), [AddDays]);
+    const router = useRouter();
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [timeFrame, setTimeFrame] = useState('Day');
 
+    const handleTimeFrameChange = (newTimeFrame: string) => {
+        setTimeFrame(newTimeFrame);
+        if (newTimeFrame === 'Day') {
+            router.push('/DailyShiftDashboard');
+        } else {
+            router.push('/WeeklyShiftDashboard');
+        }
+    };
+
+    const debouncedAddDays = useCallback(debounce(AddDays, 300), [AddDays]);
 
     return (
         <div className='flex flex-row justify-between p-9 border-b-[1px] border-b-[#D3D8DE]'>
@@ -25,9 +38,49 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ date, AddDays }) => {
                             <FontAwesomeIcon icon={faAngleRight} className='mt-1 cursor-pointer' />
                         </button>
                     </div>
-                    <div className='flex border justify-between p-[.8rem] px-4 rounded-xl'>
-                        <span className='mr-6'>Day</span>
-                        <FontAwesomeIcon icon={faAngleDown} className='mt-1' />
+                    <div className='flex border justify-between p-[.8rem] px-4 rounded-xl relative'>
+                        <button
+                            onClick={() => setDropdownOpen(!dropdownOpen)}
+                            className='mr-6 flex items-center'
+                        >
+                            {timeFrame}
+                            <FontAwesomeIcon icon={faAngleDown} className='ml-2 mt-1' />
+                        </button>
+                        {dropdownOpen && (
+                            <div className='absolute top-full mt-2 bg-white border rounded shadow-lg'>
+                                {timeFrame === 'Day' ? (
+                                    <>
+                                        <div
+                                            onClick={() => handleTimeFrameChange('Day')}
+                                            className='px-4 py-2 hover:bg-gray-200 cursor-pointer'
+                                        >
+                                            Day
+                                        </div>
+                                        <div
+                                            onClick={() => handleTimeFrameChange('Week')}
+                                            className='px-4 py-2 hover:bg-gray-200 cursor-pointer'
+                                        >
+                                            Week
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div
+                                            onClick={() => handleTimeFrameChange('Week')}
+                                            className='px-4 py-2 hover:bg-gray-200 cursor-pointer'
+                                        >
+                                            Week
+                                        </div>
+                                        <div
+                                            onClick={() => handleTimeFrameChange('Day')}
+                                            className='px-4 py-2 hover:bg-gray-200 cursor-pointer'
+                                        >
+                                            Day
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
                 <div className='bg-[#0F7AFF] text-[#FFFFFF] font-[700] p-[.8rem]  px-5 gap-2 rounded-xl'>
