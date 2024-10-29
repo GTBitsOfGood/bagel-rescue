@@ -14,23 +14,28 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { name: 'Dashboard', href: '/homepage', icon: <FiHome /> },
-  { name: 'Analytics', href: '/analytics', icon: <TbBrandGoogleAnalytics /> },
+  { name: 'Dashboard', href: '/VolunteerNavView/Homepage', icon: <FiHome /> },
+  { name: 'Analytics', href: '/VolunteerNavView/Analytics', icon: <TbBrandGoogleAnalytics /> },
 ];
 
 const Sidebar: React.FC = () => {
-  const pathname = usePathname(); // Get the current route
-  const [isOpen, setIsOpen] = useState<boolean>(true); // State to control collapse
+  const pathname = usePathname(); 
+  const [isOpen, setIsOpen] = useState<boolean>(true); 
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
   return (
     <div className={`${styles.sidebar} ${isOpen ? styles.open : styles.closed}`}>
+      <Link href="/VolunteerNavView/Homepage">
       <div className={styles.navHeader}>
         <div className={styles.navIcon}>🥯</div>
         <div className={styles.navHeaderText}>Bagel Rescue</div>
         <div className={styles.navTitleText}>Volunteer Portal</div>
       </div>
+
+      
+      </Link>
+      
       <nav className={styles.nav}>
         {navItems.map((item) => (
           <Link key={item.name} href={item.href}>
@@ -45,6 +50,7 @@ const Sidebar: React.FC = () => {
           </Link>
         ))}
       </nav>
+      <Link href="/VolunteerNavView/Profile">
       <div className={styles.profile}>
           <div className={styles.avatar}></div>
           {isOpen && (
@@ -54,6 +60,9 @@ const Sidebar: React.FC = () => {
             </div>
           )}
         </div>
+      
+      </Link>
+      
     </div>
   );
 };

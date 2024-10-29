@@ -12,6 +12,11 @@
     padding: 2rem;
   }
   
+  .layout {
+    flex: auto;
+    padding: 2rem;
+  }
+
   .header {
     display: flex;
     flex-direction: column; 

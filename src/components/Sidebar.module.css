@@ -64,11 +64,11 @@
   }
   
   .navItem:hover {
-    background-color: #374151;
+    background-color: #c3c4c5;
   }
   
   .active {
-    background-color: #4b5563;
+    background-color: #ffffff;
   }
   
   .icon {

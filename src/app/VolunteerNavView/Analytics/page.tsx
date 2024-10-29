@@ -3,14 +3,20 @@
 import Sidebar from '../../../components/Sidebar';
 import styles from './page.module.css';
 
-const Homepage: React.FC = () => {
+const Analytics: React.FC = () => {
   return (
     <div className={styles.container}>
       <Sidebar />
 
       <div className={styles.mainContent}>
         <div className={styles.header}>
-          <h1 className={styles.pageTitle}>Homepage</h1>
+          <button 
+            className={styles.backButton}
+            onClick={() => window.history.back()}
+          >
+            &lt; Back
+          </button>
+          <h1 className={styles.pageTitle}>Analytics</h1>
         </div>
 
       </div>
@@ -18,4 +24,4 @@ const Homepage: React.FC = () => {
   );
 };
 
-export default Homepage;
+export default Analytics;
