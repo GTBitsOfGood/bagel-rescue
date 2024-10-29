@@ -16,7 +16,15 @@ function RescueRecords() {
                 <p className="rescue-record-stat">350</p>
                 <p>{units[ind]}</p>
               </div>
-              <AnalyticsTable />
+              <AnalyticsTable
+                headers={["Name", "Hours", "Date"]}
+                data={[
+                  ["Bob", "5", "10-29-2024"],
+                  ["Bob", "5", "10-29-2024"],
+                  ["Bob", "5", "10-29-2024"],
+                ]}
+                widths={[55, 25, 20]}
+              />
             </div>
           );
         })}

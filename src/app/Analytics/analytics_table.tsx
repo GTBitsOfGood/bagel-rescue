@@ -1,29 +1,27 @@
-function AnalyticsTable() {
+type AnalyticsTableProps = {
+  headers: string[];
+  data: string[][];
+  widths: number[];
+};
+
+function AnalyticsTable({ headers, data, widths }: AnalyticsTableProps) {
   return (
     <table className="compact-table">
       <thead>
         <tr>
-          <th>Product</th>
-          <th>Price</th>
-          <th>Quantity</th>
+          {headers.map((h, ind) => (
+            <th key={h + ind}>{h}</th>
+          ))}
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>Apples</td>
-          <td>$1.50</td>
-          <td>50</td>
-        </tr>
-        <tr>
-          <td>Bananas</td>
-          <td>$0.75</td>
-          <td>100</td>
-        </tr>
-        <tr>
-          <td>Cherries</td>
-          <td>$3.00</td>
-          <td>25</td>
-        </tr>
+        {data.map((row) => (
+          <tr>
+            {row.map((entry, ind) => (
+              <td style={{ width: widths[ind] + "%" }}>{entry}</td>
+            ))}
+          </tr>
+        ))}
       </tbody>
     </table>
   );
