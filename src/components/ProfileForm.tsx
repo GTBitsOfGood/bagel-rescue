@@ -1,6 +1,6 @@
 'use client'
 
-import styles from './profileForm.module.css';
+import styles from './ProfileForm.module.css';
 
 const ProfileForm: React.FC = () => {
   return (
