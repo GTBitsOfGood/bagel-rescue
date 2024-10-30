@@ -1,3 +1,6 @@
+import AnalyticsBagel from "../../assets/analytics_bagel.svg";
+import Image from "next/image";
+
 function Overview() {
   const categories = ["Bagels", "Shifts", "Hours"];
 
@@ -5,10 +8,20 @@ function Overview() {
     <div className="analytics-card overview">
       <p className="analytics-card-title">Overview</p>
       <div className="overview-stats">
-        <p className="bagels-rescued-label">Bagels Rescued</p>
-        <div className="bagels-rescued-stat">
-          <p className="bagels-rescued-number">3500</p>
-          <p className="bagels-rescued-unit">Bagels</p>
+        <div className="analytics-bagel-container">
+          <Image
+            src={AnalyticsBagel}
+            alt="icon"
+            layout="fill"
+            objectFit="contain"
+          />
+          <div className="bagels-rescued-label">
+            <p className="bagels-rescued-label-text">Bagels Rescued</p>
+          </div>
+          <div className="bagels-rescued-stat">
+            <p className="bagels-rescued-number">3500</p>
+            <p className="bagels-rescued-unit">Bagels</p>
+          </div>
         </div>
         {categories.map((c) => (
           <div className="category-overview" key={c + "-category"}>

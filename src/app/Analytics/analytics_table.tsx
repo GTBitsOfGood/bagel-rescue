@@ -15,10 +15,12 @@ function AnalyticsTable({ headers, data, widths }: AnalyticsTableProps) {
         </tr>
       </thead>
       <tbody>
-        {data.map((row) => (
-          <tr>
+        {data.map((row, i) => (
+          <tr key={"row" + i}>
             {row.map((entry, ind) => (
-              <td style={{ width: widths[ind] + "%" }}>{entry}</td>
+              <td key={"entry" + ind} style={{ width: widths[ind] + "%" }}>
+                {entry}
+              </td>
             ))}
           </tr>
         ))}

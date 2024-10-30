@@ -60,27 +60,50 @@
   width: 100%;
 }
 
+.analytics-bagel-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 16em;
+  height: 16em;
+  position: relative;
+}
+
 .bagels-rescued-label {
+  position: relative;
+  top: 2.1em;
+  z-index: 1;
+  text-align: center;
+}
+
+.bagels-rescued-label-text {
   color: #673000;
   font-size: 1.25em;
   font-weight: 700;
+  background-color: var(--Bagel-Rescue-Secondary-Color);
+  padding: 0.1em;
+  border-radius: 20px;
+  display: inline-block;
 }
 
 .bagels-rescued-stat {
   display: flex;
   flex-direction: column;
   align-items: center;
+  z-index: 1;
+  position: relative;
+  top: 3em;
 }
 
 .bagels-rescued-number {
   color: var(--Bagel-Rescue-Dark-Blue);
-  font-size: 1.5em;
+  font-size: 1.375em;
   font-weight: 700;
 }
 
 .bagels-rescued-stat {
   color: var(--Bagel-Rescue-Dark-Blue);
-  font-size: 1.25em;
+  font-size: 1.125em;
   font-weight: 700;
 }
 
@@ -141,6 +164,21 @@
   font-weight: 700;
 }
 
+.rescue-record-stat-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.rescue-record-image-container {
+  display: flex;
+  justify-content: center;
+  width: 8em;
+  height: 8em;
+  position: relative;
+}
+
 .rescue-record-stat-box {
   display: flex;
   flex-direction: column;
@@ -149,6 +187,8 @@
   padding: 1em 5em;
   border-radius: 16px;
   border: 3px solid var(--Bagel-Rescue-Light-Blue);
+  position: absolute;
+  background: white;
 }
 
 .rescue-record-stat {
