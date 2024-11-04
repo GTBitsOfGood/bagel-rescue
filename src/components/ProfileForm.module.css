@@ -4,10 +4,14 @@
     padding: 2rem;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
+    flex: 1;
+    overflow: auto;
   }
   
   .sidebar {
-    width: 200px;
+    width: 20%;           
+    min-width: 0;    
+    max-width: 20%;
     padding-right: 2rem;
     border-right: 1px solid #E5E7EB;
   }
@@ -31,7 +35,7 @@
   
   .active {
     font-weight: bold;
-    color: #1D4ED8;
+    color: #072B68;
   }
   
   .signOut {
@@ -40,20 +44,21 @@
   
   .formContainer {
     flex: 1;
-    padding-left: 2rem;
+    padding-left: 4rem;
   }
   
   .name {
-    font-size: 1.75rem;
-    font-weight: bold;
+    font-size: 1.50rem;
+    font-weight: 800;
     color: #1E3A8A; 
     margin: 0;
   }
   
   .role {
     margin-bottom: 2rem;
-    font-size: 1rem;
-    color: #64748B;
+    font-weight: 400;
+    font-size: 1.50rem;
+    color: #072B68;
   }
   
   .form {
@@ -64,6 +69,7 @@
   
   .row {
     display: flex;
+    flex-wrap: wrap;
     gap: 2rem;
   }
   
@@ -74,10 +80,10 @@
   }
   
   .fieldLabel {
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    font-size: 0.875rem;
-    color: #1E40AF; 
+    margin-bottom: 0.9rem;
+    font-weight: 500;
+    font-size: 1rem;
+    color: #072B68; 
   }
   
   .fieldInput {
@@ -85,7 +91,7 @@
     background-color: #ECF2F9;
     border: 1px solid border #D3D8DE; 
     border-radius: 8px;
-    color: #334155;
+    color: #6C7D93;
     font-size: 1rem;
   }
   
