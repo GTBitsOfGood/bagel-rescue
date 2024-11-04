@@ -23,8 +23,9 @@ const Profile: React.FC = () => {
 
 
       </div>
-      <ProfileForm />
-
+      <div className={styles.backDrop}>
+        <ProfileForm />
+      </div>
       </div>
     </div>
   );
