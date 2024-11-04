@@ -3,7 +3,6 @@
     background-color: #FFFFFF;
     padding: 2rem;
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
     flex: 1;
     overflow: auto;
   }
@@ -49,6 +48,7 @@
   
   .name {
     font-size: 1.50rem;
+    padding-bottom: 0.25rem;
     font-weight: 800;
     color: #1E3A8A; 
     margin: 0;
