@@ -21,12 +21,12 @@ const ProfileForm: React.FC = () => {
           <div className={styles.row}>
             <div className={styles.field}>
               <label className={styles.fieldLabel}>First Name</label>
-              <input type="text" className={styles.fieldInput} value="Jane" disabled />
+              <input type="text" className={styles.fieldInput} value='"Jane"' disabled />
             </div>
 
             <div className={styles.field}>
               <label className={styles.fieldLabel}>Last Name</label>
-              <input type="text" className={styles.fieldInput} value="Doe" disabled />
+              <input type="text" className={styles.fieldInput} value='"Doe"' disabled />
             </div>
           </div>
 

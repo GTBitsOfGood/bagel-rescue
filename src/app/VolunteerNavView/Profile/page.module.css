@@ -1,20 +1,27 @@
 .container {
     display: flex;
-    height: 100vh;
+    min-height: 100vh;
+    box-sizing: border-box;
   }
   
   .sidebar {
     width: 250px;
+    height: 100vh;
   }
   
   .mainContent {
-    flex: 1;
-    padding: 2rem;
+    padding-left: 2rem;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #E5E7EB;
+    flex-wrap: wrap;
   }
   
   .layout {
+    display: flex;
+    flex-direction: column;
     flex: auto;
-    padding: 2rem;
   }
 
   .header {
@@ -22,7 +29,7 @@
     flex-direction: column; 
     align-items: flex-start; 
     gap: 0.5rem;
-    margin-bottom: 1rem;
+    margin-top: .7rem;
   }
   
   .backButton {
@@ -42,8 +49,16 @@
   
   .pageTitle {
     margin: 0;
-    font-size: 1.5rem;
-    font-weight: 600; 
-    color: #000000;
+    font-size: 2.5rem;
+    font-weight: 800; 
+    color: #072B68;
   }
-  
+  .backDrop{
+    background-color: #ECF2F9;
+    padding: 2rem;
+    height: 100%;
+    overflow: hidden; 
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+  }
