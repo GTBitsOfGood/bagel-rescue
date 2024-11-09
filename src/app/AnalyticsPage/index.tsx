@@ -9,7 +9,7 @@ import "./stylesheet.css";
 import { getAnalytics } from "@/server/db/actions/analytics";
 import { Analytics } from "@/server/db/models/analytics";
 
-function Analytics() {
+function AnalyticsPage() {
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
 
   useEffect(() => {
@@ -38,4 +38,4 @@ function Analytics() {
   );
 }
 
-export default Analytics;
+export default AnalyticsPage;
