@@ -2,12 +2,7 @@
 
 import { ObjectId } from "mongoose";
 import dbConnect from "../dbConnect";
-import {
-  RecurrenceModel,
-  Shift,
-  ShiftAnalytics,
-  ShiftModel,
-} from "../models/shift";
+import { RecurrenceModel, Shift, ShiftModel } from "../models/shift";
 import { RRule } from "rrule";
 
 export async function createShift(shiftObject: Shift): Promise<Shift> {
@@ -291,5 +286,35 @@ export async function getShiftAnalytics(): Promise<string | null> {
   } catch (error) {
     const err = error as Error;
     throw new Error(`Error getting shift analytics: ${err.message}`);
+  }
+}
+
+interface TempRecentShift {
+  routeId: string;
+  date: Date;
+}
+
+export async function getRecentShifts(
+  numRecentShifts: number
+): Promise<string | null> {
+  try {
+    await dbConnect();
+    const shifts = await ShiftModel.find();
+    const shiftRecurrences = shifts
+      .flatMap((s: Shift) =>
+        s.recurrences.map((r) => ({
+          routeId: s.routeId.toString(),
+          date: new Date(r.date),
+        }))
+      )
+      .sort(
+        (a: TempRecentShift, b: TempRecentShift) =>
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+      )
+      .slice(0, numRecentShifts);
+    return JSON.stringify(shiftRecurrences);
+  } catch (error) {
+    const err = error as Error;
+    throw new Error(`Error getting all shifts: ${err.message}`);
   }
 }

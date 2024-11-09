@@ -1,32 +1,62 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
-// interface Shift {
-//   shiftName: string;
-//   date: Date;
-//   numBagels?: number;
-//   numHours?: number;
-// }
+export interface RecentShift {
+  shiftName: string;
+  shiftDate: Date;
+}
+
+export interface LeaderboardUser {
+  firstName: string;
+  lastName: string;
+  bagelsDelivered?: number;
+  totalDeliveries?: number;
+}
 
 export interface Analytics extends Document {
   totalBagelsDelivered: number;
   shiftsThisMonth: number;
-  shiftMonthlyAverage: number;
-  // shiftsWithMostBagels: Shift[];
-  // longestShifts: Shift[];
+  shiftsMonthlyAverage: number;
+  recentShifts: RecentShift[];
+  leaderboardUsersBagelsDelivered: LeaderboardUser[];
+  leaderboardUsersTotalDeliveries: LeaderboardUser[];
 }
+
+const recentShiftSchema: Schema = new Schema({
+  shiftName: { type: String, required: true },
+  shiftDate: { type: Date, required: true },
+});
+
+const leaderboardUserSchema: Schema = new Schema({
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
+  bagelsDelivered: { type: Number, required: true },
+  totalDeliveries: { type: Number, required: true },
+});
 
 const analyticsSchema: Schema = new Schema({
   totalBagelsDelivered: {
     type: Number,
-    required: true,
+    default: 0,
   },
   shiftsThisMonth: {
     type: Number,
-    required: true,
+    default: 0,
   },
-  shiftMonthlyAverage: {
+  shiftsMonthlyAverage: {
     type: Number,
-    required: true,
+    default: 0,
+  },
+  recentShifts: {
+    type: [recentShiftSchema],
+    default: [],
+  },
+  leaderboardUsersBagelsDelivered: {
+    type: [leaderboardUserSchema],
+    default: [],
+  },
+  leaderboardUsersTotalDeliveries: {
+    type: [leaderboardUserSchema],
+    default: [],
   },
 });
 
@@ -34,4 +64,12 @@ const AnalyticsModel: Model<Analytics> =
   mongoose.models?.Analytics ||
   mongoose.model<Analytics>("Analytics", analyticsSchema);
 
-export default AnalyticsModel;
+const RecentShiftModel: Model<RecentShift> =
+  mongoose.models?.RecentShift ||
+  mongoose.model<RecentShift>("RecentShift", recentShiftSchema);
+
+const LeaderboardUserModel: Model<LeaderboardUser> =
+  mongoose.models?.LeaderboardUser ||
+  mongoose.model<LeaderboardUser>("LeaderboardUser", leaderboardUserSchema);
+
+export { AnalyticsModel, RecentShiftModel, LeaderboardUserModel };

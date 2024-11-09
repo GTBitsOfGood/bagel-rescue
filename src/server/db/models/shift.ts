@@ -3,11 +3,6 @@ import { RRule } from "rrule";
 
 const { ObjectId } = Schema.Types;
 
-interface ShiftAnalytics {
-  thisMonth: number;
-  monthlyAverage: number;
-}
-
 interface Recurrence {
   date: Date;
   capacity: number;
@@ -85,4 +80,4 @@ const RecurrenceModel: Model<Recurrence> =
   mongoose.model<Recurrence>("Recurrence", recurrenceSchema);
 
 export { ShiftModel, RecurrenceModel };
-export type { Shift, Recurrence, ShiftAnalytics };
+export type { Shift, Recurrence };

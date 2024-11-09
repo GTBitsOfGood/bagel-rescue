@@ -89,17 +89,12 @@ async function getUserStats(
   };
 }
 
-async function getAllUserStats(
-  session?: ClientSession
-): Promise<string | null> {
+async function getAllUserStats(): Promise<string | null> {
   await dbConnect();
 
   const documents = await User.find(
     {},
-    { firstName: 1, lastName: 1, bagelsDelivered: 1, totalDeliveries: 1 },
-    {
-      session: session,
-    }
+    { firstName: 1, lastName: 1, bagelsDelivered: 1, totalDeliveries: 1 }
   );
   return JSON.stringify(documents);
 }

@@ -1,56 +1,27 @@
-import { getAllUserStats } from "@/server/db/actions/User";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import "./stylesheet.css";
+import { LeaderboardUser } from "@/server/db/models/analytics";
 
-function Leaderboard() {
+type LeaderboardProps = {
+  bagelsDeliveredUsers: LeaderboardUser[];
+  totalDeliveriesUsers: LeaderboardUser[];
+};
+
+function Leaderboard({
+  bagelsDeliveredUsers,
+  totalDeliveriesUsers,
+}: LeaderboardProps) {
   const leaderboardFields = ["Bagels Delivered", "Total Deliveries"];
-  const fieldDisplayNametoQueryNameMapping = new Map([
+  const displayNametoFieldNameMapping = new Map([
     ["Bagels Delivered", "bagelsDelivered"],
     ["Total Deliveries", "totalDeliveries"],
   ]);
   const [currLeaderboardField, setCurrLeaderboardField] =
     useState<string>("Bagels Delivered");
-  const [allUserStats, setAllUserStats] = useState<LeaderboardStats[]>([]);
-  const [leaderboardUsers, setLeaderboardUsers] = useState<LeaderboardStats[]>(
-    []
-  );
-
-  type LeaderboardStats = {
-    firstName: string;
-    lastName: string;
-    bagelsDelivered: number;
-    totalDeliveries: number;
-  };
-
-  useEffect(() => {
-    const fetchAllUserStats = async () => {
-      const response = await getAllUserStats();
-      const data: LeaderboardStats[] = JSON.parse(response || "[]");
-      setAllUserStats(data || []);
-      updateLeaderboard(currLeaderboardField);
-    };
-    fetchAllUserStats();
-  }, []);
-
-  useEffect(() => {
-    updateLeaderboard(
-      fieldDisplayNametoQueryNameMapping.get(currLeaderboardField) || ""
-    );
-  }, [allUserStats, currLeaderboardField]);
-
-  function updateLeaderboard(field: string) {
-    if (field == "") {
-      return;
-    }
-    const leaderboard = allUserStats
-      .sort(
-        (a: LeaderboardStats, b: LeaderboardStats) =>
-          (b[field as keyof LeaderboardStats] as number) -
-          (a[field as keyof LeaderboardStats] as number)
-      )
-      .slice(0, 3);
-    setLeaderboardUsers(leaderboard);
-  }
+  const fieldNametoLeaderboardList = new Map<string, LeaderboardUser[]>([
+    ["Bagels Delivered", bagelsDeliveredUsers],
+    ["Total Deliveries", totalDeliveriesUsers],
+  ]);
 
   function LeaderboardTable() {
     return (
@@ -63,27 +34,29 @@ function Leaderboard() {
             </tr>
           </thead>
           <tbody>
-            {leaderboardUsers.map((u, ind) => {
-              return (
-                <tr key={u.firstName + u.lastName}>
-                  <td>
-                    <div className="leaderboard-entry-name">
-                      <p className="bold">{ind + 1}</p>
-                      <p>{u.firstName + " " + u.lastName}</p>
-                    </div>
-                  </td>
-                  <td>
-                    {
-                      u[
-                        fieldDisplayNametoQueryNameMapping.get(
-                          currLeaderboardField
-                        ) as keyof LeaderboardStats
-                      ]
-                    }
-                  </td>
-                </tr>
-              );
-            })}
+            {fieldNametoLeaderboardList
+              .get(currLeaderboardField)!
+              .map((u, ind) => {
+                return (
+                  <tr key={u.firstName + u.lastName}>
+                    <td>
+                      <div className="leaderboard-entry-name">
+                        <p className="bold">{ind + 1}</p>
+                        <p>{u.firstName + " " + u.lastName}</p>
+                      </div>
+                    </td>
+                    <td>
+                      {
+                        u[
+                          displayNametoFieldNameMapping.get(
+                            currLeaderboardField
+                          ) as keyof LeaderboardUser
+                        ]
+                      }
+                    </td>
+                  </tr>
+                );
+              })}
           </tbody>
         </table>
       </div>
@@ -99,9 +72,6 @@ function Leaderboard() {
           id="leaderboard-stat"
           onChange={(e) => {
             setCurrLeaderboardField(e.target.value);
-            updateLeaderboard(
-              fieldDisplayNametoQueryNameMapping.get(e.target.value) || ""
-            );
           }}
         >
           {leaderboardFields.map((s) => (
