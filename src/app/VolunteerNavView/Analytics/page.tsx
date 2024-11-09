@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import Sidebar from '../../../components/Sidebar';
-import styles from './page.module.css';
+import Sidebar from "../../../components/Sidebar";
+import styles from "./page.module.css";
 
 const Analytics: React.FC = () => {
   return (
@@ -10,7 +10,7 @@ const Analytics: React.FC = () => {
 
       <div className={styles.mainContent}>
         <div className={styles.header}>
-          <button 
+          <button
             className={styles.backButton}
             onClick={() => window.history.back()}
           >
@@ -18,7 +18,6 @@ const Analytics: React.FC = () => {
           </button>
           <h1 className={styles.pageTitle}>Analytics</h1>
         </div>
-
       </div>
     </div>
   );

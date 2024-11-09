@@ -13,7 +13,7 @@ import { Shift } from "@/server/db/models/shift";
 import { IRoute } from "@/server/db/models/Route";
 import { getAllShifts } from "@/server/db/actions/shift";
 import { getAllRoutes } from "@/server/db/actions/Route";
-import DashboardHeader from '../components/DailyDashboard';
+import DashboardHeader from "../components/DailyDashboard";
 
 function WeeklyShiftDashboard() {
   const [shiftSearchText, setShiftSearchText] = useState("");
@@ -159,8 +159,8 @@ function WeeklyShiftDashboard() {
                 };
                 return firstShift
                   ? new Intl.DateTimeFormat("en-US", options).format(
-                    new Date(firstShift["date"])
-                  )
+                      new Date(firstShift["date"])
+                    )
                   : "-";
               }) || []
             );
@@ -224,7 +224,7 @@ function WeeklyShiftDashboard() {
   }
 
   return (
-    <div className='flex flex-col'>
+    <div className="flex flex-col">
       <DashboardHeader date={date} AddDays={AddDays} />
       <div className="container">
         <div style={{ height: "50px" }}></div>

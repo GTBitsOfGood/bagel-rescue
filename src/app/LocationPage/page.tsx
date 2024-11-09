@@ -1,20 +1,16 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
-import styles from './page.module.css';
-
+import React, { useEffect, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import styles from "./page.module.css";
 
 import { getAllLocations } from "@/server/db/actions/location";
 import { Location } from "@/server/db/models/location";
 
-
-
 function LocationDashboardPage() {
   const [locations, setLocations] = useState<Location[]>([]);
-  const [sortOption, setSortOption] = useState<string>('alphabetically');
-  
+  const [sortOption, setSortOption] = useState<string>("alphabetically");
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -26,17 +22,18 @@ function LocationDashboardPage() {
     fetchLocations();
   }, [sortOption]);
 
-
   const handleSortChange = () => {
     const sortedLocations = [...locations];
-    if (sortOption === 'alphabetically') {
-      sortedLocations.sort((a: Location, b: Location) => a.locationName.localeCompare(b.locationName));
-    } else if (sortOption === 'byType') {
+    if (sortOption === "alphabetically") {
+      sortedLocations.sort((a: Location, b: Location) =>
+        a.locationName.localeCompare(b.locationName)
+      );
+    } else if (sortOption === "byType") {
       sortedLocations.sort((a: Location, b: Location) => {
         if (a.type === b.type) {
           return 0;
         }
-        return a.type === 'Drop-Off' ? -1 : 1;
+        return a.type === "Drop-Off" ? -1 : 1;
       });
     }
     setLocations(sortedLocations);
@@ -44,28 +41,33 @@ function LocationDashboardPage() {
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSortOption(event.target.value);
-
   };
-  
+
   return (
     <div className={styles.container}>
-     
       <div className={styles.searchAndSort}>
-      <div className={styles.searchInputContainer}>
-        <FontAwesomeIcon icon={faMagnifyingGlass} className={styles.searchIcon} />
-        <input
-          type="text"
-          placeholder="Search for route"
-          className={styles.searchInput}
-        />
-      </div>
+        <div className={styles.searchInputContainer}>
+          <FontAwesomeIcon
+            icon={faMagnifyingGlass}
+            className={styles.searchIcon}
+          />
+          <input
+            type="text"
+            placeholder="Search for route"
+            className={styles.searchInput}
+          />
+        </div>
         <div className={styles.filterControls}>
           <h1>Sorted:</h1>
-          <select className={styles.sortSelect} value={sortOption} onChange={handleFilterChange}>
-            <option value="alphabetically">Alphabetically</option>
-            <option value="byType">By Type</option>
-          </select>
-          <button className={styles.filterButton} onClick={handleSortChange}>Filter</button>
+          <div className={styles.sortSelect}>
+            <select value={sortOption} onChange={handleFilterChange}>
+              <option value="alphabetically">Alphabetically</option>
+              <option value="byType">By Type</option>
+            </select>
+          </div>
+          <button className={styles.filterButton} onClick={handleSortChange}>
+            Filter
+          </button>
         </div>
       </div>
       <div className={styles.tableContainer}>
@@ -85,8 +87,20 @@ function LocationDashboardPage() {
                   <strong>{location.locationName}</strong>
                   <div>{location.contact}</div>
                 </div>
-                <div className={styles.locationInfo}>{location.address.street + ", " + location.address.city + ", " + location.address.state + " " + location.address.zipCode}</div>
-                <div className={`${styles.locationInfo} ${location.type === 'Pick-Up' ? styles.pickUp : styles.dropOff}`}>
+                <div className={styles.locationInfo}>
+                  {location.address.street +
+                    ", " +
+                    location.address.city +
+                    ", " +
+                    location.address.state +
+                    " " +
+                    location.address.zipCode}
+                </div>
+                <div
+                  className={`${styles.locationInfo} ${
+                    location.type === "Pick-Up" ? styles.pickUp : styles.dropOff
+                  }`}
+                >
                   {location.type}
                 </div>
                 <div className={styles.locationInfo}>{location.bags}</div>
@@ -99,6 +113,6 @@ function LocationDashboardPage() {
       </div>
     </div>
   );
-};
+}
 
 export default LocationDashboardPage;
