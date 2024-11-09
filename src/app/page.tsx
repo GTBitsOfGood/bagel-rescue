@@ -1,5 +1,5 @@
 import Image from "next/image";
-import LocationDashboardPage from "./LocationPage/page";
+import LocationDashboardPage from "./AdminNavView/LocationPage/page";
 
 export default function Home() {
   return (

@@ -16,9 +16,9 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ date, AddDays }) => {
     const handleTimeFrameChange = (newTimeFrame: string) => {
         setTimeFrame(newTimeFrame);
         if (newTimeFrame === 'Day') {
-            router.push('/DailyShiftDashboard');
+            router.push('/AdminNavView/DailyShiftDashboard');
         } else {
-            router.push('/WeeklyShiftDashboard');
+            router.push('/AdminNavView/WeeklyShiftDashboard');
         }
     };
 

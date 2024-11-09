@@ -15,6 +15,7 @@ import { getAllLocations } from "@/server/db/actions/location";
 import { Location } from "@/server/db/models/location";
 import { ILocation } from "@/server/db/models/Route";
 import { createRoute } from "@/server/db/actions/Route";
+import AdminSidebar from '../../../components/AdminSidebar';
 
 function RouteCreationPage() {
   const [routeName, setRouteName] = useState<string>("");
@@ -94,6 +95,7 @@ function RouteCreationPage() {
     }
 
     return (
+
       <DragDropContext onDragEnd={handleOnDragEnd}>
         <Droppable droppableId="location-cards-list">
           {(provided) => (
@@ -217,8 +219,12 @@ function RouteCreationPage() {
   }
 
   return (
+    <div className="flex">
+      <AdminSidebar />
+      <div className="flex flex-col flex-1">
     <div className="container">
-      <button className="back-btn">
+      <button className="back-btn"
+      onClick={() => window.history.back()}>
         <FontAwesomeIcon icon={faAngleLeft} />
         <p>Back</p>
       </button>
@@ -303,6 +309,8 @@ function RouteCreationPage() {
           </div>
         </div>
       </div>
+    </div>
+    </div>
     </div>
   );
 }
