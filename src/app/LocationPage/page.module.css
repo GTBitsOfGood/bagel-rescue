@@ -34,10 +34,36 @@
 }
 
 .sortSelect {
+  position: relative;
   border: 1px solid #0F7AFF;
   border-radius: 69px;
-  padding: 10px 10px 10px 30px;
+  padding: 10px 50px 10px 20px; 
 }
+
+.sortSelect select {
+  width: 100%;
+  border: none;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  direction: ltr; 
+  padding: 0;
+  margin: 0;
+  font-size: 16px;
+}
+
+.sortSelect::after {
+  content: '▼';
+  font-size: 12px;
+  position: absolute;
+  top: 52%;
+  right: 20px; 
+  transform: translateY(-50%);
+  color: #000;
+  pointer-events: none;
+}
+
 
 .filterButton {
   background-color: #C6E3F9;

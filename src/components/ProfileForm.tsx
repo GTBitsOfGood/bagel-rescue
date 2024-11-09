@@ -1,6 +1,6 @@
-'use client'
+"use client";
 
-import styles from './ProfileForm.module.css';
+import styles from "./ProfileForm.module.css";
 
 const ProfileForm: React.FC = () => {
   return (
@@ -21,29 +21,54 @@ const ProfileForm: React.FC = () => {
           <div className={styles.row}>
             <div className={styles.field}>
               <label className={styles.fieldLabel}>First Name</label>
-              <input type="text" className={styles.fieldInput} value='"Jane"' disabled />
+              <input
+                type="text"
+                className={styles.fieldInput}
+                value='"Jane"'
+                disabled
+              />
             </div>
 
             <div className={styles.field}>
               <label className={styles.fieldLabel}>Last Name</label>
-              <input type="text" className={styles.fieldInput} value='"Doe"' disabled />
+              <input
+                type="text"
+                className={styles.fieldInput}
+                value='"Doe"'
+                disabled
+              />
             </div>
           </div>
 
           <div className={styles.field}>
             <label className={styles.fieldLabel}>Location</label>
-            <input type="text" className={styles.fieldInput} value="Alpharetta, GA" disabled />
+            <input
+              type="text"
+              className={styles.fieldInput}
+              value="Alpharetta, GA"
+              disabled
+            />
           </div>
 
           <div className={styles.row}>
             <div className={styles.field}>
               <label className={styles.fieldLabel}>Phone Number</label>
-              <input type="text" className={styles.fieldInput} value="(123) 456-7890" disabled />
+              <input
+                type="text"
+                className={styles.fieldInput}
+                value="(123) 456-7890"
+                disabled
+              />
             </div>
 
             <div className={styles.field}>
               <label className={styles.fieldLabel}>Email</label>
-              <input type="email" className={styles.fieldInput} value="blank@email.com" disabled />
+              <input
+                type="email"
+                className={styles.fieldInput}
+                value="blank@email.com"
+                disabled
+              />
             </div>
           </div>
         </form>
