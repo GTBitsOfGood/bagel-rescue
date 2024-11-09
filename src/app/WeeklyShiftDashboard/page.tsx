@@ -13,6 +13,7 @@ import { Shift } from "@/server/db/models/shift";
 import { IRoute } from "@/server/db/models/Route";
 import { getAllShifts } from "@/server/db/actions/shift";
 import { getAllRoutes } from "@/server/db/actions/Route";
+import DashboardHeader from "../components/DailyDashboard";
 
 function WeeklyShiftDashboard() {
   const [shiftSearchText, setShiftSearchText] = useState("");
@@ -45,6 +46,16 @@ function WeeklyShiftDashboard() {
     fetchRoutes();
     fetchShifts();
   }, []);
+
+  const [date, setDate] = useState<Date>(new Date());
+
+  const AddDays = (e: number) => {
+    const newDate = new Date(date);
+    if (newDate.getDate() - new Date().getDate() !== 7 || e === -1) {
+      newDate.setDate(newDate.getDate() + e);
+      setDate(newDate);
+    }
+  };
 
   function routesList() {
     return (
@@ -213,25 +224,28 @@ function WeeklyShiftDashboard() {
   }
 
   return (
-    <div className="container">
-      <div style={{ height: "50px" }}></div>
-      <div className="search-settings">
-        <button className="sort-by-btn">
-          <FontAwesomeIcon icon={faArrowUpShortWide} />
-          <p>Sort By</p>
-        </button>
-        <input
-          className="shift-search-input"
-          type="text"
-          placeholder="Search for a shift"
-          onChange={(e) => setShiftSearchText(e.target.value)}
-        />
-        <FontAwesomeIcon
-          icon={faMagnifyingGlass}
-          className="shift-search-icon"
-        />
+    <div className="flex flex-col">
+      <DashboardHeader date={date} AddDays={AddDays} />
+      <div className="container">
+        <div style={{ height: "50px" }}></div>
+        <div className="search-settings">
+          <button className="sort-by-btn">
+            <FontAwesomeIcon icon={faArrowUpShortWide} />
+            <p>Sort By</p>
+          </button>
+          <input
+            className="shift-search-input"
+            type="text"
+            placeholder="Search for a shift"
+            onChange={(e) => setShiftSearchText(e.target.value)}
+          />
+          <FontAwesomeIcon
+            icon={faMagnifyingGlass}
+            className="shift-search-icon"
+          />
+        </div>
+        {routesList()}
       </div>
-      {routesList()}
     </div>
   );
 }
