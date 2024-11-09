@@ -104,4 +104,20 @@ async function getAllUserStats(
   return JSON.stringify(documents);
 }
 
-export { createUser, getUser, updateUser, getUserStats, getAllUserStats };
+async function getTotalBagelsDelivered(): Promise<number | null> {
+  await dbConnect();
+
+  const totalBagelsDelivered = await User.aggregate([
+    { $group: { _id: null, total: { $sum: "$bagelsDelivered" } } },
+  ]);
+  return totalBagelsDelivered[0]?.total || 0;
+}
+
+export {
+  createUser,
+  getUser,
+  updateUser,
+  getUserStats,
+  getAllUserStats,
+  getTotalBagelsDelivered,
+};

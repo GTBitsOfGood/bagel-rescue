@@ -1,8 +1,11 @@
+import { useEffect, useState } from "react";
 import AnalyticsBagel from "../../assets/analytics_bagel.svg";
 import Image from "next/image";
+import { getTotalBagelsDelivered } from "@/server/db/actions/User";
 
 function Overview() {
   const categories = ["Bagels", "Shifts", "Hours"];
+  const [totalBagelsDelivered, setTotalBagelsDelivered] = useState<number>(0);
 
   return (
     <div className="analytics-card overview">
@@ -19,7 +22,9 @@ function Overview() {
             <p className="bagels-rescued-label-text">Bagels Rescued</p>
           </div>
           <div className="bagels-rescued-stat">
-            <p className="bagels-rescued-number">3500</p>
+            <p className="bagels-rescued-number">
+              {totalBagelsDelivered == 0 ? "-" : totalBagelsDelivered}
+            </p>
             <p className="bagels-rescued-unit">Bagels</p>
           </div>
         </div>

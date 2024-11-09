@@ -2,7 +2,12 @@
 
 import { ObjectId } from "mongoose";
 import dbConnect from "../dbConnect";
-import { RecurrenceModel, Shift, ShiftModel } from "../models/shift";
+import {
+  RecurrenceModel,
+  Shift,
+  ShiftAnalytics,
+  ShiftModel,
+} from "../models/shift";
 import { RRule } from "rrule";
 
 export async function createShift(shiftObject: Shift): Promise<Shift> {
@@ -248,4 +253,43 @@ export async function getAllShifts(): Promise<string | null> {
   }
 }
 
+export async function getShiftAnalytics(): Promise<string | null> {
+  try {
+    await dbConnect();
+    const shifts = await ShiftModel.find();
+    const monthlyShifts = new Map<string, number>();
+    shifts.forEach((s) => {
+      s.recurrences.forEach((r) => {
+        const date = new Date(r.date);
+        const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString()}`;
+        if (monthlyShifts.has(key)) {
+          monthlyShifts.set(key, monthlyShifts.get(key)! + 1);
+        } else {
+          monthlyShifts.set(key, 1);
+        }
+      });
+    });
+    const today = new Date();
+    const currMonth = `${today.getFullYear()}-${(
+      today.getMonth() + 1
+    ).toString()}`;
+    const shiftsThisMonth = monthlyShifts.has(currMonth)
+      ? monthlyShifts.get(currMonth)!
+      : 0;
+    monthlyShifts.delete(currMonth);
 
+    let monthlyAvg = 0;
+    monthlyShifts.forEach((value) => {
+      monthlyAvg += value;
+    });
+    monthlyAvg /= monthlyShifts.size;
+
+    return JSON.stringify({
+      thisMonth: shiftsThisMonth,
+      monthlyAverage: monthlyAvg,
+    });
+  } catch (error) {
+    const err = error as Error;
+    throw new Error(`Error getting shift analytics: ${err.message}`);
+  }
+}
