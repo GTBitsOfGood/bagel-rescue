@@ -5,12 +5,11 @@ import dbConnect from "../dbConnect";
 import { RecurrenceModel, Shift, ShiftModel } from "../models/shift";
 import { RRule } from "rrule";
 
-export async function createShift(shiftObject: Shift): Promise<Shift> {
+export async function createShift(shiftObject: string): Promise<string | null> {
   try {
     await dbConnect();
-
-    await shiftObject.save();
-    return shiftObject;
+    const newShift = new ShiftModel(JSON.parse(shiftObject || "{}"));
+    return JSON.stringify(await newShift.save());
   } catch (error) {
     const err = error as Error;
     throw new Error(`Error has occurred when creating shift: ${err.message}`);
