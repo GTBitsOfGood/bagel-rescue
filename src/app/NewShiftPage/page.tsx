@@ -79,12 +79,13 @@ export default function NewShiftPage() {
     if (locations.length === 0) return <div></div>;
     return locations.map((loc) => {
         return (
-            <div className="content-center bg-blue-300 px-2 rounded-lg mr-2">
+            <div key={loc._id} className="content-center bg-blue-300 px-2 rounded-lg mr-2">
             <p className="text-[#072B68] font-bold text-xs content-center">{loc["locationName"]}</p>
             </div>
         );
     }
-    );}
+    );
+  }
 
 
   function routesCards() {
