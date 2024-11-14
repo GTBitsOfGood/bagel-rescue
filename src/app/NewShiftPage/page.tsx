@@ -310,7 +310,7 @@ export default function NewShiftPage() {
                     <div className="flex justify-between text-center align-middle">
                         <div className="text-[#072B68] font-bold text-4xl content-center">New Shift</div>
                         <div className="flex justify-between space-x-4">
-                            <button onClick={() => router.back()} className="bg-[#ECF2F9] font-bold text-[#6C7D93] px-4 py-[.8rem] rounded-xl text-base border border-[#D3D8DE]">Cancel</button>
+                            <button onClick={() => router.push("/DailyShiftDashboard")} className="bg-[#ECF2F9] font-bold text-[#6C7D93] px-4 py-[.8rem] rounded-xl text-base border border-[#D3D8DE]">Cancel</button>
                             <button onClick={() => saveEdits()} className="bg-[#0F7AFF] font-bold text-white px-4 py-[.8rem] rounded-xl">Save edits</button>
                         </div>
                     </div>
@@ -319,7 +319,7 @@ export default function NewShiftPage() {
                     <div className="h-[36rem] w-full flex space-x-16">
                         <div className="flex flex-col space-y-6 w-2/5">
                             <div className="flex flex-col space-y-2">
-                                <label htmlFor="day" className="text-[#072B68] font-bold text-lg">Shift Date</label>
+                                <label htmlFor="day" className="text-[#072B68] font-bold text-lg">Shift Day</label>
                                 <select onChange={(e) => setDay(e.target.value)} id="day" name="day" className="px-4 py-[.8rem] rounded-xl border-r-[1.25rem] border-r-transparent outline outline-[#57A0D5]">
                                     <option value="Monday">Monday</option>
                                     <option value="Tuesday">Tuesday</option>
