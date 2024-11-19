@@ -160,8 +160,8 @@ function WeeklyShiftDashboard() {
                 };
                 return firstShift
                   ? new Intl.DateTimeFormat("en-US", options).format(
-                    new Date(firstShift["date"])
-                  )
+                      new Date(firstShift["date"])
+                    )
                   : "-";
               }) || []
             );

@@ -5,12 +5,11 @@ import dbConnect from "../dbConnect";
 import { RecurrenceModel, Shift, ShiftModel } from "../models/shift";
 import { RRule } from "rrule";
 
-export async function createShift(shiftObject: Shift): Promise<Shift> {
+export async function createShift(shiftObject: string): Promise<string | null> {
   try {
     await dbConnect();
-
-    await shiftObject.save();
-    return shiftObject;
+    const newShift = new ShiftModel(JSON.parse(shiftObject || "{}"));
+    return JSON.stringify(await newShift.save());
   } catch (error) {
     const err = error as Error;
     throw new Error(`Error has occurred when creating shift: ${err.message}`);
@@ -248,4 +247,73 @@ export async function getAllShifts(): Promise<string | null> {
   }
 }
 
+export async function getShiftAnalytics(): Promise<string | null> {
+  try {
+    await dbConnect();
+    const shifts = await ShiftModel.find();
+    const monthlyShifts = new Map<string, number>();
+    shifts.forEach((s) => {
+      s.recurrences.forEach((r) => {
+        const date = new Date(r.date);
+        const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString()}`;
+        if (monthlyShifts.has(key)) {
+          monthlyShifts.set(key, monthlyShifts.get(key)! + 1);
+        } else {
+          monthlyShifts.set(key, 1);
+        }
+      });
+    });
+    const today = new Date();
+    const currMonth = `${today.getFullYear()}-${(
+      today.getMonth() + 1
+    ).toString()}`;
+    const shiftsThisMonth = monthlyShifts.has(currMonth)
+      ? monthlyShifts.get(currMonth)!
+      : 0;
+    monthlyShifts.delete(currMonth);
 
+    let monthlyAvg = 0;
+    monthlyShifts.forEach((value) => {
+      monthlyAvg += value;
+    });
+    monthlyAvg /= monthlyShifts.size;
+
+    return JSON.stringify({
+      thisMonth: shiftsThisMonth,
+      monthlyAverage: monthlyAvg,
+    });
+  } catch (error) {
+    const err = error as Error;
+    throw new Error(`Error getting shift analytics: ${err.message}`);
+  }
+}
+
+interface TempRecentShift {
+  routeId: string;
+  date: Date;
+}
+
+export async function getRecentShifts(
+  numRecentShifts: number
+): Promise<string | null> {
+  try {
+    await dbConnect();
+    const shifts = await ShiftModel.find();
+    const shiftRecurrences = shifts
+      .flatMap((s: Shift) =>
+        s.recurrences.map((r) => ({
+          routeId: s.routeId.toString(),
+          date: new Date(r.date),
+        }))
+      )
+      .sort(
+        (a: TempRecentShift, b: TempRecentShift) =>
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+      )
+      .slice(0, numRecentShifts);
+    return JSON.stringify(shiftRecurrences);
+  } catch (error) {
+    const err = error as Error;
+    throw new Error(`Error getting all shifts: ${err.message}`);
+  }
+}

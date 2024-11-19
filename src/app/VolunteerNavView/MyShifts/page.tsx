@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import Sidebar from '../../../components/Sidebar';
-import styles from './page.module.css';
+import Sidebar from "../../../components/Sidebar";
+import styles from "./page.module.css";
 
 const MyShifts: React.FC = () => {
   return (
@@ -12,7 +12,6 @@ const MyShifts: React.FC = () => {
         <div className={styles.header}>
           <h1 className={styles.pageTitle}>My Shifts</h1>
         </div>
-
       </div>
     </div>
   );

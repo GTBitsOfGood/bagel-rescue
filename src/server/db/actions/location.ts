@@ -15,6 +15,18 @@ export async function createLocation(newLocation: Location): Promise<Location> {
   }
 }
 
+export async function getAllLocationById(id: string[]): Promise<string | null> {
+  await dbConnect();
+  try {
+    const location = await LocationModel.find({_id: id});
+    return JSON.stringify(location);
+  }
+  catch (error) {
+    const err = error as Error;
+    throw new Error(`Error getting location by id: ${err.message}`);
+  }
+}
+
 export async function updateLocationName(
   id: string,
   newLocationName: string
