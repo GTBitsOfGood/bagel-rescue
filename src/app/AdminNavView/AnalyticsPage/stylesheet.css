@@ -293,3 +293,13 @@
 .leaderboard-table tr td:first-child {
   width: 50%;
 }
+
+
+.big-container {
+  display: flex;
+  flex-direction: row; /* Ensures the sidebar and content are side by side */
+}
+
+.analytics-container {
+  flex: 1; /* Allows the analytics content to take up the remaining space */
+}

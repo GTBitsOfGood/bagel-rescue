@@ -18,14 +18,14 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ date, AddDays }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [timeFrame, setTimeFrame] = useState("Day");
 
-  const handleTimeFrameChange = (newTimeFrame: string) => {
-    setTimeFrame(newTimeFrame);
-    if (newTimeFrame === "Day") {
-      router.push("/DailyShiftDashboard");
-    } else {
-      router.push("/WeeklyShiftDashboard");
-    }
-  };
+    const handleTimeFrameChange = (newTimeFrame: string) => {
+        setTimeFrame(newTimeFrame);
+        if (newTimeFrame === 'Day') {
+            router.push('/AdminNavView/DailyShiftDashboard');
+        } else {
+            router.push('/AdminNavView/WeeklyShiftDashboard');
+        }
+    };
 
   const debouncedAddDays = useCallback(debounce(AddDays, 300), [AddDays]);
 
@@ -100,7 +100,10 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ date, AddDays }) => {
             )}
           </div>
         </div>
-        <div className="bg-[#0F7AFF] text-[#FFFFFF] font-[700] p-[.8rem]  px-5 gap-2 rounded-xl">
+        <div 
+          className="bg-[#0F7AFF] text-[#FFFFFF] font-[700] p-[.8rem] px-5 gap-2 rounded-xl hover:bg-[#005bb5] cursor-pointer"
+          onClick={() => router.push('/AdminNavView/NewShiftPage')}
+        >
           <FontAwesomeIcon icon={faPlus} className="mr-3" />
           <span>New Shift</span>
         </div>
