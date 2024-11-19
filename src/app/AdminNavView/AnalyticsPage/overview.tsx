@@ -1,4 +1,4 @@
-import AnalyticsBagel from "../../assets/analytics_bagel.svg";
+import AnalyticsBagel from "../../../assets/analytics_bagel.svg";
 import Image from "next/image";
 
 type OverviewProps = {

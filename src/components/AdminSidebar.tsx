@@ -18,7 +18,7 @@ const navItems: NavItem[] = [
   { name: 'Dashboard', href: '/AdminNavView/DailyShiftDashboard', icon: <FiHome /> },
   { name: 'Routes', href: '/AdminNavView/RouteCreationPage', icon: <CiRoute /> },
   { name: 'Locations', href: '/AdminNavView/LocationPage', icon: <CiLocationOn /> },
-  { name: 'Analytics', href: '/AdminNavView/Analytics', icon: <TbBrandGoogleAnalytics /> },
+  { name: 'Analytics', href: '/AdminNavView/AnalyticsPage', icon: <TbBrandGoogleAnalytics /> },
 
 ];
 

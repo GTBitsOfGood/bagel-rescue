@@ -1,6 +1,6 @@
 import AnalyticsTable from "./analytics_table";
-import AnalyticsBittenBagel from "../../assets/analytics-bitten-bagel.svg";
-import AnalyticsCar from "../../assets/analytics-car.svg";
+import AnalyticsBittenBagel from "../../../assets/analytics-bitten-bagel.svg";
+import AnalyticsCar from "../../../assets/analytics-car.svg";
 import Image from "next/image";
 
 function RescueRecords() {

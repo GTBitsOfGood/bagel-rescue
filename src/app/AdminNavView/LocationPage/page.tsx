@@ -60,11 +60,6 @@ function LocationDashboardPage() {
       </button>
       <div className="header">
         <p className="header-text">Locations</p>
-        <button
-          className="complete-route-btn"
-        >
-          Complete Route
-        </button>
       </div>
       <hr className="separator" />
         <div className={styles.container}>
