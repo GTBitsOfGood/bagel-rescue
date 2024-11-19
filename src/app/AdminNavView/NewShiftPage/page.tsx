@@ -1,7 +1,7 @@
 'use client'
 
 import "./stylesheet.css";
-import Sidebar from "@/components/Sidebar";
+import AdminSidebar from "@/components/AdminSidebar";
 import { getAllLocationById } from "@/server/db/actions/location";
 import { createRoute, getAllRoutes, getLocations } from "@/server/db/actions/Route";
 import { createShift } from "@/server/db/actions/shift";
@@ -301,17 +301,17 @@ export default function NewShiftPage() {
     
     return (
         <div className="flex min-h-screen">
-            <Sidebar/>
+            <AdminSidebar/>
             <div className="flex flex-col w-full min-h-screen">
                 <div className="flex flex-col p-9 space-y-6 border border-b-[#D3D8DE]">
-                    <div onClick={() => router.push("/DailyShiftDashboard")} className="flex space-x-2 cursor-pointer">
+                    <div onClick={() => router.push("/AdminNavView/DailyShiftDashboard")} className="flex space-x-2 cursor-pointer">
                         <FontAwesomeIcon  icon={faArrowLeft} className="text-[#6C7D93] size-5 mt-[.1rem]"/>
                         <span className="font-semibold text-base text-[#6C7D93]">Back</span>
                     </div>
                     <div className="flex justify-between text-center align-middle">
                         <div className="text-[#072B68] font-bold text-4xl content-center">New Shift</div>
                         <div className="flex justify-between space-x-4">
-                            <button onClick={() => router.push("/DailyShiftDashboard")} className="bg-[#ECF2F9] font-bold text-[#6C7D93] px-4 py-[.8rem] rounded-xl text-base border border-[#D3D8DE]">Cancel</button>
+                            <button onClick={() => router.push("/AdminNavView/DailyShiftDashboard")} className="bg-[#ECF2F9] font-bold text-[#6C7D93] px-4 py-[.8rem] rounded-xl text-base border border-[#D3D8DE]">Cancel</button>
                             <button onClick={() => saveEdits()} className="bg-[#0F7AFF] font-bold text-white px-4 py-[.8rem] rounded-xl">Save edits</button>
                         </div>
                     </div>
