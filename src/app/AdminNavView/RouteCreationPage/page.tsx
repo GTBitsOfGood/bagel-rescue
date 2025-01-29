@@ -10,6 +10,7 @@ import {
   faAngleLeft,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
+import { useRouter } from "next/navigation";
 
 import { getAllLocations } from "@/server/db/actions/location";
 import { Location } from "@/server/db/models/location";
@@ -28,6 +29,8 @@ function RouteCreationPage() {
   const [locationsIsPickUp, setLocationsIsPickUp] = useState<
     Map<string, boolean>
   >(new Map());
+
+  const router = useRouter();
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -80,7 +83,12 @@ function RouteCreationPage() {
       locationDescription: routeArea,
       locations: locs,
     };
-    createRoute(JSON.stringify(route));
+    createRoute(JSON.stringify(route))
+      .then(() => {
+        alert("Route created successfully!");
+        router.push("/AdminNavView/WeeklyShiftDashboard");
+      })
+      .catch(() => alert("Failed to create route."));
   }
 
   function locationCards() {
