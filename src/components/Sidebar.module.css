@@ -1,4 +1,7 @@
 .sidebar {
+    position: sticky;
+    top: 0;
+  
     height: 100vh;
     background-color: #fff;
     display: flex;
