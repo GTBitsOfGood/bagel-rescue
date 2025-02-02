@@ -1,5 +1,6 @@
 'use client';
 
+import { sendVolunteerSignupEmails } from "@/server/db/actions/email";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
@@ -8,7 +9,6 @@ function VolunteerAccountCreation() {
     
     const [emails, setEmails] = useState<string[]>([]);
     const [currentEmail, setCurrentEmail] = useState<string>("");
-    //TODO: add email to list and remove email from list
 
     function addEmail(email: string) {
         setEmails([...emails, email]);
@@ -31,23 +31,44 @@ function VolunteerAccountCreation() {
         ));
     }
 
+    function handleSubmit(event: React.FormEvent) {
+        event.preventDefault();
+        if (emails.indexOf(currentEmail) !== -1) {
+            alert("Email already added");
+            return;
+        }
+
+        if (currentEmail) {
+            addEmail(currentEmail);
+        } else {
+            console.error("Please enter a valid email address.");
+        }
+    }
+
+    async function inviteVolunteers() {
+        if (emails.length === 0) {
+            alert("No emails to send invitations to.");
+            return;
+        }
+
+        try {
+            const response = await sendVolunteerSignupEmails(emails);
+
+            if (await response) {
+                alert("Invitations sent successfully!");
+            } 
+        } catch (error) {
+            console.error("Error sending invitations:", error);
+            alert("An error occurred while sending invitations.");
+        }
+    }
+
+
   return (
     <div className={"flex items-center justify-center min-h-screen"}>
         <div className={"flex justify-around h-[45rem] w-5/6 bg-gray-200 shadow-lg rounded-xl"}>
             <form 
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    if (emails.indexOf(currentEmail) !== -1) {
-                        alert("Email already added");
-                        return;
-                    }
-
-                    if (currentEmail) {
-                    addEmail(currentEmail);
-                    } else {
-                    console.error("Please enter a valid email address.");
-                    }
-                }}
+                onSubmit={(e) => {handleSubmit(e)}}
             className="w-full content-center max-w-sm min-w-[200px]"
             >
                 <label className="block mb-2 text-sm text-slate-600">
@@ -72,14 +93,14 @@ function VolunteerAccountCreation() {
                 <button
                 className="ml-36 mt-10 rounded bg-slate-800 py-1 px-2.5 border border-transparent text-center text-sm text-white transition-all shadow-sm hover:shadow focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none"
                 type="button"
-                onClick={() => alert("Feature not implemented yet")}
+                onClick={async () => inviteVolunteers()}
                 >
                 Invite Volunteers
                 </button>
             </form>
             
             <div className="p-2 relative flex flex-col rounded-l border 0">
-                <label>Email List</label>
+                <label className="rounded-md bg-slate-700 py-2 px-4 border border-transparent text-center text-white">Email List</label>
                 <nav className="flex min-w-[240px] flex-col gap-1 p-1.5">
                     {emails.length != 0 ? displayEmails() : <div>No emails added</div>}
                 </nav>
