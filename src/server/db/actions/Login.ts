@@ -2,7 +2,6 @@ import {
     signInWithEmailAndPassword,
     GoogleAuthProvider,
     signInWithPopup,
-    deleteUser,
   } from "firebase/auth";
   //import Cookies from "js-cookie"; // For setting cookies
   import { auth } from "../firebase";
