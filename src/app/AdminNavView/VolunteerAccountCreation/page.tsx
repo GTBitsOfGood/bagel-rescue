@@ -9,6 +9,7 @@ function VolunteerAccountCreation() {
     
     const [emails, setEmails] = useState<string[]>([]);
     const [currentEmail, setCurrentEmail] = useState<string>("");
+    const [loading, setLoading] = useState(false);
 
     function addEmail(email: string) {
         setEmails([...emails, email]);
@@ -40,12 +41,14 @@ function VolunteerAccountCreation() {
 
         if (currentEmail) {
             addEmail(currentEmail);
+            setCurrentEmail("");
         } else {
             console.error("Please enter a valid email address.");
         }
     }
 
     async function inviteVolunteers() {
+        setLoading(true);
         if (emails.length === 0) {
             alert("No emails to send invitations to.");
             return;
@@ -55,12 +58,15 @@ function VolunteerAccountCreation() {
             const response = await sendVolunteerSignupEmails(emails);
 
             if (await response) {
+                setEmails([]);
+                setLoading(false);
                 alert("Invitations sent successfully!");
             } 
         } catch (error) {
             console.error("Error sending invitations:", error);
             alert("An error occurred while sending invitations.");
         }
+        setLoading(false);
     }
 
 
@@ -81,22 +87,23 @@ function VolunteerAccountCreation() {
                     pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
                     className="w-full bg-white placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md pl-3 pr-16 py-2 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow" 
                     placeholder="Email Address" 
+                    value={currentEmail}
                     onChange={(e) => setCurrentEmail(e.target.value)}
                     />
                     <button
-                    className="absolute right-1 top-1 rounded bg-slate-800 py-1 px-2.5 border border-transparent text-center text-sm text-white transition-all shadow-sm hover:shadow focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none"
+                    className="absolute right-1 top-1 rounded bg-slate-700 py-1 px-2.5 border border-transparent text-center text-sm text-white transition-all shadow-sm hover:shadow focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-600 active:shadow-none"
                     type="submit"
                     >
                     Add Email
                     </button>
                 </div>
-                <button
-                className="ml-36 mt-10 rounded bg-slate-800 py-1 px-2.5 border border-transparent text-center text-sm text-white transition-all shadow-sm hover:shadow focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none"
+                {!loading ? <button
+                className="ml-36 mt-10 rounded bg-slate-700 py-1 px-2.5 border border-transparent text-center text-sm text-white transition-all shadow-sm hover:shadow focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-600 active:shadow-none"
                 type="button"
                 onClick={async () => inviteVolunteers()}
                 >
                 Invite Volunteers
-                </button>
+                </button> : <div className="ml-36 mt-10 content-center spinner animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full"></div>}
             </form>
             
             <div className="p-2 relative flex flex-col rounded-l border 0">
