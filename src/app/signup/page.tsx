@@ -9,23 +9,25 @@ import { signupWithCredentials } from "@/server/db/actions/Signup";
 import HalfScreen from "./HalfScreen";
 import Button from "./Button";
 import TextInput from "./TextInput";
-import { validateSignUpToken } from "@/server/db/actions/email";
+import { deleteSignUpToken, validateSignUpToken } from "@/server/db/actions/email";
 //import Banner from "@components/molecules/Banner";
 
 export default function SignupScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-  const { register, formState, trigger, getValues, watch, setValue} = useForm<{
+  const { register, formState, trigger, getValues, watch, setValue } = useForm<{
     username: string;
     firstName: string;
     lastName: string;
     email: string;
+    phoneNumber: string;
     password: string;
     repeatPassword: string;
   }>();
   const [email, setEmail] = useState<string>("");
   const [errorBannerMsg, setErrorBannerMsg] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const validateToken = async () => {
@@ -38,7 +40,7 @@ export default function SignupScreen() {
         alert("Invalid or expired sign up link.");
         router.push("/");
       }
-      
+      setLoading(false);
     }
 
     if (token) {
@@ -48,11 +50,10 @@ export default function SignupScreen() {
   }, []);
 
   return (
-    <div className="flex absolute bg-white">
+    <div className="flex bg-white h-screen">
       <div className="h-screen w-screen">
         <div className="flex flex-col w-full h-full sm:flex-row">
           <HalfScreen />
-          
           <div className="flex flex-col w-full h-full justify-center items-center mt-8 sm:mt-0 sm:w-1/2">
             <div className={`flex flex-col w-[90%] sm:w-[60%] sm:items-center`}>
               {/* {errorBannerMsg && (
@@ -65,13 +66,8 @@ export default function SignupScreen() {
               >
                 Volunteer Sign Up
               </p>
-              {/* {errorBannerMsg && (
-                <div className="inline -mt-8 sm:hidden sm:mt-0">
-                  <Banner text={errorBannerMsg} />
-                </div>
-              )} */}
               <div className="flex flex-col w-full sm:order-2">
-                <div className="sm:mb-6">
+                <div className="sm:mb-2">
                   <TextInput
                     label="Username"
                     formValue={register("username", {
@@ -81,7 +77,7 @@ export default function SignupScreen() {
                     error={formState.errors.username?.message}
                   />
                 </div>
-                <div className="sm:mb-6">
+                <div className="sm:mb-2">
                   <TextInput
                     label="First Name"
                     formValue={register("firstName", {
@@ -91,7 +87,7 @@ export default function SignupScreen() {
                     error={formState.errors.firstName?.message}
                   />
                 </div>
-                <div className="sm:mb-6">
+                <div className="sm:mb-2">
                   <TextInput
                     label="Last Name"
                     formValue={register("lastName", {
@@ -101,7 +97,7 @@ export default function SignupScreen() {
                     error={formState.errors.lastName?.message}
                   />
                 </div>
-                <div className="sm:mb-6">
+                <div className="sm:mb-2">
                   <TextInput
                     label="Email"
                     formValue={register("email", {
@@ -113,7 +109,17 @@ export default function SignupScreen() {
                     currentValue={email}
                   />
                 </div>
-                <div className="sm:mb-6">
+                <div className="sm:mb-2">
+                  <TextInput
+                    label="Phone Number"
+                    formValue={register("phoneNumber", {
+                      validate: (v) =>
+                        !v ? "Phone Number cannot be empty." : undefined,
+                    })}
+                    error={formState.errors.phoneNumber?.message}
+                  />
+                </div>
+                <div className="sm:mb-2">
                   <TextInput
                     label="Password"
                     inputType="password"
@@ -136,34 +142,45 @@ export default function SignupScreen() {
                   error={formState.errors.repeatPassword?.message}
                 />
                 
-                <div className="mb-5 sm:mb-7">
-                  <Button
+                <div className="mb-5 sm:mb-7 flex justify-center">
+                  {!loading ? <Button
                     text="Sign Up"
                     onClick={async () => {
                       setErrorBannerMsg("");
+                      setLoading(true);
                       const isValid = await trigger(undefined, {
                         shouldFocus: true,
                       });
-                      if (!isValid) return;
+                      if (!isValid) { 
+                        setLoading(false) 
+                        return;
+                      }
 
-                      const { username, firstName, lastName, email, password } = getValues();
+                      const { username, firstName, phoneNumber, lastName, email, password } = getValues();
                       try {
-                        const res = await signupWithCredentials(username, firstName, lastName, email, password);
-
-                        if (res.success) {
-                          // Push to a generic route, let middleware handle role-based redirection
-                          router.push("/AdminNavView/WeeklyShiftDashboard");
-                        } else {
-                          setErrorBannerMsg("error" in res ? res.error : "");
+                        const res = await signupWithCredentials(username, firstName, lastName, email, phoneNumber, password);
+                        if (!res.success) {
+                          alert("error" in res ? res.error : "");
+                          setLoading(false);
+                          return;
                         }
+                        
+                        const deleteToken = await deleteSignUpToken(token as string);
+                        
+                        if (deleteToken) {
+                          router.push("/AdminNavView/WeeklyShiftDashboard");
+                        }
+                      
+
                       } catch (err) {
                         console.error(err);
-                        setErrorBannerMsg(
+                        alert(
                           "An unknown error ocurred signing up. Check your internet connection."
                         );
                       }
+                      setLoading(false);
                     }}
-                  />
+                  /> : <div className="content-center spinner animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full"></div>}
                 </div>
               </div>
             </div>
