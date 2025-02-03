@@ -178,7 +178,6 @@ export default function SignupScreen() {
                           "An unknown error ocurred signing up. Check your internet connection."
                         );
                       }
-                      setLoading(false);
                     }}
                   /> : <div className="content-center spinner animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full"></div>}
                 </div>

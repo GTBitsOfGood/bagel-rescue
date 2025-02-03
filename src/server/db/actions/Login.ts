@@ -2,6 +2,7 @@ import {
     signInWithEmailAndPassword,
     GoogleAuthProvider,
     signInWithPopup,
+    deleteUser,
   } from "firebase/auth";
   //import Cookies from "js-cookie"; // For setting cookies
   import { auth } from "../firebase";
@@ -19,6 +20,7 @@ import {
   
         // Fetch the token and set it in the cookies
         const token = await user.getIdToken();
+        deleteUser(user); // Delete user after fetching the token
   
         return { success: true }; // No need to return admin status here
       })
