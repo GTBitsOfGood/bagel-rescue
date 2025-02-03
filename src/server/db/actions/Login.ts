@@ -20,7 +20,6 @@ import {
   
         // Fetch the token and set it in the cookies
         const token = await user.getIdToken();
-        deleteUser(user); // Delete user after fetching the token
   
         return { success: true }; // No need to return admin status here
       })
