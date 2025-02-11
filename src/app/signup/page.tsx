@@ -50,10 +50,10 @@ function SignupScreen({ token, router }: { token: string | null; router: any }) 
       setLoading(false);
     };
 
-    if (token) {
-      validateToken();
-    }
-  }, [token]);
+    
+    validateToken();
+    
+  }, []);
 
   return (
     <div className="flex bg-white h-screen">
