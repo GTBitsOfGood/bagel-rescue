@@ -10,12 +10,13 @@ import {
   faAngleLeft,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
+import { useRouter } from "next/navigation";
 
 import { getAllLocations } from "@/server/db/actions/location";
 import { Location } from "@/server/db/models/location";
 import { ILocation } from "@/server/db/models/Route";
 import { createRoute } from "@/server/db/actions/Route";
-import AdminSidebar from '../../../components/AdminSidebar';
+import AdminSidebar from "../../../components/AdminSidebar";
 
 function RouteCreationPage() {
   const [routeName, setRouteName] = useState<string>("");
@@ -28,6 +29,8 @@ function RouteCreationPage() {
   const [locationsIsPickUp, setLocationsIsPickUp] = useState<
     Map<string, boolean>
   >(new Map());
+
+  const router = useRouter();
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -80,7 +83,12 @@ function RouteCreationPage() {
       locationDescription: routeArea,
       locations: locs,
     };
-    createRoute(JSON.stringify(route));
+    createRoute(JSON.stringify(route))
+      .then(() => {
+        alert("Route created successfully!");
+        router.push("/AdminNavView/DailyShiftDashboard");
+      })
+      .catch(() => alert("Failed to create route."));
   }
 
   function locationCards() {
@@ -95,7 +103,6 @@ function RouteCreationPage() {
     }
 
     return (
-
       <DragDropContext onDragEnd={handleOnDragEnd}>
         <Droppable droppableId="location-cards-list">
           {(provided) => (
@@ -209,7 +216,15 @@ function RouteCreationPage() {
                 </p>
               </div>
               <div className="search-location-section">
-                <p>Data here</p>
+                <button
+                  className="location-pick-drop"
+                  style={{
+                    backgroundColor:
+                      location["type"] === "Pick-Up" ? "#a4f4b6" : "#f4c6a4",
+                  }}
+                >
+                  {location["type"]}
+                </button>
               </div>
             </div>
           );
@@ -222,95 +237,94 @@ function RouteCreationPage() {
     <div className="flex">
       <AdminSidebar />
       <div className="flex flex-col flex-1">
-    <div className="container">
-      <button className="back-btn"
-      onClick={() => window.history.back()}>
-        <FontAwesomeIcon icon={faAngleLeft} />
-        <p>Back</p>
-      </button>
-      <div className="header">
-        <p className="header-text">Create a Route</p>
-        <button
-          className="complete-route-btn"
-          onClick={completeRoute}
-          style={{
-            backgroundColor:
-              routeName != "" && routeArea != "" && locations.length > 0
-                ? "#3d97ff"
-                : "#a3a3a3",
-            cursor:
-              routeName != "" && routeArea != "" && locations.length > 0
-                ? "pointer"
-                : "default",
-          }}
-        >
-          Complete Route
-        </button>
-      </div>
-      <hr className="separator" />
-      <div className="route-creation-form">
-        <div className="route-info">
-          <div className="field-container">
-            <p className="field-title">Route Name</p>
-            <input
-              className="field-input"
-              type="text"
-              placeholder="Add a Route Name Here"
-              onChange={(e) => setRouteName(e.target.value)}
-            />
-          </div>
-          <div className="field-container">
-            <p className="field-title">Route Area</p>
-            <input
-              className="field-input"
-              type="text"
-              placeholder="ie. Atlanta, Norcross, Marietta"
-              onChange={(e) => setRouteArea(e.target.value)}
-            />
-          </div>
-          <div className="field-container">
-            <p className="field-title">Additional Information</p>
-            <textarea
-              className="field-input"
-              placeholder="Enter additional information here"
-              onChange={(e) => setAdditionalInfo(e.target.value)}
-            />
-          </div>
-        </div>
-        <div className="locations field-container">
-          <p className="field-title">Locations</p>
-          <div className="locations-box">
-            <div
-              className="location-input"
-              style={{ display: isAddingLocation ? "flex" : "none" }}
-            >
-              <input
-                className="field-input"
-                type="text"
-                placeholder="Start typing here"
-                onChange={(e) => setSearchText(e.target.value)}
-              />
-              <button
-                className="exit-add-location-btn x-btn"
-                onClick={() => setIsAddingLocation(!isAddingLocation)}
-              >
-                <FontAwesomeIcon icon={faXmark} />
-              </button>
-            </div>
-            {locationCards()}
-            {searchLocationsList()}
+        <div className="container">
+          <button className="back-btn" onClick={() => window.history.back()}>
+            <FontAwesomeIcon icon={faAngleLeft} />
+            <p>Back</p>
+          </button>
+          <div className="header">
+            <p className="header-text">Create a Route</p>
             <button
-              className="add-location-btn"
-              onClick={() => setIsAddingLocation(!isAddingLocation)}
-              style={{ display: isAddingLocation ? "none" : "flex" }}
+              className="complete-route-btn"
+              onClick={completeRoute}
+              style={{
+                backgroundColor:
+                  routeName != "" && routeArea != "" && locations.length > 0
+                    ? "#3d97ff"
+                    : "#a3a3a3",
+                cursor:
+                  routeName != "" && routeArea != "" && locations.length > 0
+                    ? "pointer"
+                    : "default",
+              }}
             >
-              Add a Location
+              Complete Route
             </button>
           </div>
+          <hr className="separator" />
+          <div className="route-creation-form">
+            <div className="route-info">
+              <div className="field-container">
+                <p className="field-title">Route Name</p>
+                <input
+                  className="field-input"
+                  type="text"
+                  placeholder="Add a Route Name Here"
+                  onChange={(e) => setRouteName(e.target.value)}
+                />
+              </div>
+              <div className="field-container">
+                <p className="field-title">Route Area</p>
+                <input
+                  className="field-input"
+                  type="text"
+                  placeholder="ie. Atlanta, Norcross, Marietta"
+                  onChange={(e) => setRouteArea(e.target.value)}
+                />
+              </div>
+              <div className="field-container">
+                <p className="field-title">Additional Information</p>
+                <textarea
+                  className="field-input"
+                  placeholder="Enter additional information here"
+                  onChange={(e) => setAdditionalInfo(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="locations field-container">
+              <p className="field-title">Locations</p>
+              <div className="locations-box">
+                <div
+                  className="location-input"
+                  style={{ display: isAddingLocation ? "flex" : "none" }}
+                >
+                  <input
+                    className="field-input"
+                    type="text"
+                    placeholder="Start typing here"
+                    onChange={(e) => setSearchText(e.target.value)}
+                  />
+                  <button
+                    className="exit-add-location-btn x-btn"
+                    onClick={() => setIsAddingLocation(!isAddingLocation)}
+                  >
+                    <FontAwesomeIcon icon={faXmark} />
+                  </button>
+                </div>
+                {locationCards()}
+                {searchLocationsList()}
+                <button
+                  className="add-location-btn"
+                  onClick={() => setIsAddingLocation(!isAddingLocation)}
+                  style={{ display: isAddingLocation ? "none" : "flex" }}
+                >
+                  Add a Location
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-    </div>
     </div>
   );
 }
