@@ -68,7 +68,7 @@ function LocationDashboardPage() {
               <FontAwesomeIcon icon={faMagnifyingGlass} className={styles.searchIcon} />
               <input
                 type="text"
-                placeholder="Search for route"
+                placeholder="Search for location"
                 className={styles.searchInput}
               />
             </div>
