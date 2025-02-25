@@ -3,13 +3,12 @@
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-
-import { loginWithCredentials, loginWithGoogle } from "../../server/db/actions/Login";
+import { signIn } from "next-auth/react"; // Use NextAuth signIn instead of custom login
 
 import HalfScreen from "./HalfScreen";
 import Button from "./Button";
 import TextInput from "./TextInput";
-//import Banner from "@components/molecules/Banner";
+// import Banner from "@components/molecules/Banner";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -25,15 +24,13 @@ export default function LoginScreen() {
         <div className="flex flex-col w-full h-full sm:flex-row">
           <HalfScreen />
           <div className="flex flex-col w-full h-full justify-center items-center mt-8 sm:mt-0 sm:w-1/2">
-            <div className={`flex flex-col w-[90%] sm:w-[60%] sm:items-center`}>
+            <div className="flex flex-col w-[90%] sm:w-[60%] sm:items-center">
               {/* {errorBannerMsg && (
                 <div className="hidden sm:inline">
                   <Banner text={errorBannerMsg} />
                 </div>
               )} */}
-              <p
-                className={`text-primary-text text-2xl font-bold font-opensans mb-10 sm:order-1`}
-              >
+              <p className="text-primary-text text-2xl font-bold font-opensans mb-10 sm:order-1">
                 Log In
               </p>
               {/* {errorBannerMsg && (
@@ -66,7 +63,6 @@ export default function LoginScreen() {
                     className="w-auto text-center text-mbb-pink text-sm font-semibold font-opensans"
                     onClick={() => {
                       const email = getValues().email;
-
                       router.push(
                         email
                           ? `/forgotPassword?email=${encodeURIComponent(email)}`
@@ -89,25 +85,30 @@ export default function LoginScreen() {
 
                       const { email, password } = getValues();
                       try {
-                        const res = await loginWithCredentials(email, password);
-
-                        if (res.success) {
-                          // Push to a generic route, let middleware handle role-based redirection
+                        // Call NextAuth's signIn for the "credentials" provider.
+                        const res = await signIn("credentials", {
+                          redirect: false,
+                          email,
+                          password,
+                        });
+                        if (res && res.ok) {
+                          // If sign in is successful, navigate to the dashboard.
                           router.push("/AdminNavView/WeeklyShiftDashboard");
                         } else {
-                          setErrorBannerMsg("error" in res ? res.error : "");
+                          setErrorBannerMsg(
+                            "Sign in failed. Please check your credentials."
+                          );
                         }
                       } catch (err) {
                         console.error(err);
                         setErrorBannerMsg(
-                          "An unknown error ocurred logging in. Check your internet connection."
+                          "An unknown error occurred logging in. Check your internet connection."
                         );
                       }
                     }}
                   />
                 </div>
-                <div className="mb-10 flex justify-center items-center">
-                </div>
+                <div className="mb-10 flex justify-center items-center"></div>
                 <div className="flex flex-row justify-center mb-8 sm:mb-0">
                   <div className="text-light-black text-base font-normal font-opensans leading-tight tracking-tight mr-2">
                     Don&apos;t have an account?&nbsp;

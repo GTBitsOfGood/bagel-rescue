@@ -1,15 +1,42 @@
 "use client";
 
 import styles from "./ProfileForm.module.css";
+import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 const ProfileForm: React.FC = () => {
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    try {
+      console.log("Signing out..."); // Debug log
+      const result = await signOut({
+        redirect: true,
+        callbackUrl: '/Login'
+      });
+      console.log("Sign out result:", result); // Debug log
+      
+      // Force redirect if the automatic redirect doesn't work
+      router.push('/Login');
+      router.refresh();
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.sidebar}>
         <ul className={styles.menu}>
           <li className={`${styles.menuItem} ${styles.active}`}>Profile</li>
           <li className={styles.menuItem}>Password</li>
-          <li className={`${styles.menuItem} ${styles.signOut}`}>Sign Out</li>
+          <li 
+            className={`${styles.menuItem} ${styles.signOut}`}
+            onClick={handleSignOut}
+            style={{ cursor: 'pointer' }}
+          >
+            Sign Out
+          </li>
         </ul>
       </div>
 
