@@ -10,10 +10,15 @@ export interface IUser {
   firstName: string;
   lastName: string;
   email: string;
-  bagelsDelivered?: number;
   totalDeliveries?: number;
   phoneNumber?: string;
   acceptableLocations?: string;
+  lifetimeHoursVolunteered?: number;
+  monthlyHoursVolunteered?: number;
+  yearlyHoursVolunteered?: number;
+  monthlyShiftAmount?: number;
+  yearlyShiftAmount?: number;
+  lastMonthlyReset?: Date;
 }
 
 const userSchema = new Schema({
@@ -42,10 +47,6 @@ const userSchema = new Schema({
       "Invalid email format",
     ],
   },
-  bagelsDelivered: {
-    type: Number,
-    default: 0,
-  },
   totalDeliveries: {
     type: Number,
     default: 0,
@@ -58,6 +59,86 @@ const userSchema = new Schema({
     type: String,
     default: "",
   },
+  lifetimeHoursVolunteered: {
+    type: Number,
+    default: 0,
+  },
+  monthlyHoursVolunteered: {
+    type: Number,
+    default: 0,
+  },
+  yearlyHoursVolunteered: {
+    type: Number,
+    default: 0,
+  },
+  monthlyShiftAmount: {
+    type: Number,
+    default: 0,
+  },
+  yearlyShiftAmount: {
+    type: Number,
+    default: 0,
+  },
+  lastMonthlyReset: {
+    type: Date,
+    default: new Date(),
+  },
 });
+
+userSchema.methods.populateDeliveries = function () {
+  this.totalDeliveries = (this.totalDeliveries || 0) + 1;
+  return this.save();
+};
+
+userSchema.methods.populateHours = function (hours: number) {
+  this.lifetimeHoursVolunteered = (this.lifetimeHoursVolunteered || 0) + hours;
+  return this.save();
+};
+
+userSchema.methods.checkAndResetMonthlyStats = function () {
+  const now = new Date();
+  if (!this.lastMonthlyReset) {
+    this.lastMonthlyReset = now;
+  }
+
+  const lastReset = new Date(this.lastMonthlyReset);
+  const sameYear = lastReset.getFullYear() === now.getFullYear();
+  const sameMonth = lastReset.getMonth() === now.getMonth();
+
+  if (!sameYear) {
+    this.yearlyHoursVolunteered = 0;
+    this.yearlyShiftAmount = 0;
+  }
+
+  if (!sameYear || !sameMonth) {
+    this.monthlyHoursVolunteered = 0;
+    this.monthlyShiftAmount = 0;
+    this.lastMonthlyReset = now;
+  }
+};
+
+userSchema.methods.populateMonthlyHours = function (hours: number) {
+  this.checkAndResetMonthlyStats();
+  this.monthlyHoursVolunteered = (this.monthlyHoursVolunteered || 0) + hours;
+  return this.save();
+};
+
+userSchema.methods.populateYearlyHours = function (hours: number) {
+  this.checkAndResetMonthlyStats();
+  this.yearlyHoursVolunteered = (this.yearlyHoursVolunteered || 0) + hours;
+  return this.save();
+};
+
+userSchema.methods.populateMonthlyShifts = function () {
+  this.checkAndResetMonthlyStats();
+  this.monthlyShiftAmount = (this.monthlyShiftAmount || 0) + 1;
+  return this.save();
+};
+
+userSchema.methods.populateYearlyShifts = function () {
+  this.checkAndResetMonthlyStats();
+  this.yearlyShiftAmount = (this.yearlyShiftAmount || 0) + 1;
+  return this.save();
+};
 
 export default mongoose.models?.User || mongoose.model("User", userSchema);
