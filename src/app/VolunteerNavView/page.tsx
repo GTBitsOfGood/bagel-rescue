@@ -6,9 +6,7 @@ import React from "react";
 
 export default function FormTest() {
 
-    function onSubmit(event: React.FormEvent<HTMLFormElement>): void {
-        console.log("Form submitted");
-    }
+  
   return (
     <div className="flex">
       <Sidebar/>
@@ -23,7 +21,9 @@ export default function FormTest() {
             <h1 className="text-4xl font-bold text-[#072B68]">Post-Shift Form</h1>
         </div>
         <div className="w-full h-full p-9 bg-[var(--Bagel-Rescue-Light-Blue-2,#ECF2F9)]">
-          <ShiftCompletionForm/>
+          {/* The shift id is hardcoded here! The shift id is the second argument in the submitCompletionForm function */}
+          {/* TODO: Change the shift id to use a real shift */}
+          <ShiftCompletionForm shiftId={"67368ca435378ea1ea7c3c59"}/>
         </div>
       </div>
     </div>
