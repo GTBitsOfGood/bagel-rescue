@@ -14,9 +14,9 @@ async function createUser(
   newUser: IUser,
   session?: ClientSession
 ): Promise<IUser> {
-  if (!newUser.bagelsDelivered) {
-    newUser.bagelsDelivered = 0;
-  }
+  // if (!newUser.bagelsDelivered) {
+  //   newUser.bagelsDelivered = 0;
+  // }
   if (!newUser.totalDeliveries) {
     newUser.totalDeliveries = 0;
   }
