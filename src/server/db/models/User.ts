@@ -95,7 +95,7 @@ userSchema.methods.populateHours = function (hours: number) {
   return this.save();
 };
 
-userSchema.methods.checkAndResetMonthlyStats = function () {
+userSchema.methods.checkAndResetStats = function () {
   const now = new Date();
   if (!this.lastMonthlyReset) {
     this.lastMonthlyReset = now;
@@ -118,25 +118,25 @@ userSchema.methods.checkAndResetMonthlyStats = function () {
 };
 
 userSchema.methods.populateMonthlyHours = function (hours: number) {
-  this.checkAndResetMonthlyStats();
+  this.checkAndResetStats();
   this.monthlyHoursVolunteered = (this.monthlyHoursVolunteered || 0) + hours;
   return this.save();
 };
 
 userSchema.methods.populateYearlyHours = function (hours: number) {
-  this.checkAndResetMonthlyStats();
+  this.checkAndResetStats();
   this.yearlyHoursVolunteered = (this.yearlyHoursVolunteered || 0) + hours;
   return this.save();
 };
 
 userSchema.methods.populateMonthlyShifts = function () {
-  this.checkAndResetMonthlyStats();
+  this.checkAndResetStats();
   this.monthlyShiftAmount = (this.monthlyShiftAmount || 0) + 1;
   return this.save();
 };
 
 userSchema.methods.populateYearlyShifts = function () {
-  this.checkAndResetMonthlyStats();
+  this.checkAndResetStats();
   this.yearlyShiftAmount = (this.yearlyShiftAmount || 0) + 1;
   return this.save();
 };
