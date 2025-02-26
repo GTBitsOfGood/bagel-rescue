@@ -15,6 +15,9 @@ export interface LeaderboardUser {
 export interface Analytics extends Document {
   totalBagelsDelivered: number;
   shiftsThisMonth: number;
+  hoursThisMonth: number;
+  shiftsThisYear: number;
+  hoursThisYear: number;
   shiftsMonthlyAverage: number;
   recentShifts: RecentShift[];
   leaderboardUsersBagelsDelivered: LeaderboardUser[];
@@ -39,6 +42,18 @@ const analyticsSchema: Schema = new Schema({
     default: 0,
   },
   shiftsThisMonth: {
+    type: Number,
+    default: 0,
+  },
+  hoursThisMonth: {
+    type: Number,
+    default: 0,
+  },
+  shiftsThisYear: {
+    type: Number,
+    default: 0,
+  },
+  hoursThisYear: {
     type: Number,
     default: 0,
   },
