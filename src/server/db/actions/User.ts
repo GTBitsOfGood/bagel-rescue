@@ -50,6 +50,25 @@ async function getUser(
   return document;
 }
 
+async function getUserByEmail(
+  email: string,
+  session?: ClientSession
+): Promise<IUser | null> {
+  await dbConnect();
+
+  const document = await User.findOne(
+    { email: email },
+    { __v: 0 },
+    {
+      session: session,
+    }
+  ).lean();
+  if (!document) {
+    throw new Error("User with that email " + email + " does not exist");
+  }
+  return JSON.parse(JSON.stringify(document));
+}
+
 async function updateUser(
   id: mongoose.Types.ObjectId,
   updated: UpdateQuery<IUser>,
@@ -111,6 +130,7 @@ async function getTotalBagelsDelivered(): Promise<number | null> {
 export {
   createUser,
   getUser,
+  getUserByEmail,
   updateUser,
   getUserStats,
   getAllUserStats,
