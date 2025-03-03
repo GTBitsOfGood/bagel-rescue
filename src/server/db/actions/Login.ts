@@ -18,7 +18,7 @@ import {
         
         const mongoUser = await getUserByEmail(email);
 
-        return { success: true, isAdmin: mongoUser?.isAdmin}; // No need to return admin status here
+        return { success: true, isAdmin: mongoUser?.isAdmin};// No need to return admin status here  UPDATE: i fear, i may have to
       })
       .catch((error) => {
         let errorMsg = "";
