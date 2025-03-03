@@ -5,22 +5,20 @@ import {
   } from "firebase/auth";
   //import Cookies from "js-cookie"; // For setting cookies
   import { auth } from "../firebase";
-  
+  import { getUserByEmail } from "./User";
   // Login with Email and Password
   export const loginWithCredentials = async (email: string, password: string) => {
     return await signInWithEmailAndPassword(auth, email, password)
-      .then(async () => {
-        const userCredential = await signInWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
+      .then(async (userCredential) => {
+        
         const user = userCredential.user;
   
         // Fetch the token and set it in the cookies
         const token = await user.getIdToken();
-  
-        return { success: true }; // No need to return admin status here
+        
+        const mongoUser = await getUserByEmail(email);
+
+        return { success: true, isAdmin: mongoUser?.isAdmin}; // No need to return admin status here
       })
       .catch((error) => {
         let errorMsg = "";
