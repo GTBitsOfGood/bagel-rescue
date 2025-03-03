@@ -103,14 +103,19 @@ export default function LoginScreen() {
                       if (!isValid) return;
 
                       const { email, password } = getValues();
+                      
                       try {
                         const res = await loginWithCredentials(email, password);
 
                         if (res.success) {
-                          // Push to a generic route, let middleware handle role-based redirection
-                          router.push("/AdminNavView/WeeklyShiftDashboard");
+                          if ('isAdmin' in res) {
+                          router.push(res.isAdmin 
+                            ? "/AdminNavView/WeeklyShiftDashboard" 
+                            : "/VolunteerNavView/Homepage");
+                          }
+
                         } else {
-                          setErrorBannerMsg("error" in res ? res.error : "");
+                          setErrorBannerMsg('error' in res ? res.error : "");
                         }
                       } catch (err) {
                         console.error(err);
