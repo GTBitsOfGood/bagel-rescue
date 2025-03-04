@@ -157,7 +157,7 @@ function SignupScreen({ token, router }: { token: string | null; router: any }) 
                           const deleteToken = await deleteSignUpToken(token as string);
 
                           if (deleteToken) {
-                            router.push("/AdminNavView/WeeklyShiftDashboard");
+                            router.push("/VolunteerNavView/Homepage");
                           }
                         } catch (err) {
                           console.error(err);
