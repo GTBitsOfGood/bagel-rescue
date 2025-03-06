@@ -6,21 +6,22 @@ import { Shift } from "@/server/db/models/shift";
 import { IRoute } from "@/server/db/models/Route";
 
 function DailyShiftBar({
-  key,
   shift,
-  route,
+  routes,
+  startTime,
+  endTime
 }: {
-  key: string;
-  shift: Shift;
-  route: IRoute;
+  shift: Shift[];
+  routes: {[key: string]: IRoute};
+  startTime: Date;
+  endTime: Date;
 }) {
-  const routeName = route ? route.routeName : null;
   let shiftDate =
-    new Date(shift.shiftDate).toLocaleTimeString("en-us", {
+    new Date(startTime).toLocaleTimeString("en-us", {
       hour: "2-digit",
       minute: "2-digit",
     }) + " - ";
-  const shiftEndDate = new Date(shift.shiftEndDate).toLocaleTimeString(
+  const shiftEndDate = new Date(endTime).toLocaleTimeString(
     "en-us",
     { hour: "2-digit", minute: "2-digit" }
   );
@@ -28,10 +29,28 @@ function DailyShiftBar({
 
   const volunteerdivs = () => {
     const divs = [];
-    for (let i = 0; i < shift.currSignedUp; i++) {
-      if (i === 0) {
+    for (let j = 0; j < shift.length; j++) {
+      for (let i = 0; i < shift[j].currSignedUp; i++) {
+        const route = routes[shift[j].routeId.toString()] || null;
+        const routeName = route ? route.routeName : null;
+        if (i === 0) {
+          divs.push(
+            <div key={`${startTime.getHours()}-${i}-${j}-first`} className="grid grid-cols-8 pl-5 pr-4 py-5 border-[#7D7E82A8] border-opacity-65 border-t rounded-[.625rem] items-center">
+              <div className="col-span-2">Volunteer Name</div>
+              <div className="col-span-2">{routeName}</div>
+              <div className="col-span-2">{`Atlanta`}</div>
+              <div className="col-span-1 md:col-span-2 text-center flex flex-auto justify-around items-center w-full md:min-w-0 space-x-2">
+                <button className="bg-[#D3D8DE] flex-shrink py-2 md:px-7 text-center rounded-[2.75rem] font-[600] opacity-60 text-[#072B68]">{`incomplete`}</button>
+                <FontAwesomeIcon
+                  icon={faEllipsis}
+                  className="flex-shrink mt-1 min-w-0"
+                />
+              </div>
+            </div>
+          );
+        }
         divs.push(
-          <div className="grid grid-cols-8 pl-5 pr-4 py-5 border-[#7D7E82A8] border-opacity-65 border-t rounded-[.625rem] items-center">
+          <div key={`${startTime.getHours()}-${i}-${j}`} className="grid grid-cols-8 pl-5 pr-4 py-5 border-[#7D7E82A8] border-opacity-65 border-t items-center">
             <div className="col-span-2">Volunteer Name</div>
             <div className="col-span-2">{routeName}</div>
             <div className="col-span-2">{`Atlanta`}</div>
@@ -45,20 +64,6 @@ function DailyShiftBar({
           </div>
         );
       }
-      divs.push(
-        <div className="grid grid-cols-8 pl-5 pr-4 py-5 border-[#7D7E82A8] border-opacity-65 border-t items-center">
-          <div className="col-span-2">Volunteer Name</div>
-          <div className="col-span-2">{routeName}</div>
-          <div className="col-span-2">{`Atlanta`}</div>
-          <div className="col-span-1 md:col-span-2 text-center flex flex-auto justify-around items-center w-full md:min-w-0 space-x-2">
-            <button className="bg-[#D3D8DE] flex-shrink py-2 md:px-7 text-center rounded-[2.75rem] font-[600] opacity-60 text-[#072B68]">{`incomplete`}</button>
-            <FontAwesomeIcon
-              icon={faEllipsis}
-              className="flex-shrink mt-1 min-w-0"
-            />
-          </div>
-        </div>
-      );
     }
     return divs;
   };
