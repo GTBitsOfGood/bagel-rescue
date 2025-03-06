@@ -47,6 +47,30 @@ function DailyShiftDashboardPage() {
         }
     };
 
+    const addTimes = () => {
+        const divs = [];
+        for (let i = 0; i < 24; i+=4) {
+            const startTime = new Date(date);
+            startTime.setHours(i, 0, 0, 0);
+            const endTime = new Date(date);
+            endTime.setHours(i + 4, 0, 0, 0);
+
+            let currShifts = shifts.filter((shift) => {
+                const shiftDate = new Date(shift.shiftDate);
+                return shiftDate.getUTCHours() >= startTime.getHours() && shiftDate.getUTCHours() < endTime.getHours();
+            });
+            
+            console.log(startTime.getHours());
+            console.log(currShifts);
+            divs.push(
+                <div key={i} className='min-h-[5rem]'>
+                    <DailyShiftBar shift={currShifts} routes={routes} startTime={startTime} endTime={endTime} />
+                </div>
+            )
+        }
+        return divs;
+    };
+
     return (
         <div className="flex">
             <AdminSidebar />
@@ -75,17 +99,7 @@ function DailyShiftDashboardPage() {
                             </div>
                         </div>
                     </div>
-                    {shifts.filter((shift) => {
-                        const route = routes[shift.routeId.toString()]
-                        return route?.routeName.toLowerCase().includes(search.toLowerCase());
-                    }).map((shift) => {
-                        const route = routes[shift.routeId.toString()] || null;
-                        return <React.Fragment key={shift.id}>
-                            <DailyShiftBar key={shift.id} shift={shift} route={route} />
-                            <hr className='border-[#7D7E82A8]' />
-                        </React.Fragment>;
-                    })}
-
+                    {addTimes()}
                 </div>
             </div>
         </div>
