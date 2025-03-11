@@ -7,6 +7,8 @@ import styles from './Sidebar.module.css';
 import { FiHome, FiUser, } from 'react-icons/fi';
 import { TbBrandGoogleAnalytics } from "react-icons/tb";
 import { CiRoute, CiLocationOn } from "react-icons/ci";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faRoute } from "@fortawesome/free-solid-svg-icons";
 
 interface NavItem {
   name: string;
@@ -16,7 +18,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { name: 'Dashboard', href: '/AdminNavView/DailyShiftDashboard', icon: <FiHome /> },
-  { name: 'Routes', href: '/AdminNavView/RouteCreationPage', icon: <CiRoute /> },
+  { name: 'Routes', href: '/AdminNavView/RouteDashboard', icon: <FontAwesomeIcon icon={faRoute} /> },
   { name: 'Locations', href: '/AdminNavView/LocationPage', icon: <CiLocationOn /> },
   { name: 'Analytics', href: '/AdminNavView/AnalyticsPage', icon: <TbBrandGoogleAnalytics /> },
 

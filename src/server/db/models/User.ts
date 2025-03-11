@@ -3,6 +3,12 @@ import { ObjectId } from "mongoose";
 
 const { Schema } = mongoose;
 
+interface shiftCompleted {
+  shiftId: string;
+  timeTakenToComplete: number;
+}
+
+
 export interface IUser {
   _id?: ObjectId;
   username: string;
@@ -10,6 +16,9 @@ export interface IUser {
   firstName: string;
   lastName: string;
   email: string;
+  bagelsDelivered?: number;
+  bagelsPickedUp?: number;
+  shiftsCompleted?: shiftCompleted[];
   totalDeliveries?: number;
   phoneNumber?: string;
   acceptableLocations?: string;
@@ -20,6 +29,18 @@ export interface IUser {
   yearlyShiftAmount?: number;
   lastMonthlyReset?: Date;
 }
+
+const shiftCompletedSchema = new Schema({
+  shiftId: {
+    type: Schema.Types.ObjectId,
+    ref: "Shift",
+    required: true,
+  },
+  timeTakenToComplete: {
+    type: Number,
+    required: true,
+  },
+});
 
 const userSchema = new Schema({
   username: {
@@ -46,6 +67,18 @@ const userSchema = new Schema({
       /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
       "Invalid email format",
     ],
+  },
+  bagelsDelivered: {
+    type: Number,
+    default: 0,
+  },
+  bagelsPickedUp: {
+    type: Number,
+    default: 0,
+  },
+  shiftsCompleted: {
+    type: [shiftCompletedSchema],
+    default: [],
   },
   totalDeliveries: {
     type: Number,
