@@ -1,19 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import "./stylesheet.css";
+import SideBar from "../../../components/Sidebar";
 import Overview from "./overview";
 import RecentRoutes from "./recent_routes";
-import SideBar from "../../../components/Sidebar";
-import { getAnalytics } from "@/server/db/actions/analytics";
-import { Analytics } from "@/server/db/models/analytics";
-import {
-  getMockUserRoutes,
-  getUserUniqueRoutes,
-  UserRoute,
-} from "@/server/db/actions/userShifts";
-import { useSession } from "next-auth/react";
+import "./stylesheet.css";
 import { getUserByEmail } from "@/server/db/actions/User";
+import { getMockUserRoutes, UserRoute } from "@/server/db/actions/userShifts";
+import { auth } from "@/server/db/firebase"; // Import Firebase auth
+import { onAuthStateChanged } from "firebase/auth";
 
 type AnalyticsData = {
   hoursThisMonth: number;
@@ -24,7 +19,6 @@ type AnalyticsData = {
 };
 
 function AnalyticsPage() {
-  const { data: session, status } = useSession();
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
     hoursThisMonth: 0,
     hoursThisYear: 0,
@@ -34,30 +28,43 @@ function AnalyticsPage() {
   });
   const [lastUpdated, setLastUpdated] = useState<string>("mm-dd-yy hh:mm:ss");
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
+  // Listen for authentication state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in
+        setUserEmail(user.email);
+      } else {
+        // User is signed out
+        setUserEmail(null);
+        setError("Please log in to view your analytics.");
+        setLoading(false);
+      }
+    });
+
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, []);
+
+  // Fetch user data when authentication is determined
   useEffect(() => {
     const fetchUserData = async () => {
-      if (status === "loading") return;
-      if (status === "unauthenticated") {
-        console.error("User not authenticated");
-        setLoading(false);
+      if (userEmail === null) {
+        // Still waiting for auth or user is not logged in
         return;
       }
 
       try {
         setLoading(true);
+        setError(null);
 
-        // Get current user data
-        if (!session?.user?.email) {
-          console.error("No user email in session");
-          setLoading(false);
-          return;
-        }
-
-        // Fetch user data using email from session
-        const userData = await getUserByEmail(session.user.email);
+        // Fetch user data using email from Firebase auth
+        const userData = await getUserByEmail(userEmail);
         if (!userData) {
-          console.error("User data not found");
+          setError("User data not found. Please contact support.");
           setLoading(false);
           return;
         }
@@ -69,22 +76,8 @@ function AnalyticsPage() {
         const shiftsThisYear = userData.yearlyShiftAmount || 0;
 
         // Fetch unique routes for this specific user
-        let userRoutes: UserRoute[] = [];
-
-        try {
-          // For now, use the mock data because the current database schema
-          // doesn't have a way to track which shifts a specific user participated in
-          userRoutes = await getMockUserRoutes();
-
-          // In a production environment, once the database has a way to track
-          // user participation in shifts, you would use this:
-          // if (userData._id) {
-          //   userRoutes = await getUserUniqueRoutes(userData._id);
-          // }
-        } catch (routeError) {
-          console.warn("Error fetching user routes:", routeError);
-          userRoutes = await getMockUserRoutes();
-        }
+        // For now, use mock data since the database schema doesn't track user participation in shifts
+        const userRoutes = await getMockUserRoutes();
 
         setAnalyticsData({
           hoursThisMonth,
@@ -108,13 +101,14 @@ function AnalyticsPage() {
         );
       } catch (error) {
         console.error("Error fetching user data:", error);
+        setError("Error loading analytics data. Please try again later.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchUserData();
-  }, [session, status]);
+  }, [userEmail]);
 
   return (
     <div className="big-container">
@@ -130,6 +124,10 @@ function AnalyticsPage() {
         {loading ? (
           <div className="loading-container">
             <p>Loading analytics data...</p>
+          </div>
+        ) : error ? (
+          <div className="error-container">
+            <p>{error}</p>
           </div>
         ) : (
           <div className="analytics-sections-container">
