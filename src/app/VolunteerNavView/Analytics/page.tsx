@@ -32,26 +32,30 @@ function AnalyticsPage() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [firebaseReady, setFirebaseReady] = useState<boolean>(false);
 
-  // Initialize Firebase authentication safely
+  // Auto-login bypass for local development
   useEffect(() => {
+    if (process.env.NEXT_PUBLIC_AUTO_LOGIN === "true") {
+      const testEmail = process.env.NEXT_PUBLIC_TEST_USER_EMAIL || "testuser@example.com";
+      setUserEmail(testEmail);
+      setFirebaseReady(true);
+      return;
+    }
+
     // Only run Firebase in the browser, not during SSR
     if (typeof window === "undefined") return;
     
-    let auth;
+    let authInstance;
     try {
       // Dynamically import Firebase to avoid SSR issues
       const initializeFirebase = async () => {
         try {
-          // Import Firebase auth only on client side
           const { auth: firebaseAuth } = await import("@/server/db/firebase");
-          auth = firebaseAuth;
+          authInstance = firebaseAuth;
           
-          const unsubscribe = onAuthStateChanged(auth, (user) => {
+          const unsubscribe = onAuthStateChanged(authInstance, (user) => {
             if (user) {
-              // User is signed in
               setUserEmail(user.email);
             } else {
-              // User is signed out
               setUserEmail(null);
               setError("Please log in to view your analytics.");
               setLoading(false);
@@ -60,7 +64,6 @@ function AnalyticsPage() {
           
           setFirebaseReady(true);
           
-          // Cleanup subscription on unmount
           return () => unsubscribe();
         } catch (error) {
           console.error("Firebase initialization error:", error);
@@ -79,10 +82,7 @@ function AnalyticsPage() {
 
   // Fetch user data when authentication is determined
   useEffect(() => {
-    // If Firebase isn't ready or we're still determining auth state, don't proceed
     if (!firebaseReady) return;
-    
-    // If user is not logged in, we already show an error message
     if (userEmail === null) return;
 
     const fetchUserData = async () => {
@@ -90,7 +90,6 @@ function AnalyticsPage() {
         setLoading(true);
         setError(null);
 
-        // Fetch user data using email from Firebase auth
         const userData = await getUserByEmail(userEmail);
         if (!userData) {
           setError("User data not found. Please contact support.");
@@ -98,13 +97,10 @@ function AnalyticsPage() {
           return;
         }
 
-        // Extract hours and shifts data from user model
         const hoursThisMonth = userData.monthlyHoursVolunteered || 0;
         const hoursThisYear = userData.yearlyHoursVolunteered || 0;
         const shiftsThisMonth = userData.monthlyShiftAmount || 0;
         const shiftsThisYear = userData.yearlyShiftAmount || 0;
-        
-        // Fetch unique routes for this specific user
         const userRoutes = await getMockUserRoutes();
         
         setAnalyticsData({
@@ -115,7 +111,6 @@ function AnalyticsPage() {
           recentRoutes: userRoutes
         });
         
-        // Set the last updated time
         const now = new Date();
         setLastUpdated(
           `${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}-${String(now.getFullYear()).slice(-2)} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
