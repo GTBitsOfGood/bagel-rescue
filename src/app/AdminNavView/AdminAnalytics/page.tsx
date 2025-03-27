@@ -101,10 +101,10 @@ export default function AdminAnalytics() {
   ];
 
   const statusColors = {
-    'Complete': 'bg-green-100 text-[var(--Green-Green-900,#084C29)]',
-    'Incomplete': 'bg-gray-100 text-gray-800',
-    'Late': 'bg-orange-100 text-orange-800',
-    'Sub Request': 'bg-yellow-100 text-yellow-800'
+    'Complete': 'bg-[var(--Green-Green-100,#E3FCEF)] text-[var(--Green-Green-900,#084C29)]',
+    'Incomplete': 'bg-[var(--Light-Gray-300,#F2F2F2)] text-gray-700',
+    'Late': 'bg-[var(--Orange-Orange-100,#FEBF98)] text-[#622500]',
+    'Sub Request': 'bg-[#FFE3B3] text-[var(--Yellow-Yellow-900,#59431B)]'
   };
   
   const overViewData = viewData[timeView];
@@ -190,7 +190,7 @@ export default function AdminAnalytics() {
                         return   (
                                   <div 
                                     key={index} 
-                                    className="grid grid-cols-[2fr_1fr_1fr_1fr] min-h-10  items-center p-[0.525rem] border-b last:border-b-0 hover:bg-gray-50"
+                                    className="grid grid-cols-[2fr_1fr_1fr_1fr] min-h-10  items-center p-[0.525rem] border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] last:border-b-0 hover:bg-gray-50 first:hover:border-t-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] first:rounded-t-lg"
                                   >
                                     <div className="text-base leading-5 font-normal text-[var(--Bagel-Rescue-Dark-Blue,#072B68)]">
                                       {shift.name}
@@ -258,23 +258,23 @@ export default function AdminAnalytics() {
                       <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold leading-5'>Date Joined</p>
                     </div>
                     <div className='flex flex-col items-start self-stretch rounded-lg border border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]'>
-                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]'>
+                        <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] hover:border-t-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] hover:bg-gray-50 rounded-t-lg'>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>John Doe</p>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>11-10-24</p>
-                      </div>
-                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]'>
+                        </div>
+                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:bg-gray-50'>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>Jane Doe</p>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>12-21-24</p>
                       </div>
-                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]'>
+                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:bg-gray-50'>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>Bruno Mars</p>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>01-21-25</p>
                       </div>
-                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]'>
+                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:bg-gray-50'>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>Andy Brown</p>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>02-22-25</p>
                       </div>
-                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch'>
+                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch hover:rounded-lg hover:border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:bg-gray-50'>
                         
                       </div>
                     </div>
@@ -295,23 +295,23 @@ export default function AdminAnalytics() {
                       <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold leading-5'># of Shifts</p>
                     </div>
                     <div className='flex flex-col items-start self-stretch rounded-lg border border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]'>
-                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]'>
+                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] hover:border-t-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] hover:bg-gray-50 rounded-t-lg'>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>John Doe</p>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>3</p>
                       </div>
-                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]'>
+                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:bg-gray-50'>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>Jane Doe</p>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>2</p>
                       </div>
-                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]'>
+                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:bg-gray-50'>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>Bruno Mars</p>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>2</p>
                       </div>
-                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]'>
+                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:bg-gray-50'>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>Andy Brown</p>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>2</p>
                       </div>
-                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch'>
+                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch hover:rounded-lg hover:border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:bg-gray-50'>
                         
                       </div>
                     </div>
