@@ -1,4 +1,5 @@
 'use client'
+import AdminSidebar from '@/components/AdminSidebar';
 import Sidebar from '@/components/Sidebar';
 import { faEllipsis } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -110,7 +111,7 @@ export default function AdminAnalytics() {
   const overViewData = viewData[timeView];
   return (
     <div className='flex w-full min-h-screen bg-[#F6F9FC]'>
-      <Sidebar/>
+      <AdminSidebar/>
       <div className="flex flex-col w-full bg-[#F6F9FC]">
         <div className="flex flex-col p-9 justify-start space-y-6 bg-white border-b">
             <h1 className="text-4xl font-bold text-[#072B68]">Analytics</h1>

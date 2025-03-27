@@ -20,7 +20,7 @@ const navItems: NavItem[] = [
   { name: 'Dashboard', href: '/AdminNavView/DailyShiftDashboard', icon: <FiHome /> },
   { name: 'Routes', href: '/AdminNavView/RouteDashboard', icon: <FontAwesomeIcon icon={faRoute} /> },
   { name: 'Locations', href: '/AdminNavView/LocationPage', icon: <CiLocationOn /> },
-  { name: 'Analytics', href: '/AdminNavView/AnalyticsPage', icon: <TbBrandGoogleAnalytics /> },
+  { name: 'Analytics', href: '/AdminNavView/AdminAnalytics', icon: <TbBrandGoogleAnalytics /> },
 
 ];
 
