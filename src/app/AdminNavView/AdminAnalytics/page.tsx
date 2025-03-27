@@ -183,7 +183,7 @@ export default function AdminAnalytics() {
                         {shiftsData.map((shift, index) => {
                         if (!shift.name) {
                           return (
-                            <div key={index} className="grid grid-cols-[2fr_1fr_1fr_1fr] min-h-10  items-center p-[0.525rem] border-b last:border-b-0 hover:bg-gray-50 transition-colors">  
+                            <div key={index} className="grid grid-cols-[2fr_1fr_1fr_1fr] min-h-11  items-center p-[0.525rem] border-b last:border-b-0 hover:rounded-lg hover:border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:bg-gray-50 ">  
                             </div>
                           )
                         }
