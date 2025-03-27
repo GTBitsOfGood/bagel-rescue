@@ -32,7 +32,7 @@ export default function AdminAnalytics() {
       totalShifts: '240',
       averageShifts: '245',
       totalDuration: '298 hr 30 min',
-      averageDuration: '299 hr 15 min'
+      averageDuration: '298 hr 5 min'
     }
   };
 
