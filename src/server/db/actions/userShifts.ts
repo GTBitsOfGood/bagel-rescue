@@ -38,56 +38,85 @@ export async function getUserUniqueRoutes(
 ): Promise<UserRoute[]> {
   await dbConnect();
 
-  // Calculate date 6 months ago
+  // Calculate date 6 months ago for filtering recent routes
   const sixMonthsAgo = new Date();
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
   try {
-    // Find all UserShifts for this user in the last 6 months
+    
     const userShifts = await UserShiftModel.find({
       userId: new mongoose.Types.ObjectId(userId),
       shiftDate: { $gte: sixMonthsAgo },
     })
-      .populate({
-        path: "routeId",
-        select: "routeName",
-      })
-      .sort({ shiftDate: -1 })
-      .lean();
+    .sort({ shiftDate: -1 }) 
+    .lean(); 
 
     if (!userShifts || userShifts.length === 0) {
       console.log(`No shifts found for user ${userId} in the last 6 months`);
       return [];
     }
 
-    // Create a map to store unique routes with their most recent date
-    const routeMap = new Map<string, UserRoute>();
+    interface UserShiftDocument {
+      routeId: mongoose.Types.ObjectId | string;
+      shiftDate: Date | string;
+    }
 
-    userShifts.forEach((shift) => {
-      const routeId = (shift.routeId as any)._id.toString();
-      const routeName = (shift.routeId as any).routeName || "Unknown Route";
-      const shiftDate = new Date(shift.shiftDate);
+    // Type assert userShifts to have the expected structure
+    const typedShifts = userShifts as UserShiftDocument[];
 
-      // Format the date as MM-DD-YY
-      const formattedDate = shiftDate
-        .toLocaleDateString("en-US", {
-          month: "2-digit",
-          day: "2-digit",
-          year: "2-digit",
-        })
-        .replace(/\//g, "-");
-
-      // Only add if this route isn't already in our map (since we sorted by date desc)
-      if (!routeMap.has(routeId)) {
-        routeMap.set(routeId, {
-          name: routeName,
-          date: formattedDate,
-        });
+    const routeIdSet = new Set(typedShifts.map(shift => 
+      shift.routeId ? shift.routeId.toString() : ''
+    ).filter(id => id !== ''));
+    const routeIds = Array.from(routeIdSet);
+    
+    interface RouteDocument {
+      _id: mongoose.Types.ObjectId | string;
+      routeName?: string;
+    }
+    
+    const routes = await mongoose.model('Route').find({
+      _id: { $in: routeIds.map(id => new mongoose.Types.ObjectId(id)) }
+    }).lean() as RouteDocument[];
+    
+    const routeMap = new Map<string, string>();
+    routes.forEach(route => {
+      if (route._id) {
+        const routeId = route._id.toString();
+        routeMap.set(routeId, route.routeName || "Unknown Route");
       }
     });
 
-    // Return array of unique routes
-    return Array.from(routeMap.values());
+    const uniqueRoutes = new Map<string, UserRoute>();
+    
+    typedShifts.forEach((shift) => {
+      if (shift.routeId) {
+        const routeId = shift.routeId.toString();
+        const routeName = routeMap.get(routeId) || "Unknown Route";
+        
+        if (shift.shiftDate) {
+          const shiftDate = new Date(shift.shiftDate);
+          
+          // Format the date as MM-DD-YY
+          const formattedDate = shiftDate
+            .toLocaleDateString("en-US", {
+              month: "2-digit",
+              day: "2-digit",
+              year: "2-digit",
+            })
+            .replace(/\//g, "-");
+          
+          if (!uniqueRoutes.has(routeId)) {
+            uniqueRoutes.set(routeId, {
+              name: routeName,
+              date: formattedDate,
+            });
+          }
+        }
+      }
+    });
+
+    // Return the array of unique routes with their most recent dates
+    return Array.from(uniqueRoutes.values());
   } catch (error) {
     console.error("Error fetching user routes:", error);
     return [];
@@ -110,29 +139,3 @@ export async function getCurrentUserUniqueRoutes(): Promise<UserRoute[]> {
   return getUserUniqueRoutes(userId);
 }
 
-/**
- * Fallback function to get mock routes data
- * @returns Array of mock route data
- */
-export async function getMockUserRoutes(): Promise<UserRoute[]> {
-  return [
-    { name: "1. Goldberg's WPF + The Tower", date: "10-03-23" },
-    { name: "2. Emerald City Bagels", date: "10-01-23" },
-    { name: "3. Henri's Brookhaven", date: "09-02-23" },
-    { name: "4. Bagel Palace", date: "08-15-23" },
-    { name: "5. Brooklyn Bagel Bakery", date: "08-05-23" },
-    { name: "6. Hometown Bagels + Cafe", date: "07-22-23" },
-    { name: "7. Westside Bagel Company", date: "07-14-23" },
-    { name: "8. The Bagel Bin", date: "06-30-23" },
-    { name: "9. Rising Bagel Co.", date: "06-18-23" },
-    { name: "10. Sunrise Bagels & Deli", date: "06-02-23" },
-    { name: "11. Midtown Bagel Shop", date: "05-27-23" },
-    { name: "12. Bagelicious Express", date: "05-15-23" },
-    { name: "13. Uptown Bagel & Brew", date: "05-03-23" },
-    { name: "14. The Bagel Project", date: "04-22-23" },
-    { name: "15. Circle City Bagels", date: "04-10-23" },
-    { name: "16. Morning Glory Bakery", date: "03-28-23" },
-    { name: "17. Old World Bagelry", date: "03-15-23" },
-    { name: "18. Downtown Bagel Exchange", date: "03-02-23" }
-  ];
-}
