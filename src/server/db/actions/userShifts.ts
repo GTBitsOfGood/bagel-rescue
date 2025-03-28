@@ -1,9 +1,8 @@
 "use server";
 
 import dbConnect from "../dbConnect";
-import { ShiftModel } from "../models/shift";
-import Route from "../models/Route";
-import mongoose, { ObjectId } from "mongoose";
+import { UserShiftModel } from "../models/userShift";
+import mongoose from "mongoose";
 
 export type UserRoute = {
   name: string;
@@ -11,13 +10,31 @@ export type UserRoute = {
 };
 
 /**
- * Gets all unique routes from shifts for a specific user within the last 6 months
+ * Gets the current user ID from Firebase session
+ * NOTE: This is a placeholder for the actual Firebase implementation
+ *
+ * @returns The current user's ID or null if not authenticated
+ */
+async function getCurrentUserId(): Promise<string | null> {
+  // This will be implemented once Firebase is set up
+  // Example implementation:
+  // const auth = getAuth(getFirebaseApp());
+  // const user = auth.currentUser;
+  // return user?.uid || null;
+
+  // For now, return a placeholder value
+  console.warn("getCurrentUserId is not implemented yet. Using placeholder.");
+  return "placeholder-user-id";
+}
+
+/**
+ * Gets all unique routes for a user within the last 6 months
  *
  * @param userId The user's ID
- * @returns Array of unique routes with dates
+ * @returns Array of unique routes with their most recent dates
  */
 export async function getUserUniqueRoutes(
-  userId: string | ObjectId
+  userId: string
 ): Promise<UserRoute[]> {
   await dbConnect();
 
@@ -26,51 +43,29 @@ export async function getUserUniqueRoutes(
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
   try {
-    // infer a relationship model between users and shifts
-
-    // Step 1: Get all shifts from the last 6 months
-    const shifts = await ShiftModel.find({
+    // Find all UserShifts for this user in the last 6 months
+    const userShifts = await UserShiftModel.find({
+      userId: new mongoose.Types.ObjectId(userId),
       shiftDate: { $gte: sixMonthsAgo },
-    }).lean();
+    })
+      .populate({
+        path: "routeId",
+        select: "routeName",
+      })
+      .sort({ shiftDate: -1 })
+      .lean();
 
-    if (!shifts || shifts.length === 0) {
-      console.log("No shifts found in the last 6 months");
+    if (!userShifts || userShifts.length === 0) {
+      console.log(`No shifts found for user ${userId} in the last 6 months`);
       return [];
     }
 
-    // Step 2: Get route details for these shifts
-    const routeIds = Array.from(
-      new Set(shifts.map((shift) => shift.routeId.toString()))
-    );
-
-    const routes = await Route.find({
-      _id: { $in: routeIds.map((id) => new mongoose.Types.ObjectId(id)) },
-    }).lean();
-
-    // Create a map of routeId to route name
-    const routeNameMap = new Map<string, string>();
-    routes.forEach((route) => {
-      routeNameMap.set((route._id as string).toString(), route.routeName);
-    });
-
-    // Step 3: For now, we'll assume the user participated in all these shifts
-    // In a production environment, you would need a way to determine which shifts a user actually participated in
-    // This could be done through:
-    // - Adding a participants array to the Shift model
-    // - Creating a ShiftSignup model to track this relationship
-    // - Or some other domain-specific logic
-
-    console.log(`WARNING: Without a direct relationship between users and shifts, 
-      we're showing all shifts from the last 6 months as if the user participated in them. 
-      This is not accurate and should be replaced with proper filtering once 
-      a user-shift relationship is established in the database.`);
-
-    // Step 4: Create unique routes with their most recent date
+    // Create a map to store unique routes with their most recent date
     const routeMap = new Map<string, UserRoute>();
 
-    shifts.forEach((shift) => {
-      const routeId = shift.routeId.toString();
-      const routeName = routeNameMap.get(routeId) || "Unknown Route";
+    userShifts.forEach((shift) => {
+      const routeId = (shift.routeId as any)._id.toString();
+      const routeName = (shift.routeId as any).routeName || "Unknown Route";
       const shiftDate = new Date(shift.shiftDate);
 
       // Format the date as MM-DD-YY
@@ -82,11 +77,8 @@ export async function getUserUniqueRoutes(
         })
         .replace(/\//g, "-");
 
-      // If this route isn't in our map yet, or this shift is more recent than what we have, update it
-      if (
-        !routeMap.has(routeId) ||
-        new Date(routeMap.get(routeId)!.date) < shiftDate
-      ) {
+      // Only add if this route isn't already in our map (since we sorted by date desc)
+      if (!routeMap.has(routeId)) {
         routeMap.set(routeId, {
           name: routeName,
           date: formattedDate,
@@ -94,17 +86,28 @@ export async function getUserUniqueRoutes(
       }
     });
 
-    // Step 5: Convert to array and sort by date (most recent first)
-    return Array.from(routeMap.values()).sort((a, b) => {
-      // Convert dates back to comparable format
-      const dateA = new Date(a.date.split("-").reverse().join("-"));
-      const dateB = new Date(b.date.split("-").reverse().join("-"));
-      return dateB.getTime() - dateA.getTime();
-    });
+    // Return array of unique routes
+    return Array.from(routeMap.values());
   } catch (error) {
     console.error("Error fetching user routes:", error);
     return [];
   }
+}
+
+/**
+ * Gets unique routes for the currently logged-in user
+ *
+ * @returns Array of unique routes for the current user
+ */
+export async function getCurrentUserUniqueRoutes(): Promise<UserRoute[]> {
+  const userId = await getCurrentUserId();
+
+  if (!userId) {
+    console.error("No authenticated user found");
+    return [];
+  }
+
+  return getUserUniqueRoutes(userId);
 }
 
 /**
@@ -115,33 +118,21 @@ export async function getMockUserRoutes(): Promise<UserRoute[]> {
   return [
     { name: "1. Goldberg's WPF + The Tower", date: "10-03-23" },
     { name: "2. Emerald City Bagels", date: "10-01-23" },
-    { name: "3. Henri's Brookhaven", date: "09-02-20" },
-    { name: "4. Bagel Palace", date: "08-15-20" },
-    { name: "5. Brooklyn Bagel", date: "08-01-20" },
-    { name: "6. Rise-n-Dine", date: "07-22-20" },
-    { name: "7. BB's Bagels", date: "07-15-20" },
-    { name: "8. Bagelicious", date: "07-01-20" },
-    { name: "9. Art's Bagels & More", date: "06-28-20" },
-    { name: "10. General Muir", date: "06-15-20" },
-    { name: "11. Sunny's Bagels", date: "05-30-20" },
-    { name: "12. Bagel Boys", date: "05-15-20" },
-    { name: "13. Einstein Bros Bagels", date: "05-01-20" },
-    { name: "14. New York Bagel", date: "04-20-20" },
-    { name: "15. The Bagel Hole", date: "04-10-20" },
-    { name: "16. Gotham Bagels", date: "03-28-20" },
-    { name: "17. Bagel Haven", date: "03-15-20" },
-    { name: "18. Big Apple Bagels", date: "03-01-20" },
-    { name: "19. The Daily Bagel", date: "02-18-20" },
-    { name: "20. Classic Bagels & Deli", date: "02-05-20" },
-    { name: "21. The Bagel Nook", date: "01-25-20" },
-    { name: "22. Best Bagels in Town", date: "01-10-20" },
-    { name: "23. Morning Glory Bagels", date: "12-20-19" },
-    { name: "24. Broadway Bagels", date: "12-05-19" },
-    { name: "25. The Bagel Bar", date: "11-22-19" },
-    { name: "26. Bagel Bros Café", date: "11-10-19" },
-    { name: "27. Rolling Dough Bagels", date: "10-30-19" },
-    { name: "28. Westside Bagels", date: "10-15-19" },
-    { name: "29. The Bagel Joint", date: "10-01-19" },
-    { name: "30. Brooklyn Water Bagel", date: "09-20-19" },
+    { name: "3. Henri's Brookhaven", date: "09-02-23" },
+    { name: "4. Bagel Palace", date: "08-15-23" },
+    { name: "5. Brooklyn Bagel Bakery", date: "08-05-23" },
+    { name: "6. Hometown Bagels + Cafe", date: "07-22-23" },
+    { name: "7. Westside Bagel Company", date: "07-14-23" },
+    { name: "8. The Bagel Bin", date: "06-30-23" },
+    { name: "9. Rising Bagel Co.", date: "06-18-23" },
+    { name: "10. Sunrise Bagels & Deli", date: "06-02-23" },
+    { name: "11. Midtown Bagel Shop", date: "05-27-23" },
+    { name: "12. Bagelicious Express", date: "05-15-23" },
+    { name: "13. Uptown Bagel & Brew", date: "05-03-23" },
+    { name: "14. The Bagel Project", date: "04-22-23" },
+    { name: "15. Circle City Bagels", date: "04-10-23" },
+    { name: "16. Morning Glory Bakery", date: "03-28-23" },
+    { name: "17. Old World Bagelry", date: "03-15-23" },
+    { name: "18. Downtown Bagel Exchange", date: "03-02-23" }
   ];
 }
