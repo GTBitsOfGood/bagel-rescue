@@ -184,14 +184,14 @@ export default function AdminAnalytics() {
                         {shiftsData.map((shift, index) => {
                         if (!shift.name) {
                           return (
-                            <div key={index} className="grid grid-cols-[2fr_1fr_1fr_1fr] min-h-11  items-center p-[0.525rem] border-b last:border-b-0 hover:rounded-lg hover:border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:bg-gray-50 ">  
+                            <div key={index} className="grid grid-cols-[2fr_1fr_1fr_1fr] min-h-11  items-center p-[0.525rem] border-b last:border-b-0">  
                             </div>
                           )
                         }
                         return   (
                                   <div 
                                     key={index} 
-                                    className="grid grid-cols-[2fr_1fr_1fr_1fr] min-h-10  items-center p-[0.525rem] border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] last:border-b-0 hover:bg-gray-50 first:hover:border-t-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] first:rounded-t-lg"
+                                    className="grid grid-cols-[2fr_1fr_1fr_1fr] min-h-10  items-center p-[0.525rem] border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] last:border-b-0"
                                   >
                                     <div className="text-base leading-5 font-normal text-[var(--Bagel-Rescue-Dark-Blue,#072B68)]">
                                       {shift.name}
@@ -222,8 +222,8 @@ export default function AdminAnalytics() {
                       </div>
                       </div> 
                       <div className='flex w-full justify-end items-center '>
-                        <button onClick={() => {router.push('/AdminNavView/DailyShiftDashboard')}} type='button' className='flex py-2 px-3 gap-[0.625rem] items-center border justify-center border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] rounded-[var(--8,0.5rem)]'>
-                          <p>Show More</p>
+                        <button onClick={() => {router.push('/AdminNavView/DailyShiftDashboard')}} type='button' className='flex py-2 px-3 gap-[0.625rem] items-center border justify-center border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] rounded-[var(--8,0.5rem)] hover:bg-[var(--Bagel-Rescue-Light-Blue-2,#ECF2F9)]'>
+                          <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-medium'>Show More</p>
                         </button>
                       </div>
                     </div>
@@ -232,7 +232,7 @@ export default function AdminAnalytics() {
                 
             </div>
             <div className='flex px-9 items-start gap-6 self-stretch w-full h-full'>
-              <div className='flex max-w-[19.5rem] w-full bg-white p-6 flex-col items-start gap-6 rounded-lg'>
+              <div className='flex max-w-[17.5rem] w-full bg-white p-6 flex-col items-start gap-6 rounded-lg'>
                 <h1 className='h-16 text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] flex-shrink-0 self-stretch font-bold text-2xl'>Volunteer Engagement</h1>
                 <div className='flex flex-col items-start gap-2 self-stretch'>
                   <div className='flex p-4 flex-col justify-center items-center gap-1 self-stretch rounded-lg border-2 border-[var(--Bagel-Rescue-Light-Blue-2,#ECF2F9)]'>
@@ -259,30 +259,30 @@ export default function AdminAnalytics() {
                       <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold leading-5'>Date Joined</p>
                     </div>
                     <div className='flex flex-col items-start self-stretch rounded-lg border border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]'>
-                        <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] hover:border-t-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] hover:bg-gray-50 rounded-t-lg'>
+                        <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] '>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>John Doe</p>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>11-10-24</p>
                         </div>
-                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:bg-gray-50'>
+                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  '>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>Jane Doe</p>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>12-21-24</p>
                       </div>
-                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:bg-gray-50'>
+                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  '>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>Bruno Mars</p>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>01-21-25</p>
                       </div>
-                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:bg-gray-50'>
+                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  '>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>Andy Brown</p>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>02-22-25</p>
                       </div>
-                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch hover:rounded-lg hover:border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:bg-gray-50'>
+                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch'>
                         
                       </div>
                     </div>
                   </div>
                   <div className='flex w-full justify-end items-center flex-shrink-0'>
-                      <button type='button' className='flex py-2 px-3 gap-[0.625rem] items-center border justify-center border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] rounded-[var(--8,0.5rem)]'>
-                        <p>Show More</p>
+                      <button type='button' className='flex py-2 px-3 gap-[0.625rem] items-center border justify-center border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] rounded-[var(--8,0.5rem)] hover:bg-[var(--Bagel-Rescue-Light-Blue-2,#ECF2F9)]'>
+                        <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-medium'>Show More</p>
                       </button>
                   </div>
                 </div>
@@ -296,30 +296,30 @@ export default function AdminAnalytics() {
                       <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold leading-5'># of Shifts</p>
                     </div>
                     <div className='flex flex-col items-start self-stretch rounded-lg border border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]'>
-                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] hover:border-t-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] hover:bg-gray-50 rounded-t-lg'>
+                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] '>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>John Doe</p>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>3</p>
                       </div>
-                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:bg-gray-50'>
+                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  '>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>Jane Doe</p>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>2</p>
                       </div>
-                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:bg-gray-50'>
+                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  '>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>Bruno Mars</p>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>2</p>
                       </div>
-                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:bg-gray-50'>
+                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  '>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>Andy Brown</p>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>2</p>
                       </div>
-                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch hover:rounded-lg hover:border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  hover:bg-gray-50'>
+                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch'>
                         
                       </div>
                     </div>
                   </div>
                   <div className='flex w-full justify-end items-center flex-shrink-0'>
-                      <button type='button' className='flex py-2 px-3 gap-[0.625rem] items-center border justify-center border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] rounded-[var(--8,0.5rem)]'>
-                        <p>Show More</p>
+                      <button type='button' className='flex py-2 px-3 gap-[0.625rem] items-center border justify-center border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] rounded-[var(--8,0.5rem)] hover:bg-[var(--Bagel-Rescue-Light-Blue-2,#ECF2F9)]'>
+                        <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-medium'>Show More</p>
                       </button>
                   </div>
                 </div>
