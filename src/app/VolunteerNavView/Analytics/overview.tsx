@@ -1,76 +1,54 @@
-import AnalyticsBagel from "../../../assets/analytics_bagel.svg";
-import Image from "next/image";
+import React from 'react';
 
 type OverviewProps = {
-  totalBagelsDelivered: number;
-  bagelsThisMonth: number;
-  bagelsMonthlyAverage: number;
-  shiftsThisMonth: number;
-  shiftsMonthlyAverage: number;
   hoursThisMonth: number;
-  hoursMonthlyAverage: number;
+  hoursThisYear: number;
+  shiftsThisMonth: number;
+  shiftsThisYear: number;
 };
 
 function Overview({
-  totalBagelsDelivered,
-  bagelsThisMonth,
-  bagelsMonthlyAverage,
-  shiftsThisMonth,
-  shiftsMonthlyAverage,
   hoursThisMonth,
-  hoursMonthlyAverage,
+  hoursThisYear,
+  shiftsThisMonth,
+  shiftsThisYear,
 }: OverviewProps) {
-  const categories = ["Bagels", "Shifts", "Hours"];
-  const overviewStatsMap = new Map<string, number[]>([
-    ["Bagels", [bagelsThisMonth, bagelsMonthlyAverage]],
-    ["Shifts", [shiftsThisMonth, shiftsMonthlyAverage]],
-    ["Hours", [hoursThisMonth, hoursMonthlyAverage]],
-  ]);
-
   return (
-    <div className="analytics-card overview">
-      <p className="analytics-card-title">Overview</p>
-      <div className="overview-stats">
-        <div className="analytics-bagel-container">
-          <Image
-            src={AnalyticsBagel}
-            alt="icon"
-            layout="fill"
-            objectFit="contain"
-          />
-          <div className="bagels-rescued-label">
-            <p className="bagels-rescued-label-text">Bagels Rescued</p>
-          </div>
-          <div className="bagels-rescued-stat">
-            <p className="bagels-rescued-number">
-              {totalBagelsDelivered == 0 ? "-" : totalBagelsDelivered}
-            </p>
-            <p className="bagels-rescued-unit">Bagels</p>
+    <div className="analytics-card">
+      <h2 className="section-title">Overview</h2>
+      
+      <div className="stat-section">
+        <h3 className="stat-category-title">Volunteer Hours</h3>
+        <div className="stat-box">
+          <div className="stat-item">
+            <p className="stat-period">This Month</p>
+            <p className="stat-value">{hoursThisMonth} hrs</p>
           </div>
         </div>
-        {categories.map((c) => (
-          <div className="category-overview" key={c + "-category"}>
-            <p className="category-overview-title">{c}</p>
-            <div className="category-overview-row">
-              <div className="category-overview-card">
-                <p className="category-overview-label">This Month</p>
-                <p className="category-overview-statistic">
-                  {overviewStatsMap.has(c) && overviewStatsMap.get(c)![0] != 0
-                    ? overviewStatsMap.get(c)![0]
-                    : "-"}
-                </p>
-              </div>
-              <div className="category-overview-card">
-                <p className="category-overview-label">Monthly Average</p>
-                <p className="category-overview-statistic">
-                  {overviewStatsMap.has(c) && overviewStatsMap.get(c)![1] != 0
-                    ? overviewStatsMap.get(c)![1]
-                    : "-"}
-                </p>
-              </div>
-            </div>
+        
+        <div className="stat-box">
+          <div className="stat-item">
+            <p className="stat-period">This Year</p>
+            <p className="stat-value">{hoursThisYear} hrs</p>
           </div>
-        ))}
+        </div>
+      </div>
+      
+      <div className="stat-section">
+        <h3 className="stat-category-title">Total Shifts</h3>
+        <div className="stat-box">
+          <div className="stat-item">
+            <p className="stat-period">This Month</p>
+            <p className="stat-value">{shiftsThisMonth}</p>
+          </div>
+        </div>
+        
+        <div className="stat-box">
+          <div className="stat-item">
+            <p className="stat-period">This Year</p>
+            <p className="stat-value">{shiftsThisYear}</p>
+          </div>
+        </div>
       </div>
     </div>
   );

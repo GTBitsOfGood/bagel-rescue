@@ -1,9 +1,10 @@
 "use server";
 
 import { ObjectId } from "mongoose";
+import { RRule } from "rrule";
 import dbConnect from "../dbConnect";
 import { RecurrenceModel, Shift, ShiftModel } from "../models/shift";
-import { RRule } from "rrule";
+import { UserShiftModel } from "../models/userShift";
 
 export async function createShift(shiftObject: string): Promise<string | null> {
   try {
@@ -54,6 +55,10 @@ export async function updateRoute(
 * updated to the new date and all recurrences are updated accordingly.
 * 
 * Also changes the day of the week that the shift occurs on to the new date's day of the week
+*/
+/* 
+TODO:
+When a shift's date changes, all associated UserShift records need to be updated to reflect the new date
 */
 export async function updateDate(
   shiftId: ObjectId,
@@ -135,6 +140,8 @@ export async function updateCapacity(
 }
 
 // updates the recurrence rule of a shift and clears all recurrences
+/* TODO:
+The current implementation clears all recurrences without handling existing UserShift records */
 export async function updateRecurrenceRule(
   shiftId: ObjectId,
   newRule: string
@@ -160,6 +167,7 @@ export async function updateRecurrenceRule(
  * Signs up a new user for a shift and updates the number of people signed up
  * If capacity is reached, then the user is not signed up and false is returned
  *
+ * Creates a UserShift document to track user's signup
  *
  * If a shiftDate is provided and is validated against the recurrence rule, then currSignedUp is incremented for that specific recurrence.
  *
@@ -167,6 +175,7 @@ export async function updateRecurrenceRule(
  */
 export async function newSignUp(
   shiftId: ObjectId,
+  userId: ObjectId,
   shiftDate?: Date
 ): Promise<boolean> {
   try {
@@ -178,10 +187,20 @@ export async function newSignUp(
     }
 
     if (shiftDate && data.recurrenceRule !== "") {
-      return await recurrenceSignup(data, shiftDate);
+      return await recurrenceSignup(data, userId, shiftDate);
     } else if (data.capacity > data.currSignedUp) {
       data.currSignedUp += 1;
       await ShiftModel.findByIdAndUpdate(shiftId, data);
+      
+      // Create a new UserShift document
+      const userShift = new UserShiftModel({
+        userId: userId,
+        shiftId: shiftId,
+        routeId: data.routeId,
+        shiftDate: data.shiftDate
+      });
+      await userShift.save();
+      
       return true;
     }
 
@@ -196,9 +215,11 @@ export async function newSignUp(
     Helper function for newSignUp
 
     Validates the shiftDate against the recurrence rule and signs up the user for that specific date
+    Creates a UserShift document for the recurrence
 */
 async function recurrenceSignup(
   data: Shift,
+  userId: ObjectId,
   shiftDate: Date
 ): Promise<boolean> {
   const ocurrenceDate = RRule.fromString(data.recurrenceRule).after(
@@ -233,6 +254,15 @@ async function recurrenceSignup(
   }
 
   await ShiftModel.findByIdAndUpdate(data._id, data);
+  
+  const userShift = new UserShiftModel({
+    userId: userId,
+    shiftId: data._id,
+    routeId: data.routeId,
+    shiftDate: shiftDate
+  });
+  await userShift.save();
+  
   return true;
 }
 
