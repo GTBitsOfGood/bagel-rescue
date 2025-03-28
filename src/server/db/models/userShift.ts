@@ -4,6 +4,7 @@ interface UserShift extends Document {
   userId: mongoose.Types.ObjectId;
   shiftId: mongoose.Types.ObjectId;
   routeId: mongoose.Types.ObjectId;
+  shiftDate: Date;
 }
 
 const UserShiftSchema: Schema<UserShift> = new Schema(
@@ -22,10 +23,11 @@ const UserShiftSchema: Schema<UserShift> = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Route",
       required: true,
+    },
+    shiftDate: {
+      type: Date,
+      required: true,
     }
-  },
-  {
-    timestamps: true, // Still useful to have createdAt for timing queries
   }
 );
 
