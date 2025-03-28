@@ -1,5 +1,10 @@
 import mongoose, { Schema, Model, Document } from "mongoose";
 
+/* 
+future improvement:
+add a status field (active, completed, canceled, no-show)
+*/
+
 interface UserShift extends Document {
   userId: mongoose.Types.ObjectId;
   shiftId: mongoose.Types.ObjectId;
