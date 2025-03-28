@@ -259,21 +259,21 @@ export default function AdminAnalytics() {
                       <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold leading-5'>Date Joined</p>
                     </div>
                     <div className='flex flex-col items-start self-stretch rounded-lg border border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]'>
-                        <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] '>
+                        <div className='flex h-10 p-[0.625rem] pr-[2.17rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] '>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>John Doe</p>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>11-10-24</p>
                         </div>
-                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  '>
+                      <div className='flex h-10 p-[0.625rem] pr-[2.17rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  '>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>Jane Doe</p>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>12-21-24</p>
                       </div>
-                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  '>
+                      <div className='flex h-10 p-[0.625rem] pr-[2.17rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  '>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>Bruno Mars</p>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>01-21-25</p>
                       </div>
-                      <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  '>
+                      <div className='flex h-10 p-[0.625rem] pr-[2.17rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]  '>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>Andy Brown</p>
-                        <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>02-22-25</p>
+                        <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>02-21-25</p>
                       </div>
                       <div className='flex h-10 p-[0.625rem] justify-between items-center self-stretch'>
                         
