@@ -189,9 +189,9 @@ export default function NewShiftPage() {
                   {route["locationDescription"]}
                 </p>
               </div>
-              <div className="search-location-section">
+              {/* <div className="search-location-section">
                 <p>Data here</p>
-              </div>
+              </div> */}
             </div>
           );
         })}
