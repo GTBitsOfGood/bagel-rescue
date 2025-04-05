@@ -7,6 +7,7 @@ interface Recurrence {
   date: Date;
   capacity: number;
   currSignedUp: number;
+  status: string;
 }
 
 interface Shift extends Document {
@@ -17,6 +18,7 @@ interface Shift extends Document {
   currSignedUp: number;
   recurrenceRule: string;
   recurrences: Recurrence[];
+  status: string;
 }
 
 const recurrenceSchema: Schema = new Schema({
@@ -31,6 +33,11 @@ const recurrenceSchema: Schema = new Schema({
   currSignedUp: {
     type: Number,
     default: 0,
+  },
+  status: {
+    type: String,
+    enum: ["complete", "incomplete", "late", "sub request"],
+    default: "active",
   },
 });
 
@@ -70,6 +77,11 @@ const shiftSchema: Schema = new Schema({
   recurrences: {
     type: [recurrenceSchema],
     default: [],
+  },
+  status: {
+    type: String,
+    enum: ["complete", "incomplete", "late", "sub request"],
+    default: "active",
   },
 });
 
