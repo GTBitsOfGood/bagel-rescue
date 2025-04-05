@@ -1,15 +1,12 @@
 import mongoose, { Schema, Model, Document } from "mongoose";
 
-/* 
-future improvement:
-add a status field (active, completed, canceled, no-show)
-*/
-
 interface UserShift extends Document {
   userId: mongoose.Types.ObjectId;
   shiftId: mongoose.Types.ObjectId;
   routeId: mongoose.Types.ObjectId;
   shiftDate: Date;
+  shiftEndDate: Date;
+  status: "Complete" | "Incomplete";
 }
 
 const UserShiftSchema: Schema<UserShift> = new Schema(
@@ -32,6 +29,15 @@ const UserShiftSchema: Schema<UserShift> = new Schema(
     shiftDate: {
       type: Date,
       required: true,
+    },
+    shiftEndDate: {
+      type: Date,
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["Complete", "Incomplete"],
+      default: "Incomplete",
     }
   }
 );
