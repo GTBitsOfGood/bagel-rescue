@@ -132,7 +132,7 @@ export default function RouteDashboardPage() {
                         {route.locations.length}
                       </div>
                       <div className={styles.routeInfo}>
-                        {/* Additional information would go here */}
+                        {route.additionalInfo}
                       </div>
                       <button className={styles.moreOptionsButton}>⋮</button>
                     </div>

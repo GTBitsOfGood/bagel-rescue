@@ -9,6 +9,7 @@ export interface IRoute extends Document {
   _id: mongoose.Types.ObjectId;
   routeName: string;
   locationDescription: string;
+  additionalInfo: string;
   locations: ILocation[];
 }
 
@@ -24,6 +25,7 @@ const RouteSchema: Schema = new Schema({
     ],
     default: [],
   },
+  additionalInfo: { type: String, default: "-" },
 });
 
 export default mongoose.models?.Route ||
