@@ -24,7 +24,10 @@ export default function LoginScreen() {
   // Add useEffect to check if user is already logged in
   useEffect(() => {
     const checkUserAuth = async () => {
-      const { isLoggedIn, isAdmin } = await checkAuthStatus();
+      const { isLoggedIn, isAdmin } = await checkAuthStatus() as { 
+        isLoggedIn: boolean; 
+        isAdmin: boolean 
+      };
       
       if (isLoggedIn) {
         // Redirect to appropriate page based on user role
