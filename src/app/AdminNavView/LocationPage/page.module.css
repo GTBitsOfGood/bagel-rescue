@@ -38,7 +38,7 @@
   position: relative;
   border: 1px solid #0F7AFF;
   border-radius: 69px;
-  padding: 10px 50px 10px 20px; 
+  padding: 10px 20px 10px 20px; 
 }
 
 .sortSelect select {
@@ -71,6 +71,7 @@
   border: 1px solid #0F7AFF;
   padding: 10px 15px;
   border-radius: 69px;
+  margin-left: 5px;
   cursor: pointer;
 }
 
