@@ -1,8 +1,9 @@
 "use server";
 
+import mongoose from "mongoose";
 import dbConnect from "../dbConnect";
 import { UserShiftModel } from "../models/userShift";
-import mongoose from "mongoose";
+import Route from "../models/Route";
 
 export type UserRoute = {
   name: string;
@@ -74,7 +75,7 @@ export async function getUserUniqueRoutes(
       routeName?: string;
     }
     
-    const routes = await mongoose.model('Route').find({
+    const routes = await Route.find({
       _id: { $in: routeIds.map(id => new mongoose.Types.ObjectId(id)) }
     }).lean() as RouteDocument[];
     
