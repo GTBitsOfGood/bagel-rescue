@@ -78,9 +78,9 @@ function DailyShiftDashboardPage() {
                 <DashboardHeader date={date} AddDays={AddDays} />
                 <div className='bg-[#ECF2F9] flex flex-col pl-9 pr-9 gap-6 min-h-screen'>
                     <div className='flex justify-between text-[#6C7D93] mt-6'>
-                        <div className='px-5 py-[.6rem] rounded-xl space-x-2 border bg-white'>
-                            <FontAwesomeIcon icon={faArrowUpShortWide} />
-                            <span>Sort by</span>
+                        <div className='px-5 py-[.6rem] rounded-xl space-x-2'>
+                            {/* <FontAwesomeIcon icon={faArrowUpShortWide} />
+                            <span>Sort by</span> */}
                         </div>
                         <div className='flex min-w-96 border px-5 py-[.6rem] justify-start gap-2 rounded-[2.5rem] bg-white'>
                             <FontAwesomeIcon icon={faSearch} className='mt-1' />

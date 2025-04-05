@@ -2,13 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './Sidebar.module.css'; 
 import { FiHome, FiUser, } from 'react-icons/fi';
 import { TbBrandGoogleAnalytics } from "react-icons/tb";
 import { CiRoute, CiLocationOn } from "react-icons/ci";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRoute } from "@fortawesome/free-solid-svg-icons";
+import { auth } from '../server/db/firebase';
+import { getUserByEmail } from '../server/db/actions/User';
+import { FaPeopleLine } from "react-icons/fa6";
 
 interface NavItem {
   name: string;
@@ -17,16 +20,44 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { name: 'Dashboard', href: '/AdminNavView/DailyShiftDashboard', icon: <FiHome /> },
-  { name: 'Routes', href: '/AdminNavView/RouteDashboard', icon: <FontAwesomeIcon icon={faRoute} /> },
-  { name: 'Locations', href: '/AdminNavView/LocationPage', icon: <CiLocationOn /> },
-  { name: 'Analytics', href: '/AdminNavView/AdminAnalytics', icon: <TbBrandGoogleAnalytics /> },
+  { name: 'Dashboard', href: '/AdminNavView/DailyShiftDashboard', icon: <FiHome size={20} strokeWidth={1.5} /> },
+  { name: 'Routes', href: '/AdminNavView/RouteDashboard', icon: <FontAwesomeIcon icon={faRoute} style={{ width: '20px', height: '20px' }} /> },
+  { name: 'Locations', href: '/AdminNavView/LocationPage', icon: <CiLocationOn size={22} strokeWidth={1} /> },
+  { name: 'Analytics', href: '/AdminNavView/AdminAnalytics', icon: <TbBrandGoogleAnalytics size={20} strokeWidth={1.5} /> },
+  { name: 'Management', href: '/AdminNavView/ManagementPage', icon: <FaPeopleLine size={20} strokeWidth={1.5} /> },
 
 ];
 
 const AdminSidebar: React.FC = () => {
   const pathname = usePathname(); 
   const [isOpen, setIsOpen] = useState<boolean>(true); 
+  const [userData, setUserData] = useState({
+    firstName: '',
+    lastName: '',
+    role: 'Admin'
+  });
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const currentUser = auth.currentUser;
+        if (currentUser && currentUser.email) {
+          const mongoUser = await getUserByEmail(currentUser.email);
+          if (mongoUser) {
+            setUserData({
+              firstName: mongoUser.firstName || '',
+              lastName: mongoUser.lastName || '',
+              role: mongoUser.isAdmin ? 'Admin' : 'User'
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
@@ -61,8 +92,8 @@ const AdminSidebar: React.FC = () => {
           <div className={styles.avatar}></div>
           {isOpen && (
             <div className={styles.profileInfo}>
-              <p className={styles.name}>Jane Doe</p>
-              <p className={styles.role}>Admin</p>
+              <p className={styles.name}>{`${userData.firstName} ${userData.lastName}`}</p>
+              <p className={styles.role}>{userData.role}</p>
             </div>
           )}
         </div>
