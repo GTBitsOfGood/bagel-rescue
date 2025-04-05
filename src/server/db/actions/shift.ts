@@ -197,7 +197,9 @@ export async function newSignUp(
         userId: userId,
         shiftId: shiftId,
         routeId: data.routeId,
-        shiftDate: data.shiftDate
+        shiftDate: data.shiftDate,
+        shiftEndDate: data.shiftEndDate,
+        status: "Incomplete"
       });
       await userShift.save();
       
@@ -255,11 +257,16 @@ async function recurrenceSignup(
 
   await ShiftModel.findByIdAndUpdate(data._id, data);
   
+  const durationMs = data.shiftEndDate.getTime() - data.shiftDate.getTime();
+  const endDate = new Date(shiftDate.getTime() + durationMs);
+  
   const userShift = new UserShiftModel({
     userId: userId,
     shiftId: data._id,
     routeId: data.routeId,
-    shiftDate: shiftDate
+    shiftDate: shiftDate,
+    shiftEndDate: endDate,
+    status: "Incomplete"
   });
   await userShift.save();
   
