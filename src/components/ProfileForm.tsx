@@ -31,7 +31,7 @@ const ProfileForm: React.FC = () => {
               lastName: mongoUser.lastName || '',
               email: currentUser.email || '',
               phoneNumber: mongoUser.phoneNumber || '(123) 456-7890',
-              location: mongoUser.location || 'Alpharetta, GA',
+              location: 'Alpharetta, GA', // TODO: get location from mongoUser
               role: mongoUser.isAdmin ? 'Admin' : 'Volunteer'
             });
           }
