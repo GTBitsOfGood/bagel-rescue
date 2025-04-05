@@ -4,18 +4,22 @@ import exp from "constants";
 import dbConnect from "../dbConnect";
 import { ShiftModel } from "../models/shift";
 import Route from "../models/Route";
+import User, { IUser } from "../models/User";
+import adminAnalytics, { IAdminAnalytics } from "../models/adminAnalytics";
+import { Types,  Error } from "mongoose";
+import { act } from "react";
 
 export async function getNumberOfShiftsThisMonth(): Promise<number> {
     const date = new Date();
     const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0); 
+    const month = date.getMonth();
+    const startDate = new Date(year, month, 1);
+    const endDate = new Date(year, month+1, 0); 
     
     try {
         await dbConnect();
         const count = await ShiftModel.countDocuments({
-            startTime: {
+            shiftDate: {
                 $gte: startDate,
                 $lte: endDate,
             },
@@ -115,30 +119,26 @@ export async function getAverageNumberOfShiftsYearly(): Promise<number> {
             ]
         });
         
-        const yearlyShifts = new Map<string, number>();
+        const years = new Set<number>();
+        let totalShifts = 0;
         
         shifts.forEach((shift) => {
             const shiftDate = new Date(shift.shiftDate);
             if (shiftDate >= twoYearsAgo) {
-                const key = `${shiftDate.getFullYear()}`;
-                yearlyShifts.set(key, (yearlyShifts.get(key) || 0) + 1);
+                years.add(shiftDate.getFullYear());
+                totalShifts++; 
             }
             
             shift.recurrences.forEach((recurrence) => {
                 const recurrenceDate = new Date(recurrence.date);
                 if (recurrenceDate >= twoYearsAgo) {
-                    const key = `${recurrenceDate.getFullYear()}`;
-                    yearlyShifts.set(key, (yearlyShifts.get(key) || 0) + 1);
+                    years.add(recurrenceDate.getFullYear());
+                    totalShifts++;
                 }
             });
         });
         
-        let totalShifts = 0;
-        yearlyShifts.forEach((count) => {
-            totalShifts += count;
-        });
-        
-        const numberOfYears = Math.min(yearlyShifts.size, 5);
+        const numberOfYears = years.size;
         
         return numberOfYears > 0 ? totalShifts / numberOfYears : 0;
     } catch (error) {
@@ -174,6 +174,7 @@ export async function getTotalShiftDurationThisMonth(): Promise<number> {
             ]
         });
         
+    
         let totalDurationMinutes = 0;
         
         shifts.forEach((shift) => {
@@ -358,10 +359,10 @@ export async function getAverageShiftDurationYearly(): Promise<number> {
 
 export interface RecentShift {
     _id: string;
-    name: string;       
-    status: string;    
-    time: number;       
-    date: Date;       
+    routeName: string; 
+    shiftDate: Date;
+    status: string;
+    duration: number;
 }
 export async function getRecentShifts(): Promise<RecentShift[]> {
     try {
@@ -372,11 +373,11 @@ export async function getRecentShifts(): Promise<RecentShift[]> {
       const routeIds = shifts.map(shift => shift.routeId);
       const routes = await Route.find({
         _id: { $in: routeIds }
-      }).lean();
+      }).lean<{ _id: Types.ObjectId, routeName: string }[]>();
       
       const routeMap = new Map();
       routes.forEach(route => {
-        routeMap.set(route.id.toString(), route.routeName || "Unknown Route");
+        routeMap.set(route._id.toString(), route.routeName);
       });
       
       const allShifts: {
@@ -390,18 +391,18 @@ export async function getRecentShifts(): Promise<RecentShift[]> {
       
       shifts.forEach(shift => {
         const routeId = shift.routeId.toString();
-        const routeName = routeMap.get(routeId) || "Unknown Route";
+        const routeName = routeMap.get(routeId) || "Broken Route";
         const duration = calculateDuration(shift.shiftDate, shift.shiftEndDate);
         
         const shiftDate = new Date(shift.shiftDate);
         
         allShifts.push({
-          shiftId: shift._id.toString(),
-          routeId,
-          routeName,
-          date: shiftDate,
-          duration,
-          status: shift.status
+            shiftId: shift._id.toString(),
+            routeId: routeId.toString(), 
+            date: shiftDate,
+            duration,
+            status: "complete",
+            routeName: routeName
         });
         
         shift.recurrences.forEach(recurrence => {
@@ -410,11 +411,11 @@ export async function getRecentShifts(): Promise<RecentShift[]> {
           
           allShifts.push({
             shiftId: shift._id.toString(),
-            routeId,
+            routeId: routeId.toString(),
             routeName,
             date: recurrenceDate,
             duration,
-            status: recurrence.status
+            status: "complete"
           });
         });
       });
@@ -425,10 +426,10 @@ export async function getRecentShifts(): Promise<RecentShift[]> {
         .slice(0, 10)
         .map(shift => ({
           _id: shift.shiftId,
-          name: shift.routeName,
+          routeName: shift.routeName,
           status: shift.status,
-          time: shift.duration,
-          date: shift.date 
+          duration: shift.duration,
+          shiftDate: shift.date 
         }));
       
       return recentShifts;
@@ -443,3 +444,233 @@ function calculateDuration(startDate: Date, endDate: Date): number {
     return (endDate.getTime() - startDate.getTime()) / (1000 * 60);
 }
 
+export async function getNumberOfVolunteers(): Promise<number> {
+
+    try {
+        await dbConnect();
+
+        const shiftCount = await User.countDocuments({isAdmin: false});
+        return shiftCount;
+    } catch (error) {
+        console.error("Failed to get total number of volunteers:", error);
+        throw new Error("Failed to get total number of volunteers");
+    }
+}
+
+interface shiftCompleted {
+    shiftId: string;
+    timeTakenToComplete: number;
+}
+
+export async function getNumberOfActiveVolunteers(): Promise<number> {
+    try {
+        await dbConnect();
+        const volunteers = await User.find().lean<IUser[]>();
+        
+        const activeChecks = volunteers.map(async (volunteer) => {
+            if (!volunteer.shiftsCompleted || volunteer.shiftsCompleted.length === 0) {
+                return false;
+            }
+            
+            const idsOfShiftsCompleted = volunteer.shiftsCompleted
+                .filter(shift => shift.shiftId)
+                .map(shift => shift.shiftId);
+                
+            if (idsOfShiftsCompleted.length === 0) {
+                return false;
+            }
+            
+            const shiftsCompleted = await ShiftModel.find({
+                _id: { $in: idsOfShiftsCompleted }
+            }).lean();
+            
+            if (shiftsCompleted.length === 0) {
+                return false;
+            }
+            
+            const now = new Date();
+            const thirtyDaysAgo = new Date(now.getTime() - (30 * 24 * 60 * 60 * 1000));
+            
+            return shiftsCompleted.some(shift => {
+                const shiftDate = new Date(shift.shiftEndDate);
+                return shiftDate >= thirtyDaysAgo;
+            });
+        });
+        
+        const results = await Promise.all(activeChecks);
+        
+        const activeVolunteers = results.filter(isActive => isActive).length;
+        
+        console.log(`Found ${activeVolunteers} active volunteers out of ${volunteers.length} total.`);
+        return activeVolunteers;
+    } catch (error) {
+        console.error("Failed to get number of active volunteers:", error);
+        throw new Error("Failed to get number of active volunteers");
+    }
+}
+
+export async function getNumberOfNewVolunteersThisMonth(): Promise<number> {
+    try {
+        await dbConnect();
+
+        const date = new Date();
+        const startDate = new Date(date.getFullYear(), date.getMonth(), 1); 
+        const endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0); 
+
+        const newVolunteersCount = await User.countDocuments({
+            isAdmin: false,
+            createdAt: {
+                $gte: startDate,
+                $lte: endDate,
+            },
+        });
+
+        return newVolunteersCount;
+    } catch (error) {
+        console.error("Failed to get number of new volunteers this month:", error);
+        throw new Error("Failed to get number of new volunteers this month");
+    }
+}
+
+export async function getNewVolunteersThisMonth(limit: number): Promise<any[]> {
+    try {
+        await dbConnect();
+
+        const date = new Date();
+        const startDate = new Date(date.getFullYear(), date.getMonth(), 1); 
+        const endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0); 
+
+        const newVolunteers = await User.find({
+            isAdmin: false,
+            createdAt: {
+                $gte: startDate,
+                $lte: endDate,
+            },
+        })
+            .sort({ createdAt: -1 })
+            .limit(limit)
+            .lean();
+
+        return newVolunteers;
+    } catch (error) {
+        console.error("Failed to get first 5 new volunteers this month:", error);
+        throw new Error("Failed to get first 5 new volunteers this month");
+    }
+}
+
+export async function getVolunteersWithMultipleShifts(limit: number): Promise<any[]> {
+    try {
+        await dbConnect();
+
+        const volunteers = await User.aggregate([
+            { $match: { isAdmin: false } },
+            { $unwind: "$shiftsCompleted" },
+            { $group: { _id: "$_id", count: { $sum: 1 } } },
+            { $match: { count: { $gt: 1 } } },
+            { $lookup: {
+                from: "users",
+                localField: "_id",
+                foreignField: "_id",
+                as: "userDetails"
+            }},
+            { $project: { _id: 1, count: 1, userDetails: { $arrayElemAt: ["$userDetails", 0] } } }
+        ]).limit(limit).exec();
+
+        return volunteers.map(volunteer => ({
+            ...volunteer.userDetails, 
+            shiftsCount: volunteer.count 
+        }));
+    } catch (error) {
+        console.error("Failed to get volunteers with multiple shifts:", error);
+        throw new Error("Failed to get volunteers with multiple shifts");
+    }
+}
+
+export async function updateAdminAnalytics(): Promise<void> {
+    
+    try {
+        await dbConnect();
+        
+
+        const adminAnalyticsDoc = await adminAnalytics.findOne({});
+
+        const [
+            shiftsThisMonth,
+            monthlyShiftAverage,
+            shiftsThisYear,
+            yearlyShiftsAverage,
+            totalShiftDurationThisMonth,
+            totalShiftDurationThisYear,
+            averageShiftDurationThisMonth,
+            averageShiftDurationThisYear,
+            recentShifts,
+            totalVolunteers,
+            activeVolunteers,
+            numberOfNewVolunteers,
+            newVolunteersArray,
+            volunteersWithMultipleShiftsArray
+        ] = await Promise.all([
+            getNumberOfShiftsThisMonth().catch(err => {
+                console.error("Error fetching shifts this month:", err);
+                return 0;
+            }),
+            getAverageNumberOfShiftsMonthly().catch(err => {
+                console.error("Error fetching monthly shift average:", err);
+                return 0;
+            }),
+            getNumberOfShiftsThisYear().catch(() => 0),
+            getAverageNumberOfShiftsYearly().catch(() => 0),
+            getTotalShiftDurationThisMonth().catch(() => 0),
+            getTotalShiftDurationThisYear().catch(() => 0),
+            getAverageShiftDurationMonthly().catch(() => 0),
+            getAverageShiftDurationYearly().catch(() => 0),
+            getRecentShifts().catch(() => []),
+            getNumberOfVolunteers().catch(() => 0),
+            getNumberOfActiveVolunteers().catch(() => 0),
+            getNumberOfNewVolunteersThisMonth().catch(() => 0),
+            getNewVolunteersThisMonth(5).catch(() => []),
+            getVolunteersWithMultipleShifts(5).catch(() => [])
+        ]);
+        Object.assign(adminAnalyticsDoc, {
+            shiftsThisMonth,
+            monthlyShiftAverage,
+            shiftsThisYear,
+            yearlyShiftsAverage,
+            totalShiftDurationThisMonth,
+            totalShiftDurationThisYear,
+            averageShiftDurationThisMonth,
+            averageShiftDurationThisYear,
+            recentShifts,
+            totalVolunteers,
+            activeVolunteers,
+            numberOfNewVolunteers,
+            newVolunteers: newVolunteersArray,
+            volunteersWithMultipleShifts: volunteersWithMultipleShiftsArray,
+            lastUpdatedAt: new Date()
+        });
+    
+        console.log(activeVolunteers)
+        await adminAnalyticsDoc.save();
+
+
+
+        console.log("Admin analytics updated successfully.");
+    } catch (error) {
+        console.error("Failed to update admin analytics:", error);
+        throw new Error("Failed to update admin analytics");
+    }
+}
+
+
+export async function getAdminAnalytics(): Promise<string | null> {
+    try {
+        await dbConnect();
+
+        const analytics = await adminAnalytics.findOne({}).lean<IAdminAnalytics>();
+
+        return JSON.stringify(analytics);
+    } catch (error) {
+        console.error("Failed to get admin analytics:", error);
+        throw new Error("Failed to get admin analytics");
+    }
+}
