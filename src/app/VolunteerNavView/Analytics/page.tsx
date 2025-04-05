@@ -53,7 +53,7 @@ function AnalyticsPage() {
     // For now, we'll assume authentication exists and set default values
 
     // Simulating successful authentication
-    setUserEmail("testuser@example.com");
+    setUserEmail("avaye.dawadi@gmail.com");
     setFirebaseReady(true);
   }, []);
 
@@ -74,10 +74,10 @@ function AnalyticsPage() {
           return;
         }
 
-        const hoursThisMonth = userData.monthlyHoursVolunteered || 0;
-        const hoursThisYear = userData.yearlyHoursVolunteered || 0;
-        const shiftsThisMonth = userData.monthlyShiftAmount || 0;
-        const shiftsThisYear = userData.yearlyShiftAmount || 0;
+        const hoursThisMonth = userData.monthlyHoursVolunteered || 22;
+        const hoursThisYear = userData.yearlyHoursVolunteered || 50;
+        const shiftsThisMonth = userData.monthlyShiftAmount || 3;
+        const shiftsThisYear = userData.yearlyShiftAmount || 12;
 
         // Fetch recent unique routes for the current user (past 6 months)
         // This uses the API from userShift.ts instead of mock data
