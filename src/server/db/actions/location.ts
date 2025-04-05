@@ -3,12 +3,11 @@
 import { LocationModel, Location, Address } from "../models/location";
 import dbConnect from "../dbConnect";
 
-export async function createLocation(newLocation: Location): Promise<Location> {
+export async function createLocation(newLocation: string): Promise<string | null> {
   await dbConnect();
   try {
-    const location = new LocationModel(newLocation);
-    await location.save();
-    return location;
+    const newShift = new LocationModel(JSON.parse(newLocation || "{}"));
+    return JSON.stringify(await newShift.save());
   } catch (error) {
     const err = error as Error;
     throw new Error(`Error creating location: ${err.message}`);
