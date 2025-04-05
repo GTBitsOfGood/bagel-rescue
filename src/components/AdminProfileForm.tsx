@@ -1,14 +1,34 @@
 'use client'
 
 import styles from './ProfileForm.module.css';
+import { useRouter } from 'next/navigation';
+import { auth } from '../server/db/firebase';
+import { signOut } from 'firebase/auth';
 
 const ProfileForm: React.FC = () => {
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth);
+      router.push('/Login'); // Redirect to login page after sign out
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.sidebar}>
         <ul className={styles.menu}>
           <li className={`${styles.menuItem} ${styles.active}`}>Profile</li>
-          <li className={`${styles.menuItem} ${styles.signOut}`}>Sign Out</li>
+          <li 
+            className={`${styles.menuItem} ${styles.signOut}`}
+            onClick={handleSignOut}
+            style={{ cursor: 'pointer' }}
+          >
+            Sign Out
+          </li>
         </ul>
       </div>
 
