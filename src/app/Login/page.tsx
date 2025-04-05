@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { getAuth, setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
 
-import { loginWithCredentials, loginWithGoogle } from "../../server/db/actions/Login";
+import { loginWithCredentials, loginWithGoogle, checkAuthStatus } from "../../server/db/actions/Login";
 
 import HalfScreen from "./HalfScreen";
 import Button from "./Button";
@@ -18,6 +19,23 @@ export default function LoginScreen() {
     password: string;
   }>();
   const [errorBannerMsg, setErrorBannerMsg] = useState("");
+  const [keepLoggedIn, setKeepLoggedIn] = useState(false);
+  
+  // Add useEffect to check if user is already logged in
+  useEffect(() => {
+    const checkUserAuth = async () => {
+      const { isLoggedIn, isAdmin } = await checkAuthStatus();
+      
+      if (isLoggedIn) {
+        // Redirect to appropriate page based on user role
+        router.push(isAdmin 
+          ? "/AdminNavView/WeeklyShiftDashboard" 
+          : "/VolunteerNavView/Homepage");
+      }
+    };
+    
+    checkUserAuth();
+  }, [router]);
 
   return (
     <div className="flex absolute bg-[#D6E9FF]">
@@ -74,7 +92,12 @@ export default function LoginScreen() {
                 <Button type="Google" text="Sign in with Google"></Button>
                 <div className="flex justify-between mb-7 sm:mb-7">
                   <div className="flex justify-start">
-                    <input className='rounded-none checked:bg-[#016ff3] mr-2' type="checkbox"/>
+                    <input 
+                      className='rounded-none checked:bg-[#016ff3] mr-2' 
+                      type="checkbox"
+                      checked={keepLoggedIn}
+                      onChange={(e) => setKeepLoggedIn(e.target.checked)}
+                    />
                     <p className="text-[#016ff3] font-opensans text-sm">Keep me logged in</p>
                   </div>
                   <button
@@ -105,15 +128,22 @@ export default function LoginScreen() {
                       const { email, password } = getValues();
                       
                       try {
+                        // Set the persistence based on user choice
+                        const auth = getAuth();
+                        const persistenceType = keepLoggedIn 
+                          ? browserLocalPersistence 
+                          : browserSessionPersistence;
+                          
+                        await setPersistence(auth, persistenceType);
+                        
                         const res = await loginWithCredentials(email, password);
 
                         if (res.success) {
                           if ('isAdmin' in res) {
-                          router.push(res.isAdmin 
-                            ? "/AdminNavView/WeeklyShiftDashboard" 
-                            : "/VolunteerNavView/Homepage");
+                            router.push(res.isAdmin 
+                              ? "/AdminNavView/WeeklyShiftDashboard" 
+                              : "/VolunteerNavView/Homepage");
                           }
-
                         } else {
                           setErrorBannerMsg('error' in res ? res.error : "");
                         }

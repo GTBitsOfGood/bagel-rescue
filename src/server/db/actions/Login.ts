@@ -59,3 +59,37 @@ import {
       });
   };
   
+  // Add this new function to check if a user is already logged in and get their admin status
+  export const checkAuthStatus = async () => {
+    return new Promise((resolve) => {
+      const unsubscribe = auth.onAuthStateChanged(async (user) => {
+        unsubscribe(); // Unsubscribe immediately after first check
+        
+        if (user) {
+          try {
+            // User is logged in, get their email
+            const email = user.email;
+            
+            if (email) {
+              // Fetch user data from MongoDB to check admin status
+              const mongoUser = await getUserByEmail(email);
+              
+              resolve({ 
+                isLoggedIn: true, 
+                isAdmin: mongoUser?.isAdmin || false 
+              });
+            } else {
+              resolve({ isLoggedIn: true, isAdmin: false });
+            }
+          } catch (error) {
+            console.error("Error checking auth status:", error);
+            resolve({ isLoggedIn: false, isAdmin: false });
+          }
+        } else {
+          // User is not logged in
+          resolve({ isLoggedIn: false, isAdmin: false });
+        }
+      });
+    });
+  };
+  
