@@ -81,6 +81,7 @@ function RouteCreationPage() {
     const route = {
       routeName: routeName,
       locationDescription: routeArea,
+      additionalInfo: additionalInfo,
       locations: locs,
     };
     createRoute(JSON.stringify(route))
