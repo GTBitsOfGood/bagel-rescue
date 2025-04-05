@@ -150,14 +150,12 @@ function RouteCreationPage() {
                               changeIsPickUp(location["locationName"])
                             }
                             style={{
-                              backgroundColor: locationsIsPickUp.get(
-                                location["locationName"]
-                              )
+                              backgroundColor: (location["type"] == "Pick-Up")
                                 ? "#a4f4b6"
                                 : "#f4c6a4",
                             }}
                           >
-                            {locationsIsPickUp.get(location["locationName"])
+                            {location["type"] == "Pick-Up"
                               ? "Pick Up"
                               : "Drop Off"}
                           </button>
