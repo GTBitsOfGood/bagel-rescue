@@ -8,4 +8,4 @@
   seconds = 60
 
 [functions.adminAnalyticsCron]
-  schedule = "* * * * *"
+  schedule = "@daily"
