@@ -7,7 +7,6 @@ interface Recurrence {
   date: Date;
   capacity: number;
   currSignedUp: number;
-  status: string;
 }
 
 interface Shift extends Document {
