@@ -29,7 +29,7 @@
   
   .filterControls {
     display: flex;
-    gap: 10px;
+    gap: 15px;
     align-items: center;
   }
   
@@ -39,11 +39,7 @@
     border-radius: 69px;
     padding: 10px 20px;
     background: transparent;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
     font-size: 16px;
-    color: #072B68;
     outline: none;
   }
   

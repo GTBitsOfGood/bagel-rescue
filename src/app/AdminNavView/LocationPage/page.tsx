@@ -10,12 +10,13 @@ import { getAllLocations } from "@/server/db/actions/location";
 import { Location } from "@/server/db/models/location";
 
 import AdminSidebar from '../../../components/AdminSidebar';
+import { useRouter } from "next/navigation";
 
 
 function LocationDashboardPage() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [sortOption, setSortOption] = useState<string>('alphabetically');
-
+  const router = useRouter();
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -60,6 +61,14 @@ function LocationDashboardPage() {
       </button>
       <div className="header">
         <p className="header-text">Locations</p>
+        <div className="flex flex-row justify-between text-center align-middle">
+          <button
+            className={styles.newLocationButton}
+            onClick={() => router.push("/AdminNavView/LocationCreationPage")}>
+            <FontAwesomeIcon icon={faPlus} className="mr-2" />
+            New Location
+          </button>
+        </div>
       </div>
       <hr className="separator" />
         <div className={styles.container}>
