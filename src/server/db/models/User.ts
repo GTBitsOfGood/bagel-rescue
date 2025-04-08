@@ -1,3 +1,4 @@
+import { create } from "domain";
 import mongoose from "mongoose";
 import { ObjectId } from "mongoose";
 
@@ -28,6 +29,7 @@ export interface IUser {
   monthlyShiftAmount?: number;
   yearlyShiftAmount?: number;
   lastMonthlyReset?: Date;
+  createdAt?: Date; 
 }
 
 const shiftCompletedSchema = new Schema({
@@ -116,6 +118,10 @@ const userSchema = new Schema({
     type: Date,
     default: new Date(),
   },
+  createdAt: {
+    type: Date,
+    deafault: Date.now, 
+  }
 });
 
 userSchema.methods.populateDeliveries = function () {

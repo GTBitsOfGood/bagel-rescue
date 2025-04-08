@@ -2,5 +2,10 @@
   functions = "netlify/functions"
 
 [functions]
-  [functions.timeout]
-  seconds = 30
+  directory = "netlify/functions"
+
+[functions.timeout]
+  seconds = 60
+
+[functions.adminAnalyticsCron]
+  schedule = "@daily"
