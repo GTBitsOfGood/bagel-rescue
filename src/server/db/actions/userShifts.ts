@@ -147,6 +147,7 @@ export async function getUserShiftsByDateRange(
   limit: number = 10
 ): Promise<PaginatedResult> {
   await dbConnect();
+
   try {
     const skip = (page - 1) * limit;
     
@@ -158,8 +159,9 @@ export async function getUserShiftsByDateRange(
       .skip(skip)
       .limit(limit)
       .lean();
-    userShifts.sort((a, b) => new Date(a.shiftDate).getTime() - new Date(b.shiftDate).getTime());
 
+    userShifts.sort((a, b) => new Date(a.shiftDate).getTime() - new Date(b.shiftDate).getTime());
+    
     // Get total count for pagination
     const total = await UserShiftModel.countDocuments({
       userId: new mongoose.Types.ObjectId(userId),
@@ -168,14 +170,12 @@ export async function getUserShiftsByDateRange(
     
     // Get unique route IDs
     const routeIds = Array.from(new Set(userShifts.map(shift => shift.routeId)));
-    console.log("step 2")
 
     // Get route details
     const routes = await Route.find({
       _id: { $in: routeIds }
     }).lean();
 
-    
     // Create a map of route IDs to route details
     const routeMap = new Map();
     routes.forEach(route => {
@@ -188,7 +188,6 @@ export async function getUserShiftsByDateRange(
       }
     });
     
-
     // Transform the data for the frontend
     const transformedShifts = userShifts.map(shift => {
       const route = routeMap.get(shift.routeId.toString()) || {
@@ -216,7 +215,6 @@ export async function getUserShiftsByDateRange(
       }
     };
   } catch (error) {
-
     console.error("Error fetching user shifts by date range:", error);
     throw new Error("Failed to fetch user shifts by date range");
   }
