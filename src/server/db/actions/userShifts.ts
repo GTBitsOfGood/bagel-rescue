@@ -147,7 +147,6 @@ export async function getUserShiftsByDateRange(
   limit: number = 10
 ): Promise<PaginatedResult> {
   await dbConnect();
-  console.log("step 0")
   try {
     const skip = (page - 1) * limit;
     
@@ -159,10 +158,8 @@ export async function getUserShiftsByDateRange(
       .skip(skip)
       .limit(limit)
       .lean();
-    
     userShifts.sort((a, b) => new Date(a.shiftDate).getTime() - new Date(b.shiftDate).getTime());
-    console.log(userShifts)
-      console.log("step 1")
+
     // Get total count for pagination
     const total = await UserShiftModel.countDocuments({
       userId: new mongoose.Types.ObjectId(userId),
@@ -178,8 +175,6 @@ export async function getUserShiftsByDateRange(
       _id: { $in: routeIds }
     }).lean();
 
-    console.log("step 3")
-
     
     // Create a map of route IDs to route details
     const routeMap = new Map();
@@ -194,16 +189,12 @@ export async function getUserShiftsByDateRange(
     });
     
 
-    console.log("step 4")
-
     // Transform the data for the frontend
     const transformedShifts = userShifts.map(shift => {
       const route = routeMap.get(shift.routeId.toString()) || {
         routeName: "Unknown Route",
         locationDescription: ""
       };
-      console.log("step 5")
-
       
       return {
         id: shift._id.toString(),

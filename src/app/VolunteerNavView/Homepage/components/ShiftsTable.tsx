@@ -40,7 +40,7 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({ shifts, loading, error }) => 
   if (error) {
     return (
       <div className={styles.errorContainer}>
-        <p>You currently have no shifts.</p>
+        <p>{error}</p>
       </div>
     );
   }
