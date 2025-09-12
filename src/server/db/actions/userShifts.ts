@@ -45,7 +45,7 @@ async function getCurrentUserId(): Promise<string | null> {
 
   // For now, return a placeholder value
   console.warn("getCurrentUserId is not implemented yet. Using placeholder.");
-  return "507f1f77bcf86cd799439011"; // Test user ID from sample data
+  return "66de3986953f6364945c3c5e"; // Test user ID from sample data
   // return "placeholder-user-id";
 }
 
@@ -147,7 +147,7 @@ export async function getUserShiftsByDateRange(
   limit: number = 10
 ): Promise<PaginatedResult> {
   await dbConnect();
-  
+  console.log("step 0")
   try {
     const skip = (page - 1) * limit;
     
@@ -156,11 +156,13 @@ export async function getUserShiftsByDateRange(
       userId: new mongoose.Types.ObjectId(userId),
       shiftDate: { $gte: startDate, $lte: endDate }
     })
-      .sort({ shiftDate: 1 })  // Sort by shiftDate ascending
       .skip(skip)
       .limit(limit)
       .lean();
     
+    userShifts.sort((a, b) => new Date(a.shiftDate).getTime() - new Date(b.shiftDate).getTime());
+    console.log(userShifts)
+      console.log("step 1")
     // Get total count for pagination
     const total = await UserShiftModel.countDocuments({
       userId: new mongoose.Types.ObjectId(userId),
@@ -169,11 +171,15 @@ export async function getUserShiftsByDateRange(
     
     // Get unique route IDs
     const routeIds = Array.from(new Set(userShifts.map(shift => shift.routeId)));
-    
+    console.log("step 2")
+
     // Get route details
     const routes = await Route.find({
       _id: { $in: routeIds }
     }).lean();
+
+    console.log("step 3")
+
     
     // Create a map of route IDs to route details
     const routeMap = new Map();
@@ -187,12 +193,17 @@ export async function getUserShiftsByDateRange(
       }
     });
     
+
+    console.log("step 4")
+
     // Transform the data for the frontend
     const transformedShifts = userShifts.map(shift => {
       const route = routeMap.get(shift.routeId.toString()) || {
         routeName: "Unknown Route",
         locationDescription: ""
       };
+      console.log("step 5")
+
       
       return {
         id: shift._id.toString(),
@@ -214,6 +225,7 @@ export async function getUserShiftsByDateRange(
       }
     };
   } catch (error) {
+
     console.error("Error fetching user shifts by date range:", error);
     throw new Error("Failed to fetch user shifts by date range");
   }
