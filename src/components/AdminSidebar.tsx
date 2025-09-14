@@ -12,6 +12,8 @@ import { faRoute } from "@fortawesome/free-solid-svg-icons";
 import { auth } from '../server/db/firebase';
 import { getUserByEmail } from '../server/db/actions/User';
 import { FaPeopleLine } from "react-icons/fa6";
+import RoutesIcon from '../assets/routes-icon.svg';
+
 
 interface NavItem {
   name: string;
@@ -20,11 +22,11 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { name: 'Dashboard', href: '/AdminNavView/DailyShiftDashboard', icon: <FiHome size={20} strokeWidth={1.5} /> },
-  { name: 'Routes', href: '/AdminNavView/RouteDashboard', icon: <FontAwesomeIcon icon={faRoute} style={{ width: '20px', height: '20px' }} /> },
-  { name: 'Locations', href: '/AdminNavView/LocationPage', icon: <CiLocationOn size={22} strokeWidth={1} /> },
-  { name: 'Analytics', href: '/AdminNavView/AdminAnalytics', icon: <TbBrandGoogleAnalytics size={20} strokeWidth={1.5} /> },
-  { name: 'Management', href: '/AdminNavView/ManagementPage', icon: <FaPeopleLine size={20} strokeWidth={1.5} /> },
+  { name: 'Dashboard', href: '/AdminNavView/DailyShiftDashboard', icon: <FiHome size={18} strokeWidth={1.5} /> },
+  { name: 'Routes', href: '/AdminNavView/RouteDashboard', icon: <RoutesIcon data-icon="routes" width={18} height={16} /> },
+  { name: 'Locations', href: '/AdminNavView/LocationPage', icon: <CiLocationOn size={18} strokeWidth={1} /> },
+  { name: 'Analytics', href: '/AdminNavView/AdminAnalytics', icon: <TbBrandGoogleAnalytics size={18} strokeWidth={1} /> },
+  { name: 'Management', href: '/AdminNavView/ManagementPage', icon: <FaPeopleLine size={18} strokeWidth={1} /> },
 
 ];
 
