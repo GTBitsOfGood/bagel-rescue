@@ -15,10 +15,18 @@ import {
   
         // Fetch the token and set it in the cookies
         const token = await user.getIdToken();
-        
         const mongoUser = await getUserByEmail(email);
+        
+        const res = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
 
-        return { success: true, isAdmin: mongoUser?.isAdmin};// No need to return admin status here  UPDATE: i fear, i may have to
+        
+        const response = await res.json()
+        return response
+        // return { success: true, isAdmin: mongoUser?.isAdmin};// No need to return admin status here
       })
       .catch((error) => {
         let errorMsg = "";
