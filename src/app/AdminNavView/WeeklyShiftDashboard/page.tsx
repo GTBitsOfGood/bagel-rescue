@@ -52,10 +52,9 @@ function WeeklyShiftDashboard() {
 
   const AddDays = (e: number) => {
     const newDate = new Date(date);
-    if (newDate.getDate() - new Date().getDate() !== 7 || e === -1) {
-      newDate.setDate(newDate.getDate() + e);
-      setDate(newDate);
-    }
+    // For weekly view, we move by 7 days (1 week) at a time
+    newDate.setDate(newDate.getDate() + e);
+    setDate(newDate);
   };
 
   function routesList() {
