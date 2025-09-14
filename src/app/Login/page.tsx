@@ -10,7 +10,7 @@ import { loginWithCredentials, loginWithGoogle, checkAuthStatus } from "../../se
 import HalfScreen from "./HalfScreen";
 import Button from "./Button";
 import TextInput from "./TextInput";
-//import Banner from "@components/molecules/Banner";
+import ErrorBanner from "./ErrorBanner";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -20,6 +20,13 @@ export default function LoginScreen() {
   }>();
   const [errorBannerMsg, setErrorBannerMsg] = useState("");
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
+
+  // Clear error when user starts typing
+  const clearError = () => {
+    if (errorBannerMsg) {
+      setErrorBannerMsg("");
+    }
+  };
   
   // Add useEffect to check if user is already logged in
   useEffect(() => {
@@ -47,21 +54,19 @@ export default function LoginScreen() {
           <HalfScreen />
           <div className="flex flex-col w-full h-full justify-center items-center mt-8 sm:mt-0 sm:w-1/2 bg-white rounded-l-3xl">
             <div className={`flex flex-col w-[90%] sm:w-[60%] sm:items-center`}>
-              {/* {errorBannerMsg && (
-                <div className="hidden sm:inline">
-                  <Banner text={errorBannerMsg} />
+              {errorBannerMsg && (
+                <div className="w-full mb-4">
+                  <ErrorBanner 
+                    text={errorBannerMsg} 
+                    onClose={() => setErrorBannerMsg("")}
+                  />
                 </div>
-              )} */}
+              )}
               <div className="flex justify-start w-[100%]">
                 <p className="text-left text-primary-text text-2xl font-bold font-opensans text-[#013779] text-4xl mb-2">
                   Sign in
                 </p>
               </div>
-              {/* {errorBannerMsg && (
-                <div className="inline -mt-8 sm:hidden sm:mt-0">
-                  <Banner text={errorBannerMsg} />
-                </div>
-              )} */}
               <div className="flex justify-start w-[100%] mb-7">
                 <p className="text-gray-400">
                   Enter your email and password to sign in!
@@ -74,6 +79,7 @@ export default function LoginScreen() {
                   formValue={register("email", {
                     validate: (v) =>
                       !v ? "Email cannot be empty." : undefined,
+                    onChange: clearError,
                   })}
                   error={formState.errors.email?.message}
                 />
@@ -84,6 +90,7 @@ export default function LoginScreen() {
                   formValue={register("password", {
                     validate: (v) =>
                       !v ? "Password cannot be empty." : undefined,
+                    onChange: clearError,
                   })}
                   error={formState.errors.password?.message}
                 />
@@ -95,13 +102,16 @@ export default function LoginScreen() {
                 <Button type="Google" text="Sign in with Google"></Button>
                 <div className="flex justify-between mb-7 sm:mb-7">
                   <div className="flex justify-start">
-                    <input 
-                      className='rounded-none checked:bg-[#016ff3] mr-2' 
-                      type="checkbox"
-                      checked={keepLoggedIn}
-                      onChange={(e) => setKeepLoggedIn(e.target.checked)}
-                    />
-                    <p className="text-[#016ff3] font-opensans text-sm">Keep me logged in</p>
+                    <label className="flex items-center cursor-pointer">
+                      <input 
+                        className='rounded-none checked:bg-[#016ff3] mr-2' 
+                        type="checkbox"
+                        checked={keepLoggedIn}
+                        onChange={(e) => setKeepLoggedIn(e.target.checked)}
+                        aria-label="Keep me logged in"
+                      />
+                      <p className="text-[#016ff3] font-opensans text-sm">Keep me logged in</p>
+                    </label>
                   </div>
                   <button
                     className="w-auto text-center text-mbb-pink text-sm font-semibold font-opensans text-[#016ff3]" 
@@ -148,12 +158,12 @@ export default function LoginScreen() {
                               : "/VolunteerNavView/Homepage");
                           }
                         } else {
-                          setErrorBannerMsg('error' in res ? res.error : "");
+                          setErrorBannerMsg("Incorrect email or password");
                         }
                       } catch (err) {
                         console.error(err);
                         setErrorBannerMsg(
-                          "An unknown error ocurred logging in. Check your internet connection."
+                          "An unknown error occurred logging in. Please check your internet connection and try again."
                         );
                       }
                     }}
