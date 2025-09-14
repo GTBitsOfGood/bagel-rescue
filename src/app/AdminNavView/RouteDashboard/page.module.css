@@ -31,23 +31,33 @@
     display: flex;
     gap: 15px;
     align-items: center;
+    color: #072B68;
   }
   
   .sortSelect {
+    background-color: #fff;
     position: relative;
     border: 1px solid #0F7AFF;
-    border-radius: 69px;
-    padding: 10px 20px;
+    border-radius: 8px;
+    padding: 0 44px 0 16px;
     background: transparent;
     font-size: 16px;
     outline: none;
+    color: #072B68;
+    appearance: none;
+    background-image: url('/dropdown_arrow.svg');
+    background-repeat: no-repeat;
+    background-position: 90% center;
+    width: auto;
+    min-width: 167px;
+    height: 44px;
   }
   
   .filterButton {
-    background-color: #C6E3F9;
+    background-color: #fff;
     border: 1px solid #0F7AFF;
     padding: 10px 15px;
-    border-radius: 69px;
+    border-radius: 8px;
     cursor: pointer;
     color: #072B68;
   }
