@@ -64,12 +64,7 @@ export default function RouteDashboardPage() {
     <div className="flex">
       <AdminSidebar />
       <div className="flex flex-col flex-1">
-        <div className="container">
-          <button className="back-btn" onClick={() => window.history.back()}>
-            <FontAwesomeIcon icon={faAngleLeft} />
-            <p>Back</p>
-          </button>
-          <div className="header">
+        <div className="header">
             <p className="header-text">Routes</p>
             <button 
               className="complete-route-btn" 
@@ -79,8 +74,9 @@ export default function RouteDashboardPage() {
               <FontAwesomeIcon icon={faPlus} className="mr-2" />
               New Route
             </button>
-          </div>
-          <hr className="separator" />
+        </div>
+        <hr className="separator" />
+        <div className="container">
           <div className={styles.container}>
             <div className={styles.searchAndSort}>
               <div className={styles.searchInputContainer}>
