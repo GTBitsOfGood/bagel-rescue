@@ -13,7 +13,7 @@ import { Shift } from "@/server/db/models/shift";
 import { IRoute } from "@/server/db/models/Route";
 import { getAllShifts } from "@/server/db/actions/shift";
 import { getAllRoutes } from "@/server/db/actions/Route";
-import DashboardHeader from '../../components/DailyDashboard';
+import WeeklyDashboardHeader from '../../components/WeeklyDashboard';
 import AdminSidebar from '../../../components/AdminSidebar';
 
 function WeeklyShiftDashboard() {
@@ -175,7 +175,7 @@ function WeeklyShiftDashboard() {
                   <p className="route-card-time">
                     {getTimesHeader(route)} {getDaysHeader(route)}
                   </p>
-                  <button>
+                  <button title="More options">
                     <FontAwesomeIcon
                       icon={faEllipsis}
                       className="route-card-ellipsis-icon"
@@ -228,9 +228,9 @@ function WeeklyShiftDashboard() {
     <div className="flex">
       <AdminSidebar />
       <div className='flex flex-col flex-1'>
-        <DashboardHeader date={date} AddDays={AddDays} />
+        <WeeklyDashboardHeader date={date} AddDays={AddDays} />
         <div className="container">
-          <div style={{ height: "50px" }}></div>
+          <div className="spacer-50"></div>
           <div className="search-settings">
             <button className="sort-by-btn">
               <FontAwesomeIcon icon={faArrowUpShortWide} />
