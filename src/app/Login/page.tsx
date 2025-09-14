@@ -52,10 +52,10 @@ export default function LoginScreen() {
       <div className="h-screen w-screen">
         <div className="flex flex-col w-full h-full sm:flex-row">
           <HalfScreen />
-          <div className="flex flex-col w-full h-full justify-center items-center mt-8 sm:mt-0 sm:w-1/2 bg-white rounded-l-3xl">
-            <div className={`flex flex-col w-[90%] sm:w-[60%] sm:items-center`}>
+          <div className="relative flex flex-col w-full h-full justify-center items-center mt-8 sm:mt-0 sm:w-1/2 bg-white rounded-l-3xl">
+            <div className={`relative flex flex-col w-[90%] sm:w-[60%] sm:items-center`}>
               {errorBannerMsg && (
-                <div className="w-full mb-4">
+                <div className="absolute -top-20 left-0 right-0 z-10">
                   <ErrorBanner 
                     text={errorBannerMsg} 
                     onClose={() => setErrorBannerMsg("")}
@@ -79,9 +79,9 @@ export default function LoginScreen() {
                   formValue={register("email", {
                     validate: (v) =>
                       !v ? "Email cannot be empty." : undefined,
-                    onChange: clearError,
                   })}
                   error={formState.errors.email?.message}
+                  onChange={clearError}
                 />
                 <TextInput
                   label="Password"
@@ -90,9 +90,9 @@ export default function LoginScreen() {
                   formValue={register("password", {
                     validate: (v) =>
                       !v ? "Password cannot be empty." : undefined,
-                    onChange: clearError,
                   })}
                   error={formState.errors.password?.message}
+                  onChange={clearError}
                 />
                 <div className="flex justify-center mb-4">
                   <hr className="w-[45%] my-3 mr-5 border-t-2"/>
