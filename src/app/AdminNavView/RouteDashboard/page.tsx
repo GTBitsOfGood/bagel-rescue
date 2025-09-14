@@ -67,8 +67,7 @@ export default function RouteDashboardPage() {
         <div className="header">
             <p className="header-text">Routes</p>
             <button 
-              className="complete-route-btn" 
-              style={{ backgroundColor: "#3d97ff", cursor: "pointer" }}
+              className={styles.newRouteButton} 
               onClick={() => router.push("/AdminNavView/RouteCreationPage")}
             >
               <FontAwesomeIcon icon={faPlus} className="mr-2" />

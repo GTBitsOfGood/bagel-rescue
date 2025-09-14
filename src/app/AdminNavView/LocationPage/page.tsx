@@ -65,7 +65,7 @@ function LocationDashboardPage() {
           </div>
         </div>
       
-      <hr className="separator" />
+      <hr className={styles.separator} />
         <div className={styles.wrapper}>
           <div className={styles.container}>
           <div className={styles.searchAndSort}>

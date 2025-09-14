@@ -3,36 +3,18 @@
   background-color: #f7f9fc;
 }
 
-.back-btn {
-  color: var(--Bagel-Rescue-Blue);
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 0.75em;
-}
-
 .header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   padding: 2em 4em;
   color: #072B68;
+  align-items: center;
 }
 
 .header-text {
   font-size: 2.25em;
   font-weight: bold;
-}
-
-.complete-route-btn {
-  border-radius: 16px;
-  font-size: 1em;
-  font-weight: bold;
-  color: white;
-  padding: 1em;
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
 }
 
 .separator {

@@ -1,14 +1,6 @@
 .container {
-    padding: 20px;
     max-width: 1200px;
     margin: 0 auto;
-  }
-  
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
   }
   
   .newRouteButton {
@@ -16,8 +8,10 @@
     color: #fff;
     border: none;
     padding: 10px 15px;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
+    max-height: 44px;
+    
   }
   
   .searchAndSort {
@@ -29,7 +23,7 @@
   
   .filterControls {
     display: flex;
-    gap: 15px;
+    gap: 10px;
     align-items: center;
   }
   

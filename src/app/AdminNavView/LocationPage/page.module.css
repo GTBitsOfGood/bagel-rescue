@@ -26,9 +26,8 @@
   color: #ffffff;
   border: none;
   padding: 10px 15px;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: bold;
 }
 
 .searchAndSort {
@@ -184,4 +183,7 @@
   background-color: transparent;
   padding-left: 10px;
   flex-grow: 1; 
+}
+.separator {
+  border-top: 1px solid #d4d8dd;
 }
