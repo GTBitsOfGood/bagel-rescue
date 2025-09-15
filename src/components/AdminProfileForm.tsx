@@ -46,7 +46,12 @@ const ProfileForm: React.FC = () => {
   const handleSignOut = async () => {
     try {
       await signOut(auth);
-      router.push('/Login'); // Redirect to login page after sign out
+      await fetch("/api/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      })
+      router.push('/Login');
+
     } catch (error) {
       console.error('Error signing out:', error);
     }
