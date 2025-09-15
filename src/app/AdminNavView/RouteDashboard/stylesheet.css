@@ -1,6 +1,6 @@
 .container {
   padding: 1.5em 0em;
-  background-color: #f7f9fc;
+  background-color: var(--Bagel-Rescue-Background-Grey);
 }
 
 .header {
@@ -8,7 +8,7 @@
   flex-direction: row;
   justify-content: space-between;
   padding: 2em 4em;
-  color: #072B68;
+  color: var(--Bagel-Rescue-Dark-Blue);
   align-items: center;
 }
 
@@ -18,5 +18,5 @@
 }
 
 .separator {
-  border-top: 1px solid #d4d8dd;
+  border-top: 1px solid var(--Bagel-Rescue-Light-Grey);
 } 

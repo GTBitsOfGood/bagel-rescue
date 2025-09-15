@@ -6,7 +6,7 @@
 }
 
 .wrapper {
-  background-color: #f7f9fc;
+  background-color: var(--Bagel-Rescue-Background-Grey);
 }
 
 .header {
@@ -14,7 +14,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 2em 4em;
-  color: #072b68;
+  color: var(--Bagel-Rescue-Dark-Blue);
 }
 .headerText {
   font-size: 2.25em;
@@ -97,7 +97,7 @@
   border-radius: 8px;
   padding: 16px;
   font-weight: bold;
-  color: #072B68;
+  color: var(--Bagel-Rescue-Dark-Blue);
   margin-bottom: 10px;
   padding-left: 20px;
 }
@@ -113,12 +113,12 @@
 }
 
 .locationCard {
-  background-color: #fff;
+  background-color: var(--background-rgb);
   border: 1px solid #ddd;
   border-radius: 16px;
   border-color: #C6E3FF;
   padding: 10px;
-  color: #072B68;
+  color: var(--Bagel-Rescue-Dark-Blue);
 }
 
 .locationDetails {
@@ -137,7 +137,7 @@
 
 .pickUp {
   background-color: #A4F4B6;
-  color: #072B68;
+  color: var(--Bagel-Rescue-Dark-Blue);
   padding: 5px 10px;
   border-radius: 12px;
   text-align: center;
@@ -145,7 +145,7 @@
 
 .dropOff {
   background-color: #F4C6A4;
-  color: #072B68;
+  color: var(--Bagel-Rescue-Dark-Blue);
   padding: 5px 10px;
   border-radius: 12px;
   text-align: center;
@@ -185,5 +185,5 @@
   flex-grow: 1; 
 }
 .separator {
-  border-top: 1px solid #d4d8dd;
+  border-top: 1px solid var(--Bagel-Rescue-Light-Grey);
 }

@@ -43,7 +43,7 @@
     padding: 10px 15px;
     border-radius: 69px;
     cursor: pointer;
-    color: #072B68;
+    color: var(--Bagel-Rescue-Dark-Blue);
   }
   
   .tableContainer {
@@ -59,7 +59,7 @@
     border-radius: 8px;
     padding: 16px;
     font-weight: bold;
-    color: #072B68;
+    color: var(--Bagel-Rescue-Dark-Blue);
     margin-bottom: 10px;
     padding-left: 20px;
   }
@@ -75,11 +75,11 @@
   }
   
   .routeCard {
-    background-color: #fff;
+    background-color: var(--background-rgb);
     border: 1px solid #C6E3FF;
     border-radius: 16px;
     padding: 10px;
-    color: #072B68;
+    color: var(--Bagel-Rescue-Dark-Blue);
   }
   
   .routeDetails {
