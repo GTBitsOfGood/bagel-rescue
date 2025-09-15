@@ -45,7 +45,7 @@ async function getCurrentUserId(): Promise<string | null> {
 
   // For now, return a placeholder value
   console.warn("getCurrentUserId is not implemented yet. Using placeholder.");
-  return "507f1f77bcf86cd799439011"; // Test user ID from sample data
+  return "66de3986953f6364945c3c5e"; // Test user ID from sample data
   // return "placeholder-user-id";
 }
 
@@ -147,7 +147,7 @@ export async function getUserShiftsByDateRange(
   limit: number = 10
 ): Promise<PaginatedResult> {
   await dbConnect();
-  
+
   try {
     const skip = (page - 1) * limit;
     
@@ -156,10 +156,11 @@ export async function getUserShiftsByDateRange(
       userId: new mongoose.Types.ObjectId(userId),
       shiftDate: { $gte: startDate, $lte: endDate }
     })
-      .sort({ shiftDate: 1 })  // Sort by shiftDate ascending
       .skip(skip)
       .limit(limit)
       .lean();
+
+    userShifts.sort((a, b) => new Date(a.shiftDate).getTime() - new Date(b.shiftDate).getTime());
     
     // Get total count for pagination
     const total = await UserShiftModel.countDocuments({
@@ -169,12 +170,12 @@ export async function getUserShiftsByDateRange(
     
     // Get unique route IDs
     const routeIds = Array.from(new Set(userShifts.map(shift => shift.routeId)));
-    
+
     // Get route details
     const routes = await Route.find({
       _id: { $in: routeIds }
     }).lean();
-    
+
     // Create a map of route IDs to route details
     const routeMap = new Map();
     routes.forEach(route => {
