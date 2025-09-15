@@ -1,14 +1,6 @@
 .container {
-    padding: 20px;
     max-width: 1200px;
     margin: 0 auto;
-  }
-  
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
   }
   
   .newRouteButton {
@@ -16,8 +8,10 @@
     color: #fff;
     border: none;
     padding: 10px 15px;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
+    max-height: 44px;
+    
   }
   
   .searchAndSort {
@@ -29,7 +23,7 @@
   
   .filterControls {
     display: flex;
-    gap: 15px;
+    gap: 10px;
     align-items: center;
   }
   
@@ -49,7 +43,7 @@
     padding: 10px 15px;
     border-radius: 69px;
     cursor: pointer;
-    color: #072B68;
+    color: var(--Bagel-Rescue-Dark-Blue);
   }
   
   .tableContainer {
@@ -65,7 +59,7 @@
     border-radius: 8px;
     padding: 16px;
     font-weight: bold;
-    color: #072B68;
+    color: var(--Bagel-Rescue-Dark-Blue);
     margin-bottom: 10px;
     padding-left: 20px;
   }
@@ -81,11 +75,11 @@
   }
   
   .routeCard {
-    background-color: #fff;
+    background-color: var(--background-rgb);
     border: 1px solid #C6E3FF;
     border-radius: 16px;
     padding: 10px;
-    color: #072B68;
+    color: var(--Bagel-Rescue-Dark-Blue);
   }
   
   .routeDetails {
@@ -120,6 +114,7 @@
     border: 1px solid #0F7AFF;
     border-radius: 69px;
     overflow: hidden;
+    background-color: #fff;
   }
   
   .searchIcon {

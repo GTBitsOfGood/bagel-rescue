@@ -1,14 +1,24 @@
 .container {
-  padding: 20px;
+  padding: 1.5em 0em;
   max-width: 1200px;
   margin: 0 auto;
 
 }
+
+.wrapper {
+  background-color: var(--Bagel-Rescue-Background-Grey);
+}
+
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  padding: 2em 4em;
+  color: var(--Bagel-Rescue-Dark-Blue);
+}
+.headerText {
+  font-size: 2.25em;
+  font-weight: bold;
 }
 
 .newLocationButton {
@@ -16,9 +26,8 @@
   color: #ffffff;
   border: none;
   padding: 10px 15px;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: bold;
 }
 
 .searchAndSort {
@@ -88,7 +97,7 @@
   border-radius: 8px;
   padding: 16px;
   font-weight: bold;
-  color: #072B68;
+  color: var(--Bagel-Rescue-Dark-Blue);
   margin-bottom: 10px;
   padding-left: 20px;
 }
@@ -104,12 +113,12 @@
 }
 
 .locationCard {
-  background-color: #fff;
+  background-color: var(--background-rgb);
   border: 1px solid #ddd;
   border-radius: 16px;
   border-color: #C6E3FF;
   padding: 10px;
-  color: #072B68;
+  color: var(--Bagel-Rescue-Dark-Blue);
 }
 
 .locationDetails {
@@ -128,7 +137,7 @@
 
 .pickUp {
   background-color: #A4F4B6;
-  color: #072B68;
+  color: var(--Bagel-Rescue-Dark-Blue);
   padding: 5px 10px;
   border-radius: 12px;
   text-align: center;
@@ -136,7 +145,7 @@
 
 .dropOff {
   background-color: #F4C6A4;
-  color: #072B68;
+  color: var(--Bagel-Rescue-Dark-Blue);
   padding: 5px 10px;
   border-radius: 12px;
   text-align: center;
@@ -158,6 +167,7 @@
   border: 1px solid #0F7AFF;
   border-radius: 69px;
   overflow: hidden;
+  background-color: #fff;
 }
 
 .searchIcon {
@@ -173,4 +183,7 @@
   background-color: transparent;
   padding-left: 10px;
   flex-grow: 1; 
+}
+.separator {
+  border-top: 1px solid var(--Bagel-Rescue-Light-Grey);
 }
