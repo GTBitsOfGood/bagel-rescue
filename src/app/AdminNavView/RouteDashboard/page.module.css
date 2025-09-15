@@ -31,11 +31,11 @@
     display: flex;
     gap: 15px;
     align-items: center;
-    color: #072B68;
+    color: var(--Bagel-Rescue-Dark-Blue);
   }
   
   .sortSelect {
-    background-color: #fff;
+    background-color: var(--background-rgb);
     position: relative;
     border: 1px solid #0F7AFF;
     border-radius: 8px;
@@ -43,7 +43,7 @@
     background: transparent;
     font-size: 16px;
     outline: none;
-    color: #072B68;
+    color: var(--Bagel-Rescue-Dark-Blue);
     appearance: none;
     background-image: url('/dropdown_arrow.svg');
     background-repeat: no-repeat;
@@ -54,12 +54,12 @@
   }
   
   .filterButton {
-    background-color: #fff;
+    background-color: var(--background-rgb);
     border: 1px solid #0F7AFF;
     padding: 10px 15px;
     border-radius: 8px;
     cursor: pointer;
-    color: #072B68;
+    color: var(--Bagel-Rescue-Dark-Blue);
   }
   
   .tableContainer {
@@ -75,7 +75,7 @@
     border-radius: 8px;
     padding: 16px;
     font-weight: bold;
-    color: #072B68;
+    color: var(--Bagel-Rescue-Dark-Blue);
     margin-bottom: 10px;
     padding-left: 20px;
   }
@@ -91,11 +91,11 @@
   }
   
   .routeCard {
-    background-color: #fff;
+    background-color: var(--background-rgb);
     border: 1px solid #C6E3FF;
     border-radius: 16px;
     padding: 10px;
-    color: #072B68;
+    color: var(--Bagel-Rescue-Dark-Blue);
   }
   
   .routeDetails {

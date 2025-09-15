@@ -32,12 +32,12 @@
   display: flex;
   gap: 10px;
   align-items: center;
-  color: #072B68;
+  color: var(--Bagel-Rescue-Dark-Blue);
 }
 
 .sortSelect {
   position: relative;
-  background-color: #fff;
+  background-color: var(--background-rgb);
   appearance: none;
   background-image: url('/dropdown_arrow.svg');
   background-repeat: no-repeat;
@@ -76,7 +76,7 @@
 
 
 .filterButton {
-  background-color: #fff;
+  background-color: var(--background-rgb);
   border: 1px solid #0F7AFF;
   padding: 10px 15px;
   border-radius: 8px;
@@ -97,7 +97,7 @@
   border-radius: 8px;
   padding: 16px;
   font-weight: bold;
-  color: #072B68;
+  color: var(--Bagel-Rescue-Dark-Blue);
   margin-bottom: 10px;
   padding-left: 20px;
 }
@@ -113,12 +113,12 @@
 }
 
 .locationCard {
-  background-color: #fff;
+  background-color: var(--background-rgb);
   border: 1px solid #ddd;
   border-radius: 16px;
   border-color: #C6E3FF;
   padding: 10px;
-  color: #072B68;
+  color: var(--Bagel-Rescue-Dark-Blue);
 }
 
 .locationDetails {
@@ -137,7 +137,7 @@
 
 .pickUp {
   background-color: #A4F4B6;
-  color: #072B68;
+  color: var(--Bagel-Rescue-Dark-Blue);
   padding: 5px 10px;
   border-radius: 12px;
   text-align: center;
@@ -145,7 +145,7 @@
 
 .dropOff {
   background-color: #F4C6A4;
-  color: #072B68;
+  color: var(--Bagel-Rescue-Dark-Blue);
   padding: 5px 10px;
   border-radius: 12px;
   text-align: center;
