@@ -41,13 +41,22 @@
   display: flex;
   gap: 10px;
   align-items: center;
+  color: var(--Bagel-Rescue-Dark-Blue);
 }
 
 .sortSelect {
   position: relative;
+  background-color: var(--background-rgb);
+  appearance: none;
+  background-image: url('/dropdown_arrow.svg');
+  background-repeat: no-repeat;
+  background-position: 90% center;
   border: 1px solid #0F7AFF;
-  border-radius: 69px;
-  padding: 10px 20px 10px 20px; 
+  border-radius: 8px;
+  height: 44px;
+  width: auto;
+  min-width: 167px;
+  padding: 0 44px 0 16px;
 }
 
 .sortSelect select {
@@ -64,7 +73,7 @@
 }
 
 .sortSelect::after {
-  content: '▼';
+  
   font-size: 12px;
   position: absolute;
   top: 52%;
@@ -76,10 +85,10 @@
 
 
 .filterButton {
-  background-color: #C6E3F9;
+  background-color: var(--background-rgb);
   border: 1px solid #0F7AFF;
   padding: 10px 15px;
-  border-radius: 69px;
+  border-radius: 8px;
   margin-left: 5px;
   cursor: pointer;
 }
