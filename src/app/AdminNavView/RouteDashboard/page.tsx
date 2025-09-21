@@ -64,7 +64,7 @@ export default function RouteDashboardPage() {
     <div className="flex">
       <AdminSidebar />
       <div className="flex flex-col flex-1">
-        <div className="header">
+        <div className="route-dash-header">
             <p className="header-text">Routes</p>
             <button 
               className={styles.newRouteButton} 

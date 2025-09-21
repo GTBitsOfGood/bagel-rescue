@@ -3,7 +3,7 @@
   background-color: var(--Bagel-Rescue-Background-Grey);
 }
 
-.header {
+.route-dash-header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
