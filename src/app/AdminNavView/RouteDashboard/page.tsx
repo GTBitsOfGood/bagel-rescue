@@ -74,8 +74,8 @@ export default function RouteDashboardPage() {
               New Route
             </button>
         </div>
-        <hr className="separator" />
-        <div className="container">
+        <hr className="route-dash-separator" />
+        <div className="route-dash-container">
           <div className={styles.container}>
             <div className={styles.searchAndSort}>
               <div className={styles.searchInputContainer}>
