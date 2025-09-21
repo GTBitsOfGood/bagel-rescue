@@ -5,7 +5,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
   faAngleLeft, 
   faMagnifyingGlass, 
-  faPlus 
+  faPlus,
+  faEllipsisH 
 } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 
@@ -129,7 +130,7 @@ export default function RouteDashboardPage() {
                       <div className={styles.routeInfo}>
                         {route.additionalInfo}
                       </div>
-                      <button className={styles.moreOptionsButton}>⋮</button>
+                      <FontAwesomeIcon icon={faEllipsisH} className={styles.moreOptionsButton}></FontAwesomeIcon>
                     </div>
                   </div>
                 ))}
