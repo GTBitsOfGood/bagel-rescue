@@ -10,7 +10,7 @@ import {
   faAngleLeft,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { getAllLocations } from "@/server/db/actions/location";
 import { Location } from "@/server/db/models/location";
@@ -31,6 +31,8 @@ function RouteCreationPage() {
   >(new Map());
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const prefillParam = searchParams.get("prefill");
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -40,6 +42,60 @@ function RouteCreationPage() {
     };
     fetchLocations();
   }, []);
+
+  useEffect(() => {
+  if (!prefillParam) return;
+
+  try {
+    const route = JSON.parse(decodeURIComponent(prefillParam));
+    setRouteName((route.routeName ?? "") + " Copy");
+    setRouteArea(route.locationDescription ?? "");
+    setAdditionalInfo(route.additionalInfo ?? "");
+
+    if (searchLocations && searchLocations.length > 0 && Array.isArray(route.locations)) {
+      const idToLocation = new Map<string, Location>();
+      searchLocations.forEach((loc: any) => idToLocation.set(String(loc._id), loc));
+
+      const orderedLocations: Location[] = route.locations.map((rloc: any) => {
+        const id = String(rloc.location);
+        const found = idToLocation.get(id);
+        if (found) return found;
+        return {
+          _id: id,
+          locationName: `Unknown (${id})`,
+          address: { street: "", city: "", state: "", zipCode: "" },
+        } as unknown as Location;
+      });
+
+      setLocations(orderedLocations);
+
+      const isPickUpMap = new Map<string, boolean>();
+      orderedLocations.forEach((loc, i) => {
+        const type = route.locations[i]?.type === "pickup";
+        isPickUpMap.set(loc.locationName ?? String(loc._id), type);
+      });
+      setLocationsIsPickUp(isPickUpMap);
+    } else {
+      if (Array.isArray(route.locations) && route.locations.length > 0) {
+        const placeholders = route.locations.map((rloc: any) => ({
+          _id: String(rloc.location),
+          locationName: `Location ${String(rloc.location).slice(0, 6)}`,
+          address: { street: "", city: "", state: "", zipCode: "" },
+        })) as unknown as Location[];
+
+        setLocations(placeholders);
+
+        const isPickUpMap = new Map<string, boolean>();
+        placeholders.forEach((p, i) => isPickUpMap.set(p.locationName, route.locations[i].type === "pickup"));
+        setLocationsIsPickUp(isPickUpMap);
+      }
+    }
+  } catch (err) {
+    console.error("Failed to parse prefillParam", err);
+  }
+}, [prefillParam, searchLocations]);
+
+
 
   function changeIsPickUp(locationName: string): void {
     const newIsPickUp = new Map(locationsIsPickUp);
@@ -269,6 +325,7 @@ function RouteCreationPage() {
                   className="field-input"
                   type="text"
                   placeholder="Add a Route Name Here"
+                  value={routeName}
                   onChange={(e) => setRouteName(e.target.value)}
                 />
               </div>
@@ -278,6 +335,7 @@ function RouteCreationPage() {
                   className="field-input"
                   type="text"
                   placeholder="ie. Atlanta, Norcross, Marietta"
+                  value={routeArea}
                   onChange={(e) => setRouteArea(e.target.value)}
                 />
               </div>
@@ -286,6 +344,7 @@ function RouteCreationPage() {
                 <textarea
                   className="field-input"
                   placeholder="Enter additional information here"
+                  value={additionalInfo}
                   onChange={(e) => setAdditionalInfo(e.target.value)}
                 />
               </div>

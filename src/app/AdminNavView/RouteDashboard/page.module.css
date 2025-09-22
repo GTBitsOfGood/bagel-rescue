@@ -34,12 +34,11 @@
   }
   
   .sortSelect {
-    background-color: var(--background-rgb);
+    background-color: rgb(var(--background-rgb));
     position: relative;
     border: 1px solid #0F7AFF;
     border-radius: 8px;
     padding: 0 44px 0 16px;
-    background: transparent;
     font-size: 16px;
     outline: none;
     color: var(--Bagel-Rescue-Dark-Blue);
@@ -53,7 +52,7 @@
   }
   
   .filterButton {
-    background-color: var(--background-rgb);
+    background-color: rgb(var(--background-rgb));
     border: 1px solid #0F7AFF;
     padding: 10px 15px;
     border-radius: 8px;
