@@ -6,7 +6,9 @@ import {
   faAngleLeft, 
   faMagnifyingGlass, 
   faPlus,
-  faEllipsisH 
+  faEllipsisH,
+  faTrashCan,
+  faCopy 
 } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 
@@ -20,6 +22,7 @@ export default function RouteDashboardPage() {
   const [routes, setRoutes] = useState<IRoute[]>([]);
   const [sortOption, setSortOption] = useState<string>('alphabetically');
   const [searchText, setSearchText] = useState<string>("");
+  const [openModalIndex, setOpenModalIndex] = useState<number | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -48,6 +51,10 @@ export default function RouteDashboardPage() {
       );
     }
     setRoutes(sortedRoutes);
+  };
+
+  const toggleModal = (index: number) => {
+    setOpenModalIndex(openModalIndex === index ? null : index);
   };
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -130,7 +137,30 @@ export default function RouteDashboardPage() {
                       <div className={styles.routeInfo}>
                         {route.additionalInfo}
                       </div>
-                      <FontAwesomeIcon icon={faEllipsisH} className={styles.moreOptionsButton}></FontAwesomeIcon>
+                      <div className={styles.modal}>
+                        <FontAwesomeIcon 
+                          icon={faEllipsisH}
+                          className={styles.moreOptionsButton}
+                          onClick={() => toggleModal(index)}
+                        />
+                        {openModalIndex === index && (
+                          <div className = {styles.contextMenu}>
+                            <button 
+                              onClick={() => handleDuplicate(route)}
+                            >
+                              <FontAwesomeIcon icon={faCopy}/>
+                              Duplicate Route
+                            </button>
+                            <button 
+                              onClick={() => handleDelete(route)}
+                              className = {styles.modalDeleteRoute}
+                            >
+                              <FontAwesomeIcon icon={faTrashCan}/>
+                              Delete Route
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
