@@ -26,6 +26,7 @@ function RouteCreationPage() {
   const [isAddingLocation, setIsAddingLocation] = useState<boolean>(false);
   const [locations, setLocations] = useState<Location[]>([]);
   const [searchLocations, setSearchLocations] = useState<Location[]>([]);
+  // location._id (string) -> boolean (true = pickup, false = dropoff)
   const [locationsIsPickUp, setLocationsIsPickUp] = useState<
     Map<string, boolean>
   >(new Map());
@@ -43,96 +44,107 @@ function RouteCreationPage() {
     fetchLocations();
   }, []);
 
-  useEffect(() => {
-  if (!prefillParam) return;
+  const [prefilled, setPrefilled] = useState(false);
+
+useEffect(() => {
+  if (!prefillParam || searchLocations.length === 0 || prefilled) return;
 
   try {
     const route = JSON.parse(decodeURIComponent(prefillParam));
+
     setRouteName((route.routeName ?? "") + " Copy");
     setRouteArea(route.locationDescription ?? "");
     setAdditionalInfo(route.additionalInfo ?? "");
 
-    if (searchLocations && searchLocations.length > 0 && Array.isArray(route.locations)) {
-      const idToLocation = new Map<string, Location>();
-      searchLocations.forEach((loc: any) => idToLocation.set(String(loc._id), loc));
+    const idToLocation = new Map<string, Location>();
+    searchLocations.forEach((loc: any) =>
+      idToLocation.set(String(loc._id), loc)
+    );
 
-      const orderedLocations: Location[] = route.locations.map((rloc: any) => {
-        const id = String(rloc.location);
-        const found = idToLocation.get(id);
-        if (found) return found;
-        return {
-          _id: id,
-          locationName: `Unknown (${id})`,
-          address: { street: "", city: "", state: "", zipCode: "" },
-        } as unknown as Location;
-      });
+    const orderedLocations: Location[] = route.locations.map((rloc: any) => {
+      const id = String(rloc.location);
+      const found = idToLocation.get(id);
 
-      setLocations(orderedLocations);
+      const locationObj: Location = found
+        ? { ...found }
+        : {
+            _id: id,
+            locationName: `Unknown (${id.slice(0, 6)})`,
+            notes: "",
+            contact: "",
+            address: { street: "", city: "", state: "", zipCode: 0 },
+            type: "Pick-Up",
+            bags: 0,
+          };
 
-      const isPickUpMap = new Map<string, boolean>();
-      orderedLocations.forEach((loc, i) => {
-        const type = route.locations[i]?.type === "pickup";
-        isPickUpMap.set(loc.locationName ?? String(loc._id), type);
-      });
-      setLocationsIsPickUp(isPickUpMap);
-    } else {
-      if (Array.isArray(route.locations) && route.locations.length > 0) {
-        const placeholders = route.locations.map((rloc: any) => ({
-          _id: String(rloc.location),
-          locationName: `Location ${String(rloc.location).slice(0, 6)}`,
-          address: { street: "", city: "", state: "", zipCode: "" },
-        })) as unknown as Location[];
+      locationObj.bags = rloc.bags ?? 0;
+      return locationObj;
+    });
 
-        setLocations(placeholders);
+    setLocations(orderedLocations);
 
-        const isPickUpMap = new Map<string, boolean>();
-        placeholders.forEach((p, i) => isPickUpMap.set(p.locationName, route.locations[i].type === "pickup"));
-        setLocationsIsPickUp(isPickUpMap);
-      }
-    }
+    const isPickUpMap = new Map<string, boolean>();
+    orderedLocations.forEach((loc, i) => {
+      const id = String(loc._id);
+      const type = route.locations[i]?.type === "pickup";
+      isPickUpMap.set(id, type);
+    });
+    setLocationsIsPickUp(isPickUpMap);
+
+    const usedIds = new Set(orderedLocations.map((l) => String(l._id)));
+    setSearchLocations((prev) =>
+      prev.filter((l) => !usedIds.has(String(l._id)))
+    );
+
+    setPrefilled(true);
   } catch (err) {
     console.error("Failed to parse prefillParam", err);
   }
-}, [prefillParam, searchLocations]);
+}, [prefillParam, searchLocations, prefilled]);
 
 
-
-  function changeIsPickUp(locationName: string): void {
+  function changeIsPickUp(locationId: string): void {
     const newIsPickUp = new Map(locationsIsPickUp);
-    newIsPickUp.set(locationName, !newIsPickUp.get(locationName));
+    newIsPickUp.set(locationId, !newIsPickUp.get(locationId));
     setLocationsIsPickUp(newIsPickUp);
   }
 
   function addLocation(index: number): void {
-    const newLocations = [...locations];
-    newLocations.push(searchLocations[index]);
+    const locToAdd = searchLocations[index];
+    if (!locToAdd) return;
+
+    const newLocations = [...locations, locToAdd];
     setLocations(newLocations);
 
     const newIsPickUp = new Map(locationsIsPickUp);
-    newIsPickUp.set(searchLocations[index]["locationName"], true);
+    newIsPickUp.set(
+      String(locToAdd._id),
+      locToAdd.type ? locToAdd.type === "Pick-Up" : true
+    );
     setLocationsIsPickUp(newIsPickUp);
 
     const newSearchLocations = [...searchLocations];
     newSearchLocations.splice(index, 1);
     setSearchLocations(newSearchLocations);
 
-    setIsAddingLocation(!isAddingLocation);
+    setIsAddingLocation(false);
   }
 
   function removeLocation(index: number): void {
-    const newSearchLocations = [...searchLocations];
-    newSearchLocations.push(locations[index]);
-    setSearchLocations(newSearchLocations);
-
     const newLocations = [...locations];
-    newLocations.splice(index, 1);
+    const [removed] = newLocations.splice(index, 1);
     setLocations(newLocations);
+
+    const newIsPickUp = new Map(locationsIsPickUp);
+    newIsPickUp.delete(String(removed._id));
+    setLocationsIsPickUp(newIsPickUp);
+    setSearchLocations((prev) => [...prev, removed]);
   }
 
   function completeRoute(): void {
     const locs: ILocation[] = locations.map((item) => ({
       location: new mongoose.Types.ObjectId(item["_id"]!),
-      type: locationsIsPickUp.get(item["locationName"]) ? "pickup" : "dropoff",
+      type: locationsIsPickUp.get(String(item["_id"])) ? "pickup" : "dropoff",
     }));
     const route = {
       routeName: routeName,
@@ -176,16 +188,18 @@ function RouteCreationPage() {
               ref={provided.innerRef}
             >
               {locations.map((location, ind) => {
+                const idStr = String(location._id);
+                const isPickUp = locationsIsPickUp.get(idStr) ?? true;
                 return (
                   <Draggable
-                    key={location["locationName"]}
-                    draggableId={location["locationName"]}
+                    key={idStr}
+                    draggableId={idStr}
                     index={ind}
                   >
                     {(provided) => (
                       <div
-                        key={ind}
-                        className={location["locationName"] + " location-card"}
+                        key={idStr}
+                        className={idStr + " location-card"}
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
@@ -203,18 +217,14 @@ function RouteCreationPage() {
                         <div className="location-card-section">
                           <button
                             className="location-pick-drop"
-                            onClick={() =>
-                              changeIsPickUp(location["locationName"])
-                            }
+                            onClick={() => changeIsPickUp(idStr)}
                             style={{
-                              backgroundColor: (location["type"] == "Pick-Up")
+                              backgroundColor: isPickUp
                                 ? "#a4f4b6"
                                 : "#f4c6a4",
                             }}
                           >
-                            {location["type"] == "Pick-Up"
-                              ? "Pick Up"
-                              : "Drop Off"}
+                            {isPickUp ? "Pick Up" : "Drop Off"}
                           </button>
                           <button
                             className="x-btn"
@@ -245,7 +255,7 @@ function RouteCreationPage() {
         {searchLocations.map((location, ind) => {
           return (
             <div
-              key={ind}
+              key={String(location._id)}
               className="search-location"
               onClick={() => addLocation(ind)}
               style={{
@@ -278,7 +288,7 @@ function RouteCreationPage() {
                       location["type"] === "Pick-Up" ? "#a4f4b6" : "#f4c6a4",
                   }}
                 >
-                  {location["type"]}
+                  {location["type"] ?? "Pick-Up"}
                 </button>
               </div>
             </div>
