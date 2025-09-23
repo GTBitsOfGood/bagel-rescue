@@ -60,6 +60,7 @@ function WeeklyShiftDashboard() {
   function routesList() {
     return (
       <div className="routes-list">
+        <p> HHIIIIIIIII </p>
         {routes.map((route, routeInd) => {
           const getTimesHeader = (r: IRoute) => {
             const dates = getDatesHelper(r)
@@ -228,6 +229,7 @@ function WeeklyShiftDashboard() {
       <AdminSidebar />
       <div className='flex flex-col flex-1'>
         <WeeklyDashboardHeader date={date} AddDays={AddDays} />
+        <p> HHIIIIIIIII </p>
         <div className="container">
           <div className="spacer-50"></div>
           <div className="search-settings">

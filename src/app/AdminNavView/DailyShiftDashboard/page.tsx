@@ -11,13 +11,14 @@ import WeeklyShiftBar from '../../components/DailyShiftBar';
 import DashboardHeader from '../../components/DailyDashboard';
 import DailyShiftBar from '../../components/DailyShiftBar';
 import AdminSidebar from '../../../components/AdminSidebar';
-
+import ShiftSidebar from '@/app/components/ShiftSidebar';
 function DailyShiftDashboardPage() {
 
     const [search, setSearch] = useState<string>('');
     const [date, setDate] = useState<Date>(new Date());
     const [shifts, setShifts] = useState<Shift[]>([]);
     const [routes, setRoutes] = useState<{ [key: string]: IRoute }>({});
+    const [selectedItem, setSelectedItem] = useState<Shift | null>(null);
 
     useEffect(() => {
         const fetchShifts = async () => {
@@ -46,6 +47,7 @@ function DailyShiftDashboardPage() {
             setDate(newDate);
         }
     };
+        
 
     const addTimes = () => {
         const divs = [];
@@ -64,9 +66,18 @@ function DailyShiftDashboardPage() {
             console.log(currShifts);
             divs.push(
                 <div key={i} className='min-h-[5rem]'>
-                    <DailyShiftBar shift={currShifts} routes={routes} startTime={startTime} endTime={endTime} />
+                    <DailyShiftBar onOpenSidebar={() => {
+                            console.log(currShifts[i].shiftDate)
+                            setSelectedItem(currShifts[i])
+                        }}
+                        shift={currShifts}
+                        routes={routes} 
+                        startTime={startTime} 
+                        endTime={endTime} />
                 </div>
             )
+            console.log("Hi")
+
         }
         return divs;
     };
@@ -76,6 +87,7 @@ function DailyShiftDashboardPage() {
             <AdminSidebar />
             <div className='flex flex-col flex-1'>
                 <DashboardHeader date={date} AddDays={AddDays} />
+                {selectedItem && <ShiftSidebar shift={selectedItem}/>}
                 <div className='bg-[#ECF2F9] flex flex-col pl-9 pr-9 gap-6 min-h-screen'>
                     <div className='flex justify-between text-[#6C7D93] mt-6'>
                         <div className='px-5 py-[.6rem] rounded-xl space-x-2'>

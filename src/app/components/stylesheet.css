@@ -1,0 +1,31 @@
+.main-sidebar {
+    position: fixed; 
+    right: 0;               
+    height: 100%; 
+    width: 30rem;     
+    z-index: 50;    
+    
+    background: #fff;
+    box-shadow: -2px 0 6px rgba(0,0,0,0.1);
+    padding: 24px 36px 53px 36px;
+  
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(0); /* visible */
+}
+
+.sidebar-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sidebar-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}

@@ -9,12 +9,14 @@ function DailyShiftBar({
   shift,
   routes,
   startTime,
-  endTime
+  endTime,
+  onOpenSidebar
 }: {
   shift: Shift[];
   routes: {[key: string]: IRoute};
   startTime: Date;
   endTime: Date;
+  onOpenSidebar: () => void;
 }) {
   let shiftDate =
     new Date(startTime).toLocaleTimeString("en-us", {
@@ -42,6 +44,7 @@ function DailyShiftBar({
               <div className="col-span-1 md:col-span-2 text-center flex flex-auto justify-around items-center w-full md:min-w-0 space-x-2">
                 <button className="bg-[#D3D8DE] flex-shrink py-2 md:px-7 text-center rounded-[2.75rem] font-[600] opacity-60 text-[#072B68]">{`incomplete`}</button>
                 <FontAwesomeIcon
+                  onClick={() => onOpenSidebar()}
                   icon={faEllipsis}
                   className="flex-shrink mt-1 min-w-0"
                 />
@@ -57,6 +60,7 @@ function DailyShiftBar({
             <div className="col-span-1 md:col-span-2 text-center flex flex-auto justify-around items-center w-full md:min-w-0 space-x-2">
               <button className="bg-[#D3D8DE] flex-shrink py-2 md:px-7 text-center rounded-[2.75rem] font-[600] opacity-60 text-[#072B68]">{`incomplete`}</button>
               <FontAwesomeIcon
+                onClick={onOpenSidebar}
                 icon={faEllipsis}
                 className="flex-shrink mt-1 min-w-0"
               />
