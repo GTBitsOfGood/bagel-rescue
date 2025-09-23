@@ -73,8 +73,7 @@ export default function RouteDashboardPage() {
   };
 
   const handleDuplicate = (route : IRoute) => {
-    const prefill = encodeURIComponent(JSON.stringify(route))
-    router.push(`/AdminNavView/RouteCreationPage?prefill=${prefill}`);
+    router.push(`/AdminNavView/RouteCreationPage?duplicate=${route._id}`);
   };
 
   const toggleModal = (index: number) => {

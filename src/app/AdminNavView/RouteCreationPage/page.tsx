@@ -10,12 +10,12 @@ import {
   faAngleLeft,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import { getAllLocations } from "@/server/db/actions/location";
 import { Location } from "@/server/db/models/location";
 import { ILocation } from "@/server/db/models/Route";
-import { createRoute } from "@/server/db/actions/Route";
+import { getRoute, createRoute } from "@/server/db/actions/Route";
 import AdminSidebar from "../../../components/AdminSidebar";
 
 function RouteCreationPage() {
@@ -26,81 +26,90 @@ function RouteCreationPage() {
   const [isAddingLocation, setIsAddingLocation] = useState<boolean>(false);
   const [locations, setLocations] = useState<Location[]>([]);
   const [searchLocations, setSearchLocations] = useState<Location[]>([]);
+  const [locationsLoaded, setLocationsLoaded] = useState(false);
+  const [duplicateId, setDuplicateId] = useState<string | null>(null);
   // location._id (string) -> boolean (true = pickup, false = dropoff)
   const [locationsIsPickUp, setLocationsIsPickUp] = useState<
     Map<string, boolean>
   >(new Map());
+   const [prefilled, setPrefilled] = useState(false);
 
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const prefillParam = searchParams.get("prefill");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setDuplicateId(params.get("duplicate"));
+  }, []);
 
   useEffect(() => {
     const fetchLocations = async () => {
       const response = await getAllLocations();
       const data = JSON.parse(response || "[]");
       setSearchLocations(data || []);
+      setLocationsLoaded(true);
     };
     fetchLocations();
   }, []);
 
-  const [prefilled, setPrefilled] = useState(false);
 
 useEffect(() => {
-  if (!prefillParam || searchLocations.length === 0 || prefilled) return;
+  if (!duplicateId || !locationsLoaded || prefilled) return;
+  const fetchRouteToDuplicate = async () => {
+    try {
+      const route = await getRoute(duplicateId);
+      if (!route) return;
 
-  try {
-    const route = JSON.parse(decodeURIComponent(prefillParam));
+      // prefill fields
+      setRouteName((route.routeName ?? "") + " Copy");
+      setRouteArea(route.locationDescription ?? "");
+      setAdditionalInfo(route.additionalInfo ?? "");
 
-    setRouteName((route.routeName ?? "") + " Copy");
-    setRouteArea(route.locationDescription ?? "");
-    setAdditionalInfo(route.additionalInfo ?? "");
+      const idToLocation = new Map<string, Location>();
+      searchLocations.forEach((loc: any) =>
+        idToLocation.set(String(loc._id), loc)
+      );
 
-    const idToLocation = new Map<string, Location>();
-    searchLocations.forEach((loc: any) =>
-      idToLocation.set(String(loc._id), loc)
-    );
+      const orderedLocations: Location[] = route.locations.map((rloc: any) => {
+        const id = String(rloc.location);
+        const found = idToLocation.get(id);
+        const locationObj: Location = found
+          ? { ...found }
+          : {
+              _id: id,
+              locationName: `Unknown (${id.slice(0, 6)})`,
+              notes: "",
+              contact: "",
+              address: { street: "", city: "", state: "", zipCode: 0 },
+              type: "Pick-Up",
+              bags: 0,
+            };
+        locationObj.bags = rloc.bags ?? 0;
+        return locationObj;
+      });
 
-    const orderedLocations: Location[] = route.locations.map((rloc: any) => {
-      const id = String(rloc.location);
-      const found = idToLocation.get(id);
+      setLocations(orderedLocations);
 
-      const locationObj: Location = found
-        ? { ...found }
-        : {
-            _id: id,
-            locationName: `Unknown (${id.slice(0, 6)})`,
-            notes: "",
-            contact: "",
-            address: { street: "", city: "", state: "", zipCode: 0 },
-            type: "Pick-Up",
-            bags: 0,
-          };
+      const isPickUpMap = new Map<string, boolean>();
+      orderedLocations.forEach((loc, i) => {
+        const id = String(loc._id);
+        const type = route.locations[i]?.type === "pickup";
+        isPickUpMap.set(id, type);
+      });
+      setLocationsIsPickUp(isPickUpMap);
 
-      locationObj.bags = rloc.bags ?? 0;
-      return locationObj;
-    });
+      const usedIds = new Set(orderedLocations.map((l) => String(l._id)));
+      setSearchLocations((prev) =>
+        prev.filter((l) => !usedIds.has(String(l._id)))
+      );
 
-    setLocations(orderedLocations);
+      setPrefilled(true);
+    } catch (err) {
+      console.error("Failed to fetch duplicate route", err);
+    }
+  };
 
-    const isPickUpMap = new Map<string, boolean>();
-    orderedLocations.forEach((loc, i) => {
-      const id = String(loc._id);
-      const type = route.locations[i]?.type === "pickup";
-      isPickUpMap.set(id, type);
-    });
-    setLocationsIsPickUp(isPickUpMap);
-
-    const usedIds = new Set(orderedLocations.map((l) => String(l._id)));
-    setSearchLocations((prev) =>
-      prev.filter((l) => !usedIds.has(String(l._id)))
-    );
-
-    setPrefilled(true);
-  } catch (err) {
-    console.error("Failed to parse prefillParam", err);
-  }
-}, [prefillParam, searchLocations, prefilled]);
+  fetchRouteToDuplicate();
+}, [duplicateId, locationsLoaded, prefilled, searchLocations]);
 
 
   function changeIsPickUp(locationId: string): void {
