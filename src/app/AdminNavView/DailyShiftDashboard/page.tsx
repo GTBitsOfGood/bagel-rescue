@@ -12,13 +12,25 @@ import DashboardHeader from '../../components/DailyDashboard';
 import DailyShiftBar from '../../components/DailyShiftBar';
 import AdminSidebar from '../../../components/AdminSidebar';
 import ShiftSidebar from '@/app/components/ShiftSidebar';
+import { Location } from '@/server/db/models/location';
+import { ILocation } from '@/server/db/models/Route';
+import { getAllLocationsById } from '@/server/db/actions/location';
+
+export type ShiftSidebarInfo = {
+    shift: Shift;
+    route: IRoute;
+    location_list: string[]
+}
+
 function DailyShiftDashboardPage() {
 
     const [search, setSearch] = useState<string>('');
     const [date, setDate] = useState<Date>(new Date());
     const [shifts, setShifts] = useState<Shift[]>([]);
     const [routes, setRoutes] = useState<{ [key: string]: IRoute }>({});
-    const [selectedItem, setSelectedItem] = useState<Shift | null>(null);
+    const [locations, setLocations] = useState<{ [key: string]: string[] }>({});
+    const [selectedItem, setSelectedItem] = useState<ShiftSidebarInfo | null>(null);
+     
 
     useEffect(() => {
         const fetchShifts = async () => {
@@ -36,8 +48,45 @@ function DailyShiftDashboardPage() {
                 routeMap[String(route._id)] = route;
             });
             setRoutes(routeMap);
-        };
+
+            // Collect all location IDs from all routes
+            const allLocationIds: string[] = [];
+            routeData.forEach((route: IRoute) => {
+                route.locations.forEach((location: ILocation) => {
+                    allLocationIds.push(String(location.location));
+                });
+            });
+
+            try {
+                const locationsResponse = await getAllLocationsById(allLocationIds);
+                const locationsData = JSON.parse(locationsResponse || "[]");
+                
+                // Create a map of location ID to location name
+                const locationNameMap: { [key: string]: string } = {};
+                locationsData.forEach((location: any) => {
+                    locationNameMap[String(location._id)] = location.locationName;
+                });
+
+                // Create a map of route ID to location names
+                const routeLocationNamesMap: { [key: string]: string[] } = {};
+                routeData.forEach((route: IRoute) => {
+                    const locationNames: string[] = [];
+                    route.locations.forEach((location: ILocation) => {
+                        const locationName = locationNameMap[String(location.location)];
+                        if (locationName) {
+                            locationNames.push(locationName);
+                        }
+                    });
+                    routeLocationNamesMap[String(route._id)] = locationNames;
+                });
+
+                setLocations(routeLocationNamesMap);
+            } catch (error) {
+                console.error("Error fetching locations:", error);
+            }
+        }
         fetchShifts();
+        console.log(locations)
     }, [date]);
 
     const AddDays = (e: number) => {
@@ -62,16 +111,14 @@ function DailyShiftDashboardPage() {
                 return shiftDate.getUTCHours() >= startTime.getHours() && shiftDate.getUTCHours() < endTime.getHours();
             });
             
-            console.log(startTime.getHours());
-            console.log(currShifts);
             divs.push(
                 <div key={i} className='min-h-[5rem]'>
-                    <DailyShiftBar onOpenSidebar={() => {
-                            console.log(currShifts[i].shiftDate)
-                            setSelectedItem(currShifts[i])
+                    <DailyShiftBar onOpenSidebar={(shift: Shift, route: IRoute, location_list: string[]) => {
+                            setSelectedItem({shift, route, location_list});
                         }}
                         shift={currShifts}
                         routes={routes} 
+                        locations={locations}
                         startTime={startTime} 
                         endTime={endTime} />
                 </div>
@@ -85,10 +132,16 @@ function DailyShiftDashboardPage() {
     return (
         <div className="flex">
             <AdminSidebar />
-            <div className='flex flex-col flex-1'>
+            <div className='flex flex-col flex-1 relative'>
                 <DashboardHeader date={date} AddDays={AddDays} />
-                {selectedItem && <ShiftSidebar shift={selectedItem}/>}
                 <div className='bg-[#ECF2F9] flex flex-col pl-9 pr-9 gap-6 min-h-screen'>
+                {selectedItem && 
+                    <ShiftSidebar
+                        shiftSidebarInfo={selectedItem}
+                        onOpenSidebar={() => {
+                            setSelectedItem(null);
+                        }}
+                    />}
                     <div className='flex justify-between text-[#6C7D93] mt-6'>
                         <div className='px-5 py-[.6rem] rounded-xl space-x-2'>
                             {/* <FontAwesomeIcon icon={faArrowUpShortWide} />

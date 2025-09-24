@@ -2,36 +2,77 @@ import { useRouter } from "next/router";
 import React, { useCallback, useState } from "react";
 import { Shift } from "@/server/db/models/shift";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowUpShortWide } from "@fortawesome/free-solid-svg-icons";
+import { faAngleDoubleRight, faArrowUpShortWide } from "@fortawesome/free-solid-svg-icons";
 import { faPenClip } from "@fortawesome/free-solid-svg-icons";
+import { ShiftSidebarInfo } from "../AdminNavView/DailyShiftDashboard/page";
 interface ShiftSidebarProps {
-    shift: Shift;
+    shiftSidebarInfo: ShiftSidebarInfo;
+    onOpenSidebar: () => void;
 }
 import "./stylesheet.css";
 
-const ShiftSidebar: React.FC<ShiftSidebarProps> = ({shift}) => {
+const getDays = (recurrenceRule: string): string => {
+  const dayMap: { [key: string]: string } = {
+    'MO': 'Monday',
+    'TU': 'Tuesday',
+    'WE': 'Wednesday',
+    'TH': 'Thursday',
+    'FR': 'Friday',
+    'SA': 'Saturday',
+    'SU': 'Sunday'
+  };
+
+  try {
+    // Parse the recurrence rule string
+    const parts = recurrenceRule.split(';');
+    const byDayPart = parts.find(part => part.startsWith('BYDAY='));
+    
+    if (byDayPart) {
+      const dayCodes = byDayPart.substring(6).split(','); // Remove "BYDAY=" and split by comma
+      const dayNames = dayCodes.map(code => dayMap[code] || code);
+      return dayNames.join(', ');
+    }
+    
+    return "--"; // Return original if no BYDAY found
+  } catch (error) {
+    return "--"; // Return original if parsing fails
+  }
+}
+
+const ShiftSidebar: React.FC<ShiftSidebarProps> = ({shiftSidebarInfo, onOpenSidebar}) => {
   return (
     <div className="main-sidebar">
         <div className="sidebar-header">
-            <FontAwesomeIcon icon={faArrowUpShortWide}/>
-            <div className="bg-[#0F7AFF] text-[#FFFFFF] font-[700] p-[.8rem] px-5 gap-2 rounded-xl hover:bg-[#005bb5] cursor-pointer">
-                      <FontAwesomeIcon icon={faPenClip} className="mr-3" />
-                      <span>Edit Shift</span>
+            <div className="bg-white text-[#00377A] font-[500] p-[.8rem] px-5 rounded-xl 
+                hover:bg-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] 
+                hover:cursor-pointer">
+            <FontAwesomeIcon icon={faAngleDoubleRight} onClick={onOpenSidebar}/>
+            </div>
+            <div className="bg-white text-[#00377A] font-[500] p-[.8rem] px-5 gap-2 rounded-xl 
+                hover:bg-[#005bb5] border-2 border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] 
+                hover:text-white cursor-pointer">
+            <FontAwesomeIcon icon={faPenClip} className="mr-3" />
+                <span>Edit Shift</span>
             </div>
         </div>
         <div className="sidebar-content">
+          <div className="sidebar-route-name">
+            {shiftSidebarInfo.route.routeName ? shiftSidebarInfo.route.routeName : "Route"}
+          </div>
           <div className="sidebar-content-header">
             <h3> Route Locations</h3>
-            <p>Atlanta</p>
+            {shiftSidebarInfo.location_list.map((item: string, index: number) => (
+  <p key={index}>{item}</p>
+))}
           </div>
           <div className="sidebar-content-header">
             <h3> Date Range</h3>
-            <p>{new Date(shift.shiftDate).toLocaleDateString(
+            <p>{new Date(shiftSidebarInfo.shift.shiftDate).toLocaleDateString(
               "en-US", {
                 year: "numeric",
                 month: "long",
                 day: "numeric"
-              })} - {new Date(shift.shiftEndDate).toLocaleDateString(
+              })} - {new Date(shiftSidebarInfo.shift.shiftEndDate).toLocaleDateString(
                 "en-US", {
                   year: "numeric",
                   month: "long",
@@ -40,11 +81,29 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({shift}) => {
           </div>
           <div className="sidebar-content-header">
             <h3> Days </h3>
-            <p>{shift.recurrenceRule.toString()}</p>
+            <p>{getDays(shiftSidebarInfo.shift.recurrenceRule.toString())}</p>
           </div>
           <div className="sidebar-content-header">
             <h3> Time</h3>
-            <p>{new Date(shift.shiftDate).toLocaleTimeString()} - {new Date(shift.shiftEndDate).toLocaleTimeString()}</p>
+            <p>{new Date(shiftSidebarInfo.shift.shiftDate).toLocaleTimeString(
+              "en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true
+              }
+            )} - {new Date(shiftSidebarInfo.shift.shiftEndDate).toLocaleTimeString(
+              "en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true
+              }
+            )}</p>
+          </div>
+          <div className="sidebar-content-header">
+            <h3> Volunteer(s) Assigned</h3>
+            <div className="volunteer-container">
+              
+            </div>
           </div>
         </div>
     </div>
