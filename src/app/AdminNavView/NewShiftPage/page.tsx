@@ -75,6 +75,7 @@ export default function NewShiftPage() {
     newRoutes.splice(index, 1);
     setRoutes(newRoutes);
   }
+
   function locationsList() {
     if (locations.length === 0) return <div></div>;
     return locations.map((loc) => {
@@ -303,6 +304,7 @@ export default function NewShiftPage() {
         <div className="flex min-h-screen">
             <AdminSidebar/>
             <div className="flex flex-col w-full min-h-screen">
+              {/* this is the top bar */}
                 <div className="flex flex-col p-9 space-y-6 border border-b-[#D3D8DE]">
                     <div onClick={() => router.push("/AdminNavView/DailyShiftDashboard")} className="flex space-x-2 cursor-pointer">
                         <FontAwesomeIcon  icon={faArrowLeft} className="text-[#6C7D93] size-5 mt-[.1rem]"/>
@@ -316,9 +318,22 @@ export default function NewShiftPage() {
                         </div>
                     </div>
                 </div>
+
+                {/* main content area */}
                 <div className="flex justify-between pt-16 px-16 bg-[#ECF2F9] space-x-16 flex-grow">
                     <div className="h-[36rem] w-full flex space-x-16">
+                        {/* this is the left side of the main content area */}
                         <div className="flex flex-col space-y-6 w-2/5">
+                            <div className="flex space-x-4">
+                              <div className="flex flex-col space-y-2 flex-1">
+                                  <p className="text-[#072B68] font-bold text-lg">Start Time <span className="text-red-500">*</span></p>
+                                    <input onChange={(e) => setStartTime(e.target.value)} ref={timeStartInputRef} onClick={() => handleClick()} className="px-4 py-[.8rem] rounded-lg border border-blue-500 h-full" type="time" placeholder="Enter additional information here"/>
+                              </div>
+                              <div className="flex flex-col space-y-2 flex-1">
+                                <p className="text-[#072B68] font-bold text-lg">End Time <span className="text-red-500">*</span></p>
+                                  <input onChange={(e) => setEndTime(e.target.value)} ref={timeEndInputRef} onClick={() => handleClickEnd()} className="px-4 py-[.8rem] rounded-lg border border-blue-500 h-full" type="time" placeholder="Enter additional information here"/>
+                              </div>
+                            </div>
                             <div className="flex flex-col space-y-2">
                                 <label htmlFor="day" className="text-[#072B68] font-bold text-lg">Shift Day</label>
                                 <select onChange={(e) => setDay(e.target.value)} id="day" name="day" className="px-4 py-[.8rem] rounded-xl border-r-[1.25rem] border-r-transparent outline outline-[#57A0D5]">
@@ -331,15 +346,8 @@ export default function NewShiftPage() {
                                     <option value="Sunday">Sunday</option>
                                 </select>
                             </div>
-                            <div className="flex flex-col space-y-2">
-                                <p className="text-[#072B68] font-bold text-lg">Shift Start Time</p>
-                                  <input onChange={(e) => setStartTime(e.target.value)} ref={timeStartInputRef} onClick={() => handleClick()} className="px-4 py-[.8rem] rounded-xl border border-[#57A0D5] h-full" type="time" placeholder="Enter additional information here"/>
-                            </div>
-                            <div className="flex flex-col space-y-2">
-                                <p className="text-[#072B68] font-bold text-lg">Shift End Time</p>
-                                  <input onChange={(e) => setEndTime(e.target.value)} ref={timeEndInputRef} onClick={() => handleClickEnd()} className="px-4 py-[.8rem] rounded-xl border border-[#57A0D5] h-full" type="time" placeholder="Enter additional information here"/>
-                            </div>
                         </div>
+                        {/* this is the right side of the main content area */}
                         <div className="flex flex-col justify-start w-3/5 space-y-2">
                             <p className="text-[#072B68] font-bold text-lg">Route</p>
                             <div className="flex flex-col justify-between px-4 py-[.8rem] rounded-xl border border-[#57A0D5] h-full bg-white">
