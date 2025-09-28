@@ -6,6 +6,7 @@ import { getAllLocationById } from "@/server/db/actions/location";
 import { createRoute, getAllRoutes, getLocations } from "@/server/db/actions/Route";
 import { createShift } from "@/server/db/actions/shift";
 import { getAllUsers } from "@/server/db/actions/User";
+import { createUserShift } from "@/server/db/actions/userShifts";
 import { Location } from "@/server/db/models/location";
 import { IRoute } from "@/server/db/models/Route";
 import { Shift } from "@/server/db/models/shift";
@@ -267,15 +268,26 @@ export default function NewShiftPage() {
   
   }
 
-  function saveEdits() {
+  async function saveEdits() {
 
     if (routes.length === 0) {
       alert("Please add a route.");
       return;
     }
+    
+    if (volunteers.length === 0) {
+      alert("Please add at least one volunteer.");
+      return;
+    }
+    
+    if (selectedDays.length === 0) {
+      alert("Please select at least one day.");
+      return;
+    }
+    
     const selectedRoute = routes[0]._id;
     
-    selectedDays.forEach(day => {
+    for (const day of selectedDays) {
       const targetDay = day.toLowerCase();
       let finalStartDay = new Date(); 
       let finalEndDay = new Date();
@@ -328,12 +340,34 @@ export default function NewShiftPage() {
         recurrenceRule: "FREQ=WEEKLY;BYDAY=" + targetDay.toUpperCase().substring(0, 2),
       };
       
-      createShift(JSON.stringify(newShift));
-    });
+      try {
+        // Create the shift first
+        const shiftResult = await createShift(JSON.stringify(newShift));
+        if (!shiftResult) {
+          throw new Error("Failed to create shift");
+        }
+        const shiftData = JSON.parse(shiftResult);
+        const shiftId = shiftData.shiftId;
+        const routeId = shiftData.routeId;
+        
+        // Create UserShift records for each volunteer
+        for (const volunteer of volunteers) {
+          await createUserShift({
+            userId: volunteer._id,
+            shiftId: shiftId,
+            routeId: routeId,
+            shiftDate: finalStartDay,
+            shiftEndDate: finalEndDay
+          });
+        }
+      } catch (error) {
+        console.error("Error creating shift or user shifts:", error);
+        alert("Error creating shift. Please try again.");
+        return;
+      }
+    }
 
     alert("Shift(s) created successfully.");
-
-
   }
 
 

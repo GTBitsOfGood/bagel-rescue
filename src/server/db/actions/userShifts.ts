@@ -415,3 +415,30 @@ export async function getCurrentUserUniqueRoutes(): Promise<UserRoute[]> {
 
   return getUserUniqueRoutes(userId);
 }
+
+export async function createUserShift(userShiftData: {
+  userId: string;
+  shiftId: string;
+  routeId: string;
+  shiftDate: Date;
+  shiftEndDate: Date;
+}): Promise<string> {
+  try {
+    await dbConnect();
+    
+    const newUserShift = new UserShiftModel({
+      userId: userShiftData.userId,
+      shiftId: userShiftData.shiftId,
+      routeId: userShiftData.routeId,
+      shiftDate: userShiftData.shiftDate,
+      shiftEndDate: userShiftData.shiftEndDate,
+      status: "Incomplete"
+    });
+
+    await newUserShift.save();
+    return "UserShift created successfully";
+  } catch (error) {
+    console.error("Error creating UserShift:", error);
+    throw error;
+  }
+}
