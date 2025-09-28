@@ -27,6 +27,7 @@ export default function NewShiftPage() {
     const [locations, setLocations] = useState<Location[]>([]);
     const [day, setDay] = useState<string>("Monday");
     const [selectedDays, setSelectedDays] = useState<string[]>([]);
+    const [selectedVolunteers, setSelectedVolunteers] = useState<string[]>([]);
     const [startTime, setStartTime] = useState<string>("");
     const [endTime, setEndTime] = useState<string>("");
     const [timeSpecific, setTimeSpecific] = useState<boolean>(false);
@@ -95,89 +96,51 @@ export default function NewShiftPage() {
 
 
   function routesCards() {
-    function handleOnDragEnd(result: any) {
-      if (!result.destination) return;
-
-      const items = Array.from(routes);
-      const [reorderedItem] = items.splice(result.source.index, 1);
-      items.splice(result.destination.index, 0, reorderedItem);
-
-      setRoutes(items);
-    }
-
     return (
-      <DragDropContext onDragEnd={handleOnDragEnd}>
-        <Droppable droppableId="location-cards-list">
-          {(provided) => (
-            <div
-              className="location-cards-list"
-              style={{
-                display: isAddingRoute
-                  ? "none"
-                  : routes.length > 0
-                  ? "flex"
-                  : "none",
-              }}
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-            >
-              {routes.map((route, ind) => {
-                return (
-                  <Draggable
-                    key={route["routeName"]}
-                    draggableId={route["routeName"]}
-                    index={ind}
-                  >
-                    {(provided) => (
-                      <div
-                        key={ind}
-                        className={route["routeName"] + " location-card"}
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                      >
-                        <div className="location-card-section">
-                          <FontAwesomeIcon
-                            icon={faGripVertical}
-                            className="drag-drop-icon"
-                          />
-                          <p className="location-number">{ind + 1}</p>
-                          <p className="location-name">
-                            {route["routeName"]}
-                          </p>
-                        </div>
-                        <div className="location-card-section">
-                          <button
-                            className="x-btn"
-                            onClick={() => removeRoute(ind)}
-                          >
-                            <FontAwesomeIcon icon={faXmark} />
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </Draggable>
-                );
-              })}
-              {provided.placeholder}
+      <div
+              className="route-cards-list"
+        style={{
+          display: isAddingRoute
+            ? "none"
+            : routes.length > 0
+            ? "flex"
+            : "none",
+        }}
+      >
+        {routes.map((route, ind) => (
+          <div
+            key={ind}
+            className={route["routeName"] + " route-card"}
+          >
+            <div className="route-card-section">
+              <p className="route-number">{ind + 1}</p>
+              <p className="route-name">{route["routeName"]}</p>
             </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+            <div className="route-card-section">
+              <button
+                className="x-btn"
+                onClick={() => removeRoute(ind)}
+              >
+                <FontAwesomeIcon icon={faXmark} />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     );
   }
 
   function searchRoutesList() {
     return (
       <div
-        className="search-location-list"
+        className="search-results-list"
         style={{ display: isAddingRoute ? "flex" : "none" }}
       >
         {searchRoutes.map((route, ind) => {
           return (
             <div
               key={ind}
-              className="search-location"
+              className="search-result"
               onClick={() => addRoute(ind)}
               style={{
                 display: route["routeName"]
@@ -188,7 +151,7 @@ export default function NewShiftPage() {
               }}
             >
               <div className="search-location-section">
-                <p className="search-location-name">
+                <p className="search-result-name">
                   {route["routeName"]}
                 </p>
                 <p className="search-location-address">
@@ -417,14 +380,18 @@ export default function NewShiftPage() {
                                      })}
                                  </div>
                              </div>
+                             {/* this is the volunteer area */}
+                             <div className="flex flex-col space-y-2">
+                                 <label htmlFor="volunteer" className="text-[#072B68] font-bold text-lg">Volunteer<span className="text-red-500 ml-1">*</span></label>
+                             </div>
                         </div>
                         {/* this is the right side of the main content area */}
                         <div className="flex flex-col justify-start w-3/5 space-y-2">
-                            <p className="text-[#072B68] font-bold text-lg">Route</p>
-                            <div className="flex flex-col justify-between px-4 py-[.8rem] rounded-xl border border-[#57A0D5] h-full bg-white">
-                                    <div className="locations-box">
+                            <p className="text-[#072B68] font-bold text-lg">Route<span className="text-red-500 ml-1">*</span></p>
+                            <div className="flex flex-col justify-between px-4 py-[.8rem] rounded-xl border border-[#57A0D5] bg-white">
+                                    <div className="route-box">
                                         <div
-                                        className="location-input"
+                                        className="route-input"
                                         style={{ display: isAddingRoute ? "flex" : "none" }}
                                         >
                                         <input
@@ -434,7 +401,7 @@ export default function NewShiftPage() {
                                             onChange={(e) => setSearchText(e.target.value)}
                                         />
                                         <button
-                                            className="exit-add-location-btn x-btn"
+                                            className="exit-btn x-btn"
                                             onClick={() => setIsAddingRoute(!isAddingRoute)}
                                         >
                                             <FontAwesomeIcon icon={faXmark} />
@@ -443,20 +410,13 @@ export default function NewShiftPage() {
                                         {routesCards()}
                                         {searchRoutesList()}
                                         {routes.length > 0 ? <div></div>:<button
-                                        className="add-location-btn"
+                                        className="add-route-btn"
                                         onClick={() => setIsAddingRoute(!isAddingRoute)}
                                         style={{ display: isAddingRoute ? "none" : "flex" }}
                                         >
                                         Add a Route
                                         </button>}
                                     </div>
-                                
-                                <div className="flex px-2 py-4 border-t-2 border-[#C6E3F9]">
-                                    <h1 className="text-[#072B68] font-bold text-sm pr-2 border-r-2 border-[#57A0D5]">Route Locations</h1>
-                                    <div className="flex pl-2 space-x-3">
-                                        {routes.length > 0 ? <div className="flex flex-wrap">{locationsList()}</div> : (<div className="text-[#072B68] font-bold text-sm opacity-30">No locations have been selected yet.</div>)}
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
