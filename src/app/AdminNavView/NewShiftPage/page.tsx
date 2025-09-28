@@ -23,7 +23,7 @@ export default function NewShiftPage() {
     const [searchRoutes, setSearchRoutes] = useState<IRoute[]>([]);
     const [routes, setRoutes] = useState<IRoute[]>([]);
     const [searchText, setSearchText] = useState<string>("");
-    const [isAddingRoute, setIsAddingRoute] = useState<boolean>(false);
+    const [hasAddedRoute, setHasAddedRoute] = useState<boolean>(false);
     const [locations, setLocations] = useState<Location[]>([]);
     const [day, setDay] = useState<string>("Monday");
     const [selectedDays, setSelectedDays] = useState<string[]>([]);
@@ -69,7 +69,7 @@ export default function NewShiftPage() {
     newSearchRoutes.splice(index, 1);
     setSearchRoutes(newSearchRoutes);
 
-    setIsAddingRoute(!isAddingRoute);
+    setHasAddedRoute(true);
   }
 
   function removeRoute(index: number): void {
@@ -80,6 +80,8 @@ export default function NewShiftPage() {
     const newRoutes = [...routes];
     newRoutes.splice(index, 1);
     setRoutes(newRoutes);
+    
+    setHasAddedRoute(false);
   }
 
   function locationsList() {
@@ -95,37 +97,20 @@ export default function NewShiftPage() {
   }
 
 
-  function routesCards() {
+  function selectedRoute() {
+    if (routes.length === 0) return null;
+    
     return (
-      <div
-              className="route-cards-list"
-        style={{
-          display: isAddingRoute
-            ? "none"
-            : routes.length > 0
-            ? "flex"
-            : "none",
-        }}
-      >
-        {routes.map((route, ind) => (
-          <div
-            key={ind}
-            className={route["routeName"] + " route-card"}
-          >
-            <div className="route-card-section">
-              <p className="route-number">{ind + 1}</p>
-              <p className="route-name">{route["routeName"]}</p>
-            </div>
-            <div className="route-card-section">
-              <button
-                className="x-btn"
-                onClick={() => removeRoute(ind)}
-              >
-                <FontAwesomeIcon icon={faXmark} />
-              </button>
-            </div>
-          </div>
-        ))}
+      <div className="selected-route">
+        <div className="route-info">
+          <p className="route-name">{routes[0]["routeName"]}</p>
+        </div>
+        <button
+          className="x-btn"
+          onClick={() => removeRoute(0)}
+        >
+          <FontAwesomeIcon icon={faXmark} />
+        </button>
       </div>
     );
   }
@@ -134,7 +119,7 @@ export default function NewShiftPage() {
     return (
       <div
         className="search-results-list"
-        style={{ display: isAddingRoute ? "flex" : "none" }}
+        style={{ display: hasAddedRoute ? "none" : "flex" }}
       >
         {searchRoutes.map((route, ind) => {
           return (
@@ -143,7 +128,7 @@ export default function NewShiftPage() {
               className="search-result"
               onClick={() => addRoute(ind)}
               style={{
-                display: route["routeName"]
+                display: searchText === "" || route["routeName"]
                   .toLowerCase()
                   .includes(searchText.toLowerCase())
                   ? "flex"
@@ -390,32 +375,17 @@ export default function NewShiftPage() {
                             <p className="text-[#072B68] font-bold text-lg">Route<span className="text-red-500 ml-1">*</span></p>
                             <div className="flex flex-col justify-between px-4 py-[.8rem] rounded-xl border border-[#57A0D5] bg-white">
                                     <div className="route-box">
-                                        <div
-                                        className="route-input"
-                                        style={{ display: isAddingRoute ? "flex" : "none" }}
-                                        >
-                                        <input
-                                            className="field-input"
-                                            type="text"
-                                            placeholder="Start typing here"
-                                            onChange={(e) => setSearchText(e.target.value)}
-                                        />
-                                        <button
-                                            className="exit-btn x-btn"
-                                            onClick={() => setIsAddingRoute(!isAddingRoute)}
-                                        >
-                                            <FontAwesomeIcon icon={faXmark} />
-                                        </button>
-                                        </div>
-                                        {routesCards()}
+                                        {hasAddedRoute ? selectedRoute() : (
+                                            <div className="route-input">
+                                                <input
+                                                    className="field-input"
+                                                    type="text"
+                                                    placeholder="Start typing here"
+                                                    onChange={(e) => setSearchText(e.target.value)}
+                                                />
+                                            </div>
+                                        )}
                                         {searchRoutesList()}
-                                        {routes.length > 0 ? <div></div>:<button
-                                        className="add-route-btn"
-                                        onClick={() => setIsAddingRoute(!isAddingRoute)}
-                                        style={{ display: isAddingRoute ? "none" : "flex" }}
-                                        >
-                                        Add a Route
-                                        </button>}
                                     </div>
                             </div>
                         </div>
