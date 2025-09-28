@@ -5,9 +5,11 @@ import AdminSidebar from "@/components/AdminSidebar";
 import { getAllLocationById } from "@/server/db/actions/location";
 import { createRoute, getAllRoutes, getLocations } from "@/server/db/actions/Route";
 import { createShift } from "@/server/db/actions/shift";
+import { getAllUsers } from "@/server/db/actions/User";
 import { Location } from "@/server/db/models/location";
 import { IRoute } from "@/server/db/models/Route";
 import { Shift } from "@/server/db/models/shift";
+import { User } from "@/server/db/models/User";
 import { regular } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { faArrowLeft, faGripVertical, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -23,6 +25,10 @@ export default function NewShiftPage() {
     const [searchRoutes, setSearchRoutes] = useState<IRoute[]>([]);
     const [routes, setRoutes] = useState<IRoute[]>([]);
     const [searchText, setSearchText] = useState<string>("");
+    const [volunteerSearchText, setVolunteerSearchText] = useState<string>("");
+    const [isSearchingVolunteers, setIsSearchingVolunteers] = useState<boolean>(false);
+    const [searchVolunteers, setSearchVolunteers] = useState<User[]>([]);
+    const [volunteers, setVolunteers] = useState<User[]>([]);
     const [hasAddedRoute, setHasAddedRoute] = useState<boolean>(false);
     const [locations, setLocations] = useState<Location[]>([]);
     const [selectedDays, setSelectedDays] = useState<string[]>([]);
@@ -45,6 +51,15 @@ export default function NewShiftPage() {
       setSearchRoutes(data || []);
     };
     fetchRoutes();
+  }, []);
+
+  useEffect(() => {
+    const fetchVolunteers = async () => {
+      const response = await getAllUsers();
+      const data = JSON.parse(response || "[]");
+      setSearchVolunteers(data || []);
+    };
+    fetchVolunteers();
   }, []);
 
   useEffect(() => {
@@ -79,6 +94,28 @@ export default function NewShiftPage() {
     setRoutes(newRoutes);
     
     setHasAddedRoute(false);
+  }
+
+  function addVolunteer(index: number): void {
+    const newVolunteers = [...volunteers];
+    newVolunteers.push(searchVolunteers[index]);
+    setVolunteers(newVolunteers);
+
+    const newSearchVolunteers = [...searchVolunteers];
+    newSearchVolunteers.splice(index, 1);
+    setSearchVolunteers(newSearchVolunteers);
+
+    setIsSearchingVolunteers(false);
+  }
+
+  function removeVolunteer(index: number): void {
+    const newSearchVolunteers = [...searchVolunteers];
+    newSearchVolunteers.push(volunteers[index]);
+    setSearchVolunteers(newSearchVolunteers);
+
+    const newVolunteers = [...volunteers];
+    newVolunteers.splice(index, 1);
+    setVolunteers(newVolunteers);
   }
 
   function locationsList() {
@@ -274,9 +311,8 @@ export default function NewShiftPage() {
                     </div>
                     <div className="flex justify-between text-center align-middle">
                         <div className="text-[#072B68] font-bold text-4xl content-center">New Shift</div>
-                        <div className="flex justify-between space-x-4">
-                            <button onClick={() => router.push("/AdminNavView/DailyShiftDashboard")} className="bg-[#ECF2F9] font-bold text-[#6C7D93] px-4 py-[.8rem] rounded-xl text-base border border-[#D3D8DE]">Cancel</button>
-                            <button onClick={() => saveEdits()} className="bg-[#0F7AFF] font-bold text-white px-4 py-[.8rem] rounded-xl">Save edits</button>
+                        <div className="flex justify-end">
+                            <button onClick={() => saveEdits()} className="font-bold text-white px-6 py-[.8rem] rounded-xl text-base" style={{backgroundColor: '#A3A3A3'}}>Complete Shift</button>
                         </div>
                     </div>
                 </div>
@@ -372,7 +408,36 @@ export default function NewShiftPage() {
                              {/* this is the volunteer area */}
                              <div className="flex flex-col space-y-2">
                                  <label htmlFor="volunteer" className="text-[#072B68] font-bold text-lg">Volunteer<span className="text-red-500 ml-1">*</span></label>
+                                  <input
+                                       className="field-input"
+                                       type="text"
+                                       placeholder="Enter a volunteer here"
+                                       onChange={(e) => setVolunteerSearchText(e.target.value)}
+                                       onClick={() => setIsSearchingVolunteers(true)}
+                                   />
                              </div>
+                              {isSearchingVolunteers && (
+                                        <div className="search-results-list bg-white">
+                                            {searchVolunteers.map((volunteer, ind) => {
+                                                return (
+                                                    <div
+                                                        key={ind}
+                                                        className="search-result"
+                                                        onClick={() => addVolunteer(ind)}
+                                                        style={{
+                                                            display: volunteerSearchText === "" || volunteer.name
+                                                                .toLowerCase()
+                                                                .includes(volunteerSearchText.toLowerCase())
+                                                                ? "flex"
+                                                                : "none",
+                                                        }}
+                                                    >
+                                                        <p className="search-result-name">{volunteer.name}</p>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                         </div>
                         {/* this is the right side of the main content area */}
                         <div className="flex flex-col justify-start w-3/5 space-y-2">
