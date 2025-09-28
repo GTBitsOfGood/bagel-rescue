@@ -377,7 +377,7 @@ export default function NewShiftPage() {
             <AdminSidebar/>
             <div className="flex flex-col w-full min-h-screen">
               {/* this is the top bar */}
-                <div className="flex flex-col p-9 space-y-6 border border-b-[#D3D8DE]">
+                <div className="flex flex-col p-4 space-y-2 border border-b-[#D3D8DE]">
                     <div onClick={() => router.push("/AdminNavView/DailyShiftDashboard")} className="flex space-x-2 cursor-pointer">
                         <FontAwesomeIcon  icon={faArrowLeft} className="text-[#6C7D93] size-5 mt-[.1rem]"/>
                         <span className="font-semibold text-base text-[#6C7D93]">Back</span>

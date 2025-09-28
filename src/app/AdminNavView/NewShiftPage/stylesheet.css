@@ -196,7 +196,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5em;
-  max-height: 150px;
+  max-height: 116px;
   overflow-y: auto;
   border: 1px solid var(--Bagel-Rescue-Blue);
   border-radius: 12px;
