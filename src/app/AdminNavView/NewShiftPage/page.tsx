@@ -517,7 +517,7 @@ export default function NewShiftPage() {
                             {/* this is the additional information area */}
                             <p className="text-[#072B68] font-bold text-lg">Additional Information</p>
                             <textarea
-                                className={hasAddedRoute ? "field-input-smaller" : "field-input"}
+                                className="additional-info-textarea"
                                 placeholder="Enter additional information here"
                                 onChange={(e) => setAdditionalInfo(e.target.value)}
                             />
