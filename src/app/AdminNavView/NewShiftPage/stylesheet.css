@@ -181,3 +181,27 @@
   font-size: 1em;
   font-weight: bold;
 }
+
+/* Date input styling */
+.date-input-enabled {
+  border: 1px solid #2563eb;
+  background-color: white;
+  color: #072B68;
+  cursor: pointer;
+}
+
+.date-input-disabled {
+  border: 1px solid #2563eb;
+  background-color: white;
+  color: #9CA3AF;
+  cursor: not-allowed;
+}
+
+/* Label styling for disabled state */
+.label-disabled {
+  color: #9CA3AF;
+}
+
+.label-enabled {
+  color: #072B68;
+}

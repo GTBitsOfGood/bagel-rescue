@@ -29,6 +29,9 @@ export default function NewShiftPage() {
     const [startTime, setStartTime] = useState<string>("");
     const [endTime, setEndTime] = useState<string>("");
     const [timeSpecific, setTimeSpecific] = useState<boolean>(false);
+    const [dateRange, setDateRange] = useState<boolean>(false);
+    const [startDate, setStartDate] = useState<string>("");
+    const [endDate, setEndDate] = useState<string>("");
     const [routesIsPickUp, setRoutesIsPickUp] = useState<
     Map<string, boolean>
   >(new Map());
@@ -327,22 +330,58 @@ export default function NewShiftPage() {
                         {/* this is the left side of the main content area */}
                         <div className="flex flex-col space-y-6 w-2/5">
                             {/* this is the time input area */}
-                            <div className="flex space-x-4">
+                            <div className="flex space-x-12">
                               <div className="flex flex-col space-y-2 flex-1">
                                   <p className="text-[#072B68] font-bold text-lg">Start Time <span className="text-red-500">*</span></p>
-                                    <input onChange={(e) => setStartTime(e.target.value)} ref={timeStartInputRef} onClick={() => handleClick()} className="px-4 py-[.8rem] rounded-lg border border-blue-500 h-full" type="time" placeholder="Enter additional information here"/>
+                                   <input onChange={(e) => setStartTime(e.target.value)} ref={timeStartInputRef} onClick={() => handleClick()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
                               </div>
                               <div className="flex flex-col space-y-2 flex-1">
                                 <p className="text-[#072B68] font-bold text-lg">End Time <span className="text-red-500">*</span></p>
-                                  <input onChange={(e) => setEndTime(e.target.value)} ref={timeEndInputRef} onClick={() => handleClickEnd()} className="px-4 py-[.8rem] rounded-lg border border-blue-500 h-full" type="time" placeholder="Enter additional information here"/>
+                                <input onChange={(e) => setEndTime(e.target.value)} ref={timeEndInputRef} onClick={() => handleClickEnd()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
                               </div>
                             </div>
+                            {/* this is the time specific area */}
                             <div className="flex flex-col space-y-2">
                               <div className="flex flex-row gap-2 items-center">
                                 <label className="text-[#072B68] font-bold text-lg" htmlFor="timeSpecific">Time Specific?</label>
                                 <input type="checkbox" id="timeSpecific" className="w-5 h-5 border-2 border-blue-500 rounded" checked={timeSpecific} onChange={() => setTimeSpecific(!timeSpecific)}></input>
                               </div>
                               <p className="text-[#072B68] text-sm">This shift must be done exactly within this timeframe</p>
+                            </div>
+                            {/* this is the date range area */}
+                            <div className="flex flex-col space-y-4">
+                              <div className="flex flex-row gap-2 items-center">
+                                <p className="text-[#072B68] font-bold text-lg">Date Range?</p>
+                                <input type="checkbox" id="dateRange" className="w-5 h-5 border-2 border-blue-500 rounded" checked={dateRange} onChange={() => setDateRange(!dateRange)}></input>
+                              </div>
+                              <div className="flex space-x-12">
+                                <div className="flex flex-col space-y-2 flex-1">
+                                    <p className={`font-bold text-lg ${dateRange ? 'label-enabled' : 'label-disabled'}`}>
+                                      Start Date <span className="text-red-500">*</span>
+                                    </p>
+                                    <input 
+                                      className={`px-4 py-[.8rem] rounded-lg h-full ${dateRange ? 'date-input-enabled' : 'date-input-disabled'}`} 
+                                      type="date" 
+                                      placeholder="Enter additional information here" 
+                                      value={startDate}
+                                      onChange={(e) => dateRange ? setStartDate(e.target.value) : null}
+                                      onClick={(e) => !dateRange && e.preventDefault()}
+                                    />
+                                </div>
+                                <div className="flex flex-col space-y-2 flex-1">
+                                  <p className={`font-bold text-lg ${dateRange ? 'label-enabled' : 'label-disabled'}`}>
+                                    End Date <span className="text-red-500">*</span>
+                                  </p>
+                                  <input 
+                                    className={`px-4 py-[.8rem] rounded-lg h-full ${dateRange ? 'date-input-enabled' : 'date-input-disabled'}`} 
+                                    type="date" 
+                                    placeholder="Enter additional information here" 
+                                    value={endDate}
+                                    onChange={(e) => dateRange ? setEndDate(e.target.value) : null}
+                                    onClick={(e) => !dateRange && e.preventDefault()}
+                                  />
+                                </div>
+                              </div>
                             </div>
                             <div className="flex flex-col space-y-2">
                                 <label htmlFor="day" className="text-[#072B68] font-bold text-lg">Shift Day</label>
