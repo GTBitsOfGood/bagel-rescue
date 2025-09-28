@@ -100,9 +100,9 @@
   width: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
   align-items: center;
   padding: 1em;
+  gap: 1em;
   border-radius: 8px;
   border: 1px solid var(--Bagel-Rescue-Blue);
   background: white;
@@ -113,12 +113,18 @@
   flex-direction: row;
   gap: 1em;
   align-items: center;
+  margin-right: auto;
 }
 
 .route-name {
   color: #00377a;
   font-size: 1em;
   font-weight: 700;
+}
+
+.route-description {
+  font-size: 0.875em;
+  color: #00377a;
 }
 
 .search-results-list {

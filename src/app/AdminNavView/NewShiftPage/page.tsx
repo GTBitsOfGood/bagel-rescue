@@ -102,8 +102,14 @@ export default function NewShiftPage() {
     
     return (
       <div className="selected-route">
-        <div className="route-info">
+        <div className="route-info justify-between">
+          <div className="flex flex-col gap-2">
           <p className="route-name">{routes[0]["routeName"]}</p>
+          <p className="route-description">{routes[0]["locationDescription"]}</p>
+          </div>
+        </div>
+        <div className="flex flex-col gap-2">
+            <p className="route-description">{routes[0]["locations"].length} stops</p>
         </div>
         <button
           className="x-btn"
