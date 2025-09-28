@@ -127,6 +127,17 @@ async function getTotalBagelsDelivered(): Promise<number | null> {
   return totalBagelsDelivered[0]?.total || 0;
 }
 
+async function getAllUsers(): Promise<string> {
+  try {
+    await dbConnect();
+    const users = await User.find({}).select("name email");
+    return JSON.stringify(users);
+  } catch (error) {
+    console.error("Error fetching all users:", error);
+    return JSON.stringify([]);
+  }
+}
+
 export {
   createUser,
   getUser,
@@ -135,4 +146,5 @@ export {
   getUserStats,
   getAllUserStats,
   getTotalBagelsDelivered,
+  getAllUsers,
 };
