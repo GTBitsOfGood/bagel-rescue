@@ -247,59 +247,63 @@ export default function NewShiftPage() {
       return;
     }
     const selectedRoute = routes[0]._id;
-    const targetDay = day.toLowerCase();
-
-    const today = new Date();
-    const todayName = today.toLocaleString("en-us", { weekday: "long" }).toLowerCase();
-
-    if (targetDay === todayName) {
-      finalStartDay = today;
-      finalEndDay = today;
-    }
-
-    for (let i = 1; i < 7; i++) {
-      const temp = new Date(today);
-      temp.setDate(today.getDate() + i);
-      if (temp.toLocaleString("en-us", { weekday: "long" }).toLowerCase() === targetDay) {
-        finalStartDay = temp;
-        finalEndDay = temp;
-        break;
-      }
-    }
-
-    const [startHour, startMinute] = timeIntoHoursandMinutes(startTime);
-    const [endHour, endMinute] = timeIntoHoursandMinutes(endTime);
-
-    if (startHour === 0 && startMinute === 0 || 
-      endHour === 0 && endMinute === 0 || 
-      endHour < startHour || 
-      (endHour === startHour && endMinute <= startMinute)) {
-      alert("Please enter a valid start time.");
-      return;
-    }
-
-    finalStartDay = new Date(finalStartDay);
-    finalStartDay.setHours(startHour);
-    finalStartDay.setMinutes(startMinute);
-    finalStartDay.setSeconds(0);
-
-    finalEndDay = new Date(finalEndDay);
-    finalEndDay.setHours(endHour);
-    finalEndDay.setMinutes(endMinute);
-    finalEndDay.setSeconds(0);
-
-    const newShift = {
-      routeId: selectedRoute,
-      shiftDate: finalStartDay,
-      shiftEndDate: finalEndDay,
-      timeSpecific: timeSpecific,
-      recurrenceRule: "FREQ=WEEKLY;BYDAY=" + targetDay.toUpperCase().substring(0, 2),
-    };
     
+    selectedDays.forEach(day => {
+      const targetDay = day.toLowerCase();
+      let finalStartDay = new Date(); 
+      let finalEndDay = new Date();
 
-    createShift(JSON.stringify(newShift));
+      const today = new Date();
+      const todayName = today.toLocaleString("en-us", { weekday: "long" }).toLowerCase();
 
-    alert("Shift created successfully.");
+      if (targetDay === todayName) {
+        finalStartDay = today;
+        finalEndDay = today;
+      }
+
+      for (let i = 1; i < 7; i++) {
+        const temp = new Date(today);
+        temp.setDate(today.getDate() + i);
+        if (temp.toLocaleString("en-us", { weekday: "long" }).toLowerCase() === targetDay) {
+          finalStartDay = temp;
+          finalEndDay = temp;
+          break;
+        }
+      }
+
+      const [startHour, startMinute] = timeIntoHoursandMinutes(startTime);
+      const [endHour, endMinute] = timeIntoHoursandMinutes(endTime);
+
+      if (startHour === 0 && startMinute === 0 || 
+        endHour === 0 && endMinute === 0 || 
+        endHour < startHour || 
+        (endHour === startHour && endMinute <= startMinute)) {
+        alert("Please enter a valid start time.");
+        return;
+      }
+
+      finalStartDay = new Date(finalStartDay);
+      finalStartDay.setHours(startHour);
+      finalStartDay.setMinutes(startMinute);
+      finalStartDay.setSeconds(0);
+
+      finalEndDay = new Date(finalEndDay);
+      finalEndDay.setHours(endHour);
+      finalEndDay.setMinutes(endMinute);
+      finalEndDay.setSeconds(0);
+
+      const newShift = {
+        routeId: selectedRoute,
+        shiftDate: finalStartDay,
+        shiftEndDate: finalEndDay,
+        timeSpecific: timeSpecific,
+        recurrenceRule: "FREQ=WEEKLY;BYDAY=" + targetDay.toUpperCase().substring(0, 2),
+      };
+      
+      createShift(JSON.stringify(newShift));
+    });
+
+    alert("Shift(s) created successfully.");
 
 
   }
