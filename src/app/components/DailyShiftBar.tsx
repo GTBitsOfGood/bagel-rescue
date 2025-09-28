@@ -41,7 +41,7 @@ function DailyShiftBar({
         if (i === 0) {
           divs.push(
             <div key={`${startTime.getHours()}-${i}-${j}-first`}
-             className="grid grid-cols-8 pl-5 pr-4 py-5 border-[#7D7E82A8] border-opacity-65 border-t rounded-[.625rem] items-center"
+             className="grid grid-cols-8 pl-5 pr-4 py-5 border-[#7D7E82A8] hover:bg-[#ECECEC] border-opacity-65 border-t rounded-[.625rem] items-center"
              onClick={() => onOpenSidebar(shift[j], route, location_list)}>
               <div className="col-span-2">Volunteer Name</div>
               <div className="col-span-2">{routeName}</div>
@@ -58,7 +58,7 @@ function DailyShiftBar({
         }
         divs.push(
           <div key={`${startTime.getHours()}-${i}-${j}`}
-           className="grid grid-cols-8 pl-5 pr-4 py-5 border-[#7D7E82A8] border-opacity-65 border-t items-center"
+           className="grid grid-cols-8 pl-5 pr-4 py-5 border-[#7D7E82A8] hover:bg-[#ECECEC] border-opacity-65 border-t items-center"
            onClick={() => onOpenSidebar(shift[j], route, location_list)}>
             <div className="col-span-2">Volunteer Name</div>
             <div className="col-span-2">{routeName}</div>
