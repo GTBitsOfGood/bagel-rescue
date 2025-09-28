@@ -18,6 +18,7 @@ interface Shift extends Document {
   recurrenceRule: string;
   recurrences: Recurrence[];
   timeSpecific: boolean;
+  additionalInfo: string;
 }
 
 const recurrenceSchema: Schema = new Schema({
@@ -71,6 +72,14 @@ const shiftSchema: Schema = new Schema({
   recurrences: {
     type: [recurrenceSchema],
     default: [],
+  },
+  timeSpecific: {
+    type: Boolean,
+    default: false,
+  },
+  additionalInfo: {
+    type: String,
+    default: "",
   },
 });
 

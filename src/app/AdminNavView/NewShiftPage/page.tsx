@@ -25,7 +25,6 @@ export default function NewShiftPage() {
     const [searchText, setSearchText] = useState<string>("");
     const [hasAddedRoute, setHasAddedRoute] = useState<boolean>(false);
     const [locations, setLocations] = useState<Location[]>([]);
-    const [day, setDay] = useState<string>("Monday");
     const [selectedDays, setSelectedDays] = useState<string[]>([]);
     const [selectedVolunteers, setSelectedVolunteers] = useState<string[]>([]);
     const [startTime, setStartTime] = useState<string>("");
@@ -34,9 +33,7 @@ export default function NewShiftPage() {
     const [dateRange, setDateRange] = useState<boolean>(false);
     const [startDate, setStartDate] = useState<string>("");
     const [endDate, setEndDate] = useState<string>("");
-    const [routesIsPickUp, setRoutesIsPickUp] = useState<
-    Map<string, boolean>
-  >(new Map());
+    const [additionalInfo, setAdditionalInfo] = useState<string>("");
 
     const router = useRouter();
     
@@ -251,6 +248,7 @@ export default function NewShiftPage() {
         shiftDate: finalStartDay,
         shiftEndDate: finalEndDay,
         timeSpecific: timeSpecific,
+        additionalInfo: additionalInfo,
         recurrenceRule: "FREQ=WEEKLY;BYDAY=" + targetDay.toUpperCase().substring(0, 2),
       };
       
@@ -284,8 +282,8 @@ export default function NewShiftPage() {
                 </div>
 
                 {/* main content area */}
-                <div className="flex justify-between pt-16 px-16 bg-[#ECF2F9] space-x-16 flex-grow">
-                    <div className="h-[36rem] w-full flex space-x-16">
+                <div className="flex justify-between pt-8 px-16 bg-[#ECF2F9] space-x-16 flex-grow">
+                    <div className="h-full w-full flex space-x-16 pb-6">
                         {/* this is the left side of the main content area */}
                         <div className="flex flex-col space-y-6 w-2/5">
                             {/* this is the time input area */}
@@ -378,6 +376,7 @@ export default function NewShiftPage() {
                         </div>
                         {/* this is the right side of the main content area */}
                         <div className="flex flex-col justify-start w-3/5 space-y-2">
+                            {/* this is the route area */}
                             <p className="text-[#072B68] font-bold text-lg">Route<span className="text-red-500 ml-1">*</span></p>
                             <div className="flex flex-col justify-between px-4 py-[.8rem] rounded-xl border border-[#57A0D5] bg-white">
                                     <div className="route-box">
@@ -394,6 +393,13 @@ export default function NewShiftPage() {
                                         {searchRoutesList()}
                                     </div>
                             </div>
+                            {/* this is the additional information area */}
+                            <p className="text-[#072B68] font-bold text-lg">Additional Information</p>
+                            <textarea
+                                className={hasAddedRoute ? "field-input-smaller" : "field-input"}
+                                placeholder="Enter additional information here"
+                                onChange={(e) => setAdditionalInfo(e.target.value)}
+                            />
                         </div>
                     </div>
                 </div>
