@@ -28,6 +28,7 @@ export default function NewShiftPage() {
     const [day, setDay] = useState<string>("Monday");
     const [startTime, setStartTime] = useState<string>("");
     const [endTime, setEndTime] = useState<string>("");
+    const [timeSpecific, setTimeSpecific] = useState<boolean>(false);
     const [routesIsPickUp, setRoutesIsPickUp] = useState<
     Map<string, boolean>
   >(new Map());
@@ -287,6 +288,7 @@ export default function NewShiftPage() {
       routeId: selectedRoute,
       shiftDate: finalStartDay,
       shiftEndDate: finalEndDay,
+      timeSpecific: timeSpecific,
       recurrenceRule: "FREQ=WEEKLY;BYDAY=" + targetDay.toUpperCase().substring(0, 2),
     };
     
@@ -338,7 +340,7 @@ export default function NewShiftPage() {
                             <div className="flex flex-col space-y-2">
                               <div className="flex flex-row gap-2 items-center">
                                 <label className="text-[#072B68] font-bold text-lg" htmlFor="timeSpecific">Time Specific?</label>
-                                <input type="checkbox" id="timeSpecific" className="w-5 h-5 border-2 border-blue-500 rounded"></input>
+                                <input type="checkbox" id="timeSpecific" className="w-5 h-5 border-2 border-blue-500 rounded" checked={timeSpecific} onChange={() => setTimeSpecific(!timeSpecific)}></input>
                               </div>
                               <p className="text-[#072B68] text-sm">This shift must be done exactly within this timeframe</p>
                             </div>

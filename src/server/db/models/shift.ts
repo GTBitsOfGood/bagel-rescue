@@ -17,6 +17,7 @@ interface Shift extends Document {
   currSignedUp: number;
   recurrenceRule: string;
   recurrences: Recurrence[];
+  timeSpecific: boolean;
 }
 
 const recurrenceSchema: Schema = new Schema({
