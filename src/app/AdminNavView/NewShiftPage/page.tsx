@@ -9,7 +9,7 @@ import { getAllUsers } from "@/server/db/actions/User";
 import { Location } from "@/server/db/models/location";
 import { IRoute } from "@/server/db/models/Route";
 import { Shift } from "@/server/db/models/shift";
-import { User } from "@/server/db/models/User";
+import User from "@/server/db/models/User";
 import { regular } from "@fortawesome/fontawesome-svg-core/import.macro";
 import { faArrowLeft, faGripVertical, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -183,9 +183,31 @@ export default function NewShiftPage() {
                   {route["locationDescription"]}
                 </p>
               </div>
-              {/* <div className="search-location-section">
-                <p>Data here</p>
-              </div> */}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  function searchVolunteersList() {
+    return (
+      <div className="search-results-list bg-white">
+        {searchVolunteers.map((volunteer, ind) => {
+          return (
+            <div
+              key={ind}
+              className="search-result"
+              onClick={() => addVolunteer(ind)}
+              style={{
+                display: volunteerSearchText === "" || `${volunteer.firstName} ${volunteer.lastName}`
+                  .toLowerCase()
+                  .includes(volunteerSearchText.toLowerCase())
+                  ? "flex"
+                  : "none",
+              }}
+            >
+              <p className="search-result-name">{volunteer.firstName} {volunteer.lastName}</p>
             </div>
           );
         })}
@@ -227,8 +249,6 @@ export default function NewShiftPage() {
   }
 
   function saveEdits() {
-    let finalStartDay = new Date(); 
-    let finalEndDay = new Date();
 
     if (routes.length === 0) {
       alert("Please add a route.");
@@ -318,7 +338,7 @@ export default function NewShiftPage() {
                 </div>
 
                 {/* main content area */}
-                <div className="flex justify-between pt-8 px-16 bg-[#ECF2F9] space-x-16 flex-grow">
+                <div className="flex justify-between pt-8 px-16 bg-white space-x-16 flex-grow">
                     <div className="h-full w-full flex space-x-16 pb-6">
                         {/* this is the left side of the main content area */}
                         <div className="flex flex-col space-y-6 w-2/5">
@@ -416,28 +436,7 @@ export default function NewShiftPage() {
                                        onClick={() => setIsSearchingVolunteers(true)}
                                    />
                              </div>
-                              {isSearchingVolunteers && (
-                                        <div className="search-results-list bg-white">
-                                            {searchVolunteers.map((volunteer, ind) => {
-                                                return (
-                                                    <div
-                                                        key={ind}
-                                                        className="search-result"
-                                                        onClick={() => addVolunteer(ind)}
-                                                        style={{
-                                                            display: volunteerSearchText === "" || volunteer.name
-                                                                .toLowerCase()
-                                                                .includes(volunteerSearchText.toLowerCase())
-                                                                ? "flex"
-                                                                : "none",
-                                                        }}
-                                                    >
-                                                        <p className="search-result-name">{volunteer.name}</p>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
+                               {searchVolunteersList()}
                         </div>
                         {/* this is the right side of the main content area */}
                         <div className="flex flex-col justify-start w-3/5 space-y-2">

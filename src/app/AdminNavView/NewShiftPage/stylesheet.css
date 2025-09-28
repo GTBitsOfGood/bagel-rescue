@@ -144,7 +144,7 @@
   border-radius: 12px;
   border: 1px solid var(--Bagel-Rescue-Blue);
   gap: 1.5em;
-  max-height: 300px;
+  max-height: 150px;
   overflow-y: auto;
 }
 
@@ -157,6 +157,7 @@
 
 .search-result-name {
   font-weight: bold;
+  color: #00377a;
 }
 
 .add-route-btn {

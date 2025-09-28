@@ -130,7 +130,7 @@ async function getTotalBagelsDelivered(): Promise<number | null> {
 async function getAllUsers(): Promise<string> {
   try {
     await dbConnect();
-    const users = await User.find({}).select("name email");
+    const users = await User.find({}).select("firstName lastName email");
     return JSON.stringify(users);
   } catch (error) {
     console.error("Error fetching all users:", error);
