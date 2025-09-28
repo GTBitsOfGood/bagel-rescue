@@ -324,6 +324,7 @@ export default function NewShiftPage() {
                     <div className="h-[36rem] w-full flex space-x-16">
                         {/* this is the left side of the main content area */}
                         <div className="flex flex-col space-y-6 w-2/5">
+                            {/* this is the time input area */}
                             <div className="flex space-x-4">
                               <div className="flex flex-col space-y-2 flex-1">
                                   <p className="text-[#072B68] font-bold text-lg">Start Time <span className="text-red-500">*</span></p>
@@ -333,6 +334,13 @@ export default function NewShiftPage() {
                                 <p className="text-[#072B68] font-bold text-lg">End Time <span className="text-red-500">*</span></p>
                                   <input onChange={(e) => setEndTime(e.target.value)} ref={timeEndInputRef} onClick={() => handleClickEnd()} className="px-4 py-[.8rem] rounded-lg border border-blue-500 h-full" type="time" placeholder="Enter additional information here"/>
                               </div>
+                            </div>
+                            <div className="flex flex-col space-y-2">
+                              <div className="flex flex-row gap-2 items-center">
+                                <label className="text-[#072B68] font-bold text-lg" htmlFor="timeSpecific">Time Specific?</label>
+                                <input type="checkbox" id="timeSpecific" className="w-5 h-5 border-2 border-blue-500 rounded"></input>
+                              </div>
+                              <p className="text-[#072B68] text-sm">This shift must be done exactly within this timeframe</p>
                             </div>
                             <div className="flex flex-col space-y-2">
                                 <label htmlFor="day" className="text-[#072B68] font-bold text-lg">Shift Day</label>
