@@ -26,13 +26,12 @@ export default function NewShiftPage() {
     const [routes, setRoutes] = useState<IRoute[]>([]);
     const [searchText, setSearchText] = useState<string>("");
     const [volunteerSearchText, setVolunteerSearchText] = useState<string>("");
+    const [searchVolunteers, setSearchVolunteers] = useState<any[]>([]);
+    const [volunteers, setVolunteers] = useState<any[]>([]);
     const [isSearchingVolunteers, setIsSearchingVolunteers] = useState<boolean>(false);
-    const [searchVolunteers, setSearchVolunteers] = useState<User[]>([]);
-    const [volunteers, setVolunteers] = useState<User[]>([]);
     const [hasAddedRoute, setHasAddedRoute] = useState<boolean>(false);
     const [locations, setLocations] = useState<Location[]>([]);
     const [selectedDays, setSelectedDays] = useState<string[]>([]);
-    const [selectedVolunteers, setSelectedVolunteers] = useState<string[]>([]);
     const [startTime, setStartTime] = useState<string>("");
     const [endTime, setEndTime] = useState<string>("");
     const [timeSpecific, setTimeSpecific] = useState<boolean>(false);
@@ -197,7 +196,7 @@ export default function NewShiftPage() {
           return (
             <div
               key={ind}
-              className="search-result"
+              className="volunteer-search-result"
               onClick={() => addVolunteer(ind)}
               style={{
                 display: volunteerSearchText === "" || `${volunteer.firstName} ${volunteer.lastName}`
@@ -207,10 +206,30 @@ export default function NewShiftPage() {
                   : "none",
               }}
             >
-              <p className="search-result-name">{volunteer.firstName} {volunteer.lastName}</p>
+              <p className="volunteer-search-result-name">{volunteer.firstName} {volunteer.lastName}</p>
             </div>
           );
         })}
+      </div>
+    );
+  }
+
+  function selectedVolunteersList() {
+    return (
+      <div className="selected-volunteers-list">
+        {volunteers.map((volunteer, index) => (
+          <div key={index} className="selected-volunteer">
+            <div className="selected-volunteer-name">
+              {volunteer.firstName} {volunteer.lastName}
+            </div>
+            <button
+              className="x-btn"
+              onClick={() => removeVolunteer(index)}
+            >
+              <FontAwesomeIcon icon={faXmark} />
+            </button>
+          </div>
+        ))}
       </div>
     );
   }
@@ -428,15 +447,19 @@ export default function NewShiftPage() {
                              {/* this is the volunteer area */}
                              <div className="flex flex-col space-y-2">
                                  <label htmlFor="volunteer" className="text-[#072B68] font-bold text-lg">Volunteer<span className="text-red-500 ml-1">*</span></label>
-                                  <input
+                                  {volunteers.length > 0 ? selectedVolunteersList() : (
+                                    <div className="route-input">
+                                      <input
                                        className="field-input"
                                        type="text"
                                        placeholder="Enter a volunteer here"
                                        onChange={(e) => setVolunteerSearchText(e.target.value)}
                                        onClick={() => setIsSearchingVolunteers(true)}
-                                   />
+                                      />
+                                    </div>
+                                  )}
                              </div>
-                               {searchVolunteersList()}
+                             {searchVolunteersList()}
                         </div>
                         {/* this is the right side of the main content area */}
                         <div className="flex flex-col justify-start w-3/5 space-y-2">
