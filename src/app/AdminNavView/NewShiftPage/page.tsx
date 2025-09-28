@@ -26,6 +26,7 @@ export default function NewShiftPage() {
     const [isAddingRoute, setIsAddingRoute] = useState<boolean>(false);
     const [locations, setLocations] = useState<Location[]>([]);
     const [day, setDay] = useState<string>("Monday");
+    const [selectedDays, setSelectedDays] = useState<string[]>([]);
     const [startTime, setStartTime] = useState<string>("");
     const [endTime, setEndTime] = useState<string>("");
     const [timeSpecific, setTimeSpecific] = useState<boolean>(false);
@@ -383,18 +384,35 @@ export default function NewShiftPage() {
                                 </div>
                               </div>
                             </div>
-                            <div className="flex flex-col space-y-2">
-                                <label htmlFor="day" className="text-[#072B68] font-bold text-lg">Shift Day</label>
-                                <select onChange={(e) => setDay(e.target.value)} id="day" name="day" className="px-4 py-[.8rem] rounded-xl border-r-[1.25rem] border-r-transparent outline outline-[#57A0D5]">
-                                    <option value="Monday">Monday</option>
-                                    <option value="Tuesday">Tuesday</option>
-                                    <option value="Wednesday">Wednesday</option>
-                                    <option value="Thursday">Thursday</option>
-                                    <option value="Friday">Friday</option>
-                                    <option value="Saturday">Saturday</option>
-                                    <option value="Sunday">Sunday</option>
-                                </select>
-                            </div>
+                             {/* this is the shift day area */}
+                             <div className="flex flex-col space-y-2">
+                                 <label htmlFor="day" className="text-[#072B68] font-bold text-lg">Day(s)<span className="text-red-500 ml-1">*</span></label>
+                                  <div className="flex justify-between">
+                                     {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day, index) => {
+                                         const isSelected = selectedDays.includes(day);
+                                         return (
+                                             <button
+                                                 key={day}
+                                                 type="button"
+                                                 onClick={() => {
+                                                     if (isSelected) {
+                                                         setSelectedDays(selectedDays.filter(d => d !== day));
+                                                     } else {
+                                                         setSelectedDays([...selectedDays, day]);
+                                                     }
+                                                 }}
+                                                 className={`w-14 h-14 rounded-full border border-blue-600 ${
+                                                     isSelected 
+                                                         ? 'bg-blue-600 text-white' 
+                                                         : 'bg-white text-[#072B68] hover:bg-gray-100'
+                                                 }`}
+                                             >
+                                                 {day}
+                                             </button>
+                                         );
+                                     })}
+                                 </div>
+                             </div>
                         </div>
                         {/* this is the right side of the main content area */}
                         <div className="flex flex-col justify-start w-3/5 space-y-2">
