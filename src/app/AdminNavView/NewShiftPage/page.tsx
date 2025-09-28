@@ -105,6 +105,7 @@ export default function NewShiftPage() {
     newSearchVolunteers.splice(index, 1);
     setSearchVolunteers(newSearchVolunteers);
 
+    setVolunteerSearchText("");
     setIsSearchingVolunteers(false);
   }
 
@@ -231,6 +232,21 @@ export default function NewShiftPage() {
             </button>
           </div>
         ))}
+        <input
+          type="text"
+          placeholder="Type to search..."
+          value={volunteerSearchText}
+          onChange={(e) => setVolunteerSearchText(e.target.value)}
+          onClick={() => setIsSearchingVolunteers(true)}
+          style={{
+            border: 'none',
+            outline: 'none',
+            background: 'transparent',
+            padding: '0.5em',
+            fontSize: '1em',
+            minWidth: '150px'
+          }}
+        />
       </div>
     );
   }
@@ -481,17 +497,7 @@ export default function NewShiftPage() {
                              {/* this is the volunteer area */}
                              <div className="flex flex-col space-y-2">
                                  <label htmlFor="volunteer" className="text-[#072B68] font-bold text-lg">Volunteer<span className="text-red-500 ml-1">*</span></label>
-                                  {volunteers.length > 0 ? selectedVolunteersList() : (
-                                    <div className="route-input">
-                                      <input
-                                       className="field-input"
-                                       type="text"
-                                       placeholder="Enter a volunteer here"
-                                       onChange={(e) => setVolunteerSearchText(e.target.value)}
-                                       onClick={() => setIsSearchingVolunteers(true)}
-                                      />
-                                    </div>
-                                  )}
+                                 {selectedVolunteersList()}
                              </div>
                              {searchVolunteersList()}
                         </div>
