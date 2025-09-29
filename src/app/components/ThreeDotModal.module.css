@@ -1,0 +1,28 @@
+.modal {
+  position: fixed;
+  z-index: 50;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  padding: 0.5rem 0;
+  min-width: 120px;
+}
+
+.deleteButton {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  text-align: left;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.deleteButton:hover {
+  background-color: #fef2f2;
+}
+
