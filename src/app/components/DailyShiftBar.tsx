@@ -36,7 +36,7 @@ function DailyShiftBar({
     const rect = e.currentTarget.getBoundingClientRect();
     setModalPosition({
       x: rect.left + rect.width / 2,
-      y: rect.bottom + 5
+      y: rect.bottom - 5
     });
     
     setModalOpen(true);
