@@ -5,6 +5,7 @@ import dbConnect from "../dbConnect";
 import { UserShiftModel, UserShift } from "../models/userShift";
 import Route from "../models/Route";
 import { ObjectId } from "mongodb";
+import { requireUser } from "../auth/auth";
 
 export type UserRoute = {
   name: string;
@@ -62,6 +63,7 @@ export async function getUserShifts(
   page: number = 1,
   limit: number = 10
 ): Promise<PaginatedResult> {
+  await requireUser();
   await dbConnect();
   
   try {
@@ -146,6 +148,8 @@ export async function getUserShiftsByDateRange(
   page: number = 1,
   limit: number = 10
 ): Promise<PaginatedResult> {
+  await requireUser();
+
   await dbConnect();
 
   try {
@@ -231,6 +235,8 @@ export async function updateUserShiftStatus(
   shiftId: string,
   status: "Complete" | "Incomplete"
 ): Promise<UserShift | null> {
+  await requireUser();
+
   await dbConnect();
   
   try {
@@ -258,6 +264,8 @@ export async function getCurrentUserShifts(
   page: number = 1,
   limit: number = 10
 ): Promise<PaginatedResult> {
+  await requireUser();
+
   const userId = await getCurrentUserId();
   
   if (!userId) {
@@ -291,6 +299,7 @@ export async function getCurrentUserShiftsByDateRange(
   page: number = 1,
   limit: number = 10
 ): Promise<PaginatedResult> {
+  await requireUser();
   const userId = await getCurrentUserId();
   
   if (!userId) {

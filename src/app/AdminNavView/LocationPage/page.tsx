@@ -11,6 +11,7 @@ import { Location } from "@/server/db/models/location";
 
 import AdminSidebar from '../../../components/AdminSidebar';
 import { useRouter } from "next/navigation";
+import { handleAuthError } from "@/lib/authErrorHandler";
 
 
 function LocationDashboardPage() {
@@ -20,10 +21,17 @@ function LocationDashboardPage() {
 
   useEffect(() => {
     const fetchLocations = async () => {
-      const response = await getAllLocations();
-      const data = JSON.parse(response || "[]");
-
-      setLocations(data || []);
+      try {
+        const response = await getAllLocations();
+        const data = JSON.parse(response || "[]");
+        setLocations(data || []);
+      } catch (error) {
+        if (handleAuthError(error, router)) {
+          return; // Auth error handled, user redirected
+        }
+        console.error("Error fetching locations:", error);
+        setLocations([]);
+      }
     };
     fetchLocations();
   }, [sortOption]);

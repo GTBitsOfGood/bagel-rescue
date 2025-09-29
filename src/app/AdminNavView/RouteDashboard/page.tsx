@@ -14,6 +14,7 @@ import { IRoute } from "@/server/db/models/Route";
 import AdminSidebar from "../../../components/AdminSidebar";
 import styles from "./page.module.css";
 import "./stylesheet.css";
+import { handleAuthError } from "@/lib/authErrorHandler";
 
 export default function RouteDashboardPage() {
   const [routes, setRoutes] = useState<IRoute[]>([]);
@@ -28,6 +29,9 @@ export default function RouteDashboardPage() {
         const data = JSON.parse(response || "[]");
         setRoutes(data || []);
       } catch (error) {
+        if (handleAuthError(error, router)) {
+          return; // Auth error handled, user redirected
+        }
         console.error("Error fetching routes:", error);
         setRoutes([]);
       }

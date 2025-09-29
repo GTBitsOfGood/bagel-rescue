@@ -1,12 +1,14 @@
 'use client';
 
 import { sendVolunteerSignupEmails } from "@/server/db/actions/email";
+import { useRouter } from "next/navigation";
+import { handleAuthError } from "@/lib/authErrorHandler";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 
 function VolunteerAccountCreation() {
-    
+    const router = useRouter();
     const [emails, setEmails] = useState<string[]>([]);
     const [currentEmail, setCurrentEmail] = useState<string>("");
     const [loading, setLoading] = useState(false);
@@ -63,6 +65,9 @@ function VolunteerAccountCreation() {
                 alert("Invitations sent successfully!");
             } 
         } catch (error) {
+            if (handleAuthError(error, router)) {
+                return; // Auth error handled, user redirected
+            }
             console.error("Error sending invitations:", error);
             alert("An error occurred while sending invitations.");
         }

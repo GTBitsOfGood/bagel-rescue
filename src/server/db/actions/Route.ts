@@ -3,8 +3,10 @@
 import { ObjectId } from "mongodb";
 import Route, { ILocation, IRoute } from "../models/Route";
 import dbConnect from "../dbConnect";
+import { requireUser, requireAdmin } from "../auth/auth";
 
 export async function getRoute(id: string): Promise<IRoute | null> {
+  await requireAdmin();
   try {
     return await Route.findById(id);
   } catch (error) {
@@ -15,6 +17,7 @@ export async function getRoute(id: string): Promise<IRoute | null> {
 
 export async function createRoute(route: string): Promise<string | null> {
   try {
+    await requireAdmin();
     await dbConnect();
     const newRoute = new Route(JSON.parse(route || "{}"));
     return JSON.stringify(await newRoute.save());
@@ -29,6 +32,7 @@ export async function updateRouteName(
   newRouteName: string
 ): Promise<IRoute | null> {
   try {
+    await requireAdmin();
     return await Route.findByIdAndUpdate(
       id,
       { routeName: newRouteName },
@@ -42,6 +46,7 @@ export async function updateRouteName(
 
 export async function getLocations(id: string): Promise<ILocation[] | null> {
   try {
+    await requireAdmin();
     const route = await Route.findById(id);
     return route ? route.locations : null;
   } catch (error) {
@@ -90,6 +95,7 @@ export async function removeLocation(
 
 export async function getAllRoutes(): Promise<string | null> {
   try {
+    await requireAdmin();
     await dbConnect();
     const routes = await Route.find();
     return JSON.stringify(routes);
@@ -101,9 +107,10 @@ export async function getAllRoutes(): Promise<string | null> {
 
 export async function getAllRoutesbyIds(routeIds: ObjectId[]): Promise<string | null> {
   try {
-      await dbConnect();
-      const data = await Route.find({_id: {$in: routeIds}});
-      return JSON.stringify(data);
+    await requireAdmin();
+    await dbConnect();
+    const data = await Route.find({_id: {$in: routeIds}});
+    return JSON.stringify(data);
   } catch (error) {
       const err = error as Error;
       throw new Error(`Error has occurred when getting all routes: ${err.message}`);

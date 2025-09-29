@@ -4,8 +4,10 @@ import { v4 as uuidv4 } from "uuid";
 import SignUpToken, { ISignUpToken } from "../models/SignUpToken";
 import nodemailer from "nodemailer";
 import dbConnect from "../dbConnect";
+import { requireAdmin } from "../auth/auth";
 
 export async function sendVolunteerSignupEmails(emails: string[]) {
+    await requireAdmin(); // Only admins should be able to send invite emails
     try {
         await dbConnect();
         const expirationDate = new Date(Date.now() + (24 * 60 * 60 * 1000));
