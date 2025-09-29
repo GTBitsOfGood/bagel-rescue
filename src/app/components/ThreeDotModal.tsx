@@ -36,7 +36,7 @@ const ThreeDotModal: React.FC<ThreeDotModalProps> = ({
         style={{
           left: `${position.x}px`,
           top: `${position.y}px`,
-          transform: 'translate(-90%, -5px)',
+          transform: 'translate(-94%, 0px)',
         }}
       >
         <button
