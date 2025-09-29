@@ -11,13 +11,13 @@
 
 .deleteButton {
   width: 100%;
-  padding: 0.5rem 1rem;
+  padding: 0.25rem 0.75rem;
   text-align: left;
   color: #dc2626;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 400;
   transition: background-color 0.2s;
 }
