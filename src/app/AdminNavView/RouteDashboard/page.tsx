@@ -5,7 +5,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
   faAngleLeft, 
   faMagnifyingGlass, 
-  faPlus 
+  faPlus,
+  faEllipsisH,
+  faTrashCan,
+  faCopy 
 } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 
@@ -19,6 +22,8 @@ export default function RouteDashboardPage() {
   const [routes, setRoutes] = useState<IRoute[]>([]);
   const [sortOption, setSortOption] = useState<string>('alphabetically');
   const [searchText, setSearchText] = useState<string>("");
+  const [openModalIndex, setOpenModalIndex] = useState<number | null>(null);
+  const modalRefs = React.useRef<Map<number, HTMLDivElement | null>>(new Map());
   const router = useRouter();
 
   useEffect(() => {
@@ -35,6 +40,24 @@ export default function RouteDashboardPage() {
     fetchRoutes();
   }, []);
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        openModalIndex !== null &&
+        modalRefs.current.get(openModalIndex) &&
+        !modalRefs.current.get(openModalIndex)!.contains(event.target as Node)
+      ) {
+        setOpenModalIndex(null);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openModalIndex]);
+
+
   const handleSortChange = () => {
     const sortedRoutes = [...routes];
     if (sortOption === 'alphabetically') {
@@ -47,6 +70,14 @@ export default function RouteDashboardPage() {
       );
     }
     setRoutes(sortedRoutes);
+  };
+
+  const handleDuplicate = (route : IRoute) => {
+    router.push(`/AdminNavView/RouteCreationPage?duplicate=${route._id}`);
+  };
+
+  const toggleModal = (index: number) => {
+    setOpenModalIndex(openModalIndex === index ? null : index);
   };
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -64,7 +95,7 @@ export default function RouteDashboardPage() {
     <div className="flex">
       <AdminSidebar />
       <div className="flex flex-col flex-1">
-        <div className="header">
+        <div className="route-dash-header">
             <p className="header-text">Routes</p>
             <button 
               className={styles.newRouteButton} 
@@ -74,8 +105,8 @@ export default function RouteDashboardPage() {
               New Route
             </button>
         </div>
-        <hr className="separator" />
-        <div className="container">
+        <hr className="route-dash-separator" />
+        <div className="route-dash-container">
           <div className={styles.container}>
             <div className={styles.searchAndSort}>
               <div className={styles.searchInputContainer}>
@@ -129,7 +160,33 @@ export default function RouteDashboardPage() {
                       <div className={styles.routeInfo}>
                         {route.additionalInfo}
                       </div>
-                      <button className={styles.moreOptionsButton}>⋮</button>
+                      <div className={styles.modal}>
+                        <FontAwesomeIcon 
+                          icon={faEllipsisH}
+                          className={styles.moreOptionsButton}
+                          onClick={() => toggleModal(index)}
+                        />
+                        {openModalIndex === index && (
+                          <div 
+                            ref={(el: HTMLDivElement | null) => {
+                              modalRefs.current.set(index, el);
+                            }}
+                            className={styles.contextMenu}>
+                              <button 
+                                onClick={() => handleDuplicate(route)}
+                              >
+                                <FontAwesomeIcon icon={faCopy}/>
+                                Duplicate Route
+                              </button>
+                              <button 
+                                className = {styles.modalDeleteRoute}
+                              >
+                                <FontAwesomeIcon icon={faTrashCan}/>
+                                Delete Route
+                              </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}

@@ -6,7 +6,7 @@ import dbConnect from "../dbConnect";
 
 export async function getRoute(id: string): Promise<IRoute | null> {
   try {
-    return await Route.findById(id);
+    return await Route.findById(id).lean<IRoute>();
   } catch (error) {
     console.error("Error fetching route:", error);
     throw new Error("Failed to fetch route");
