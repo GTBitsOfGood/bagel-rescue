@@ -134,14 +134,14 @@
 }
 
 .route-name {
-  color: #00377a;
+  color: var(--Bagel-Rescue-Text-Dark-Blue);
   font-size: 1em;
   font-weight: 700;
 }
 
 .route-description {
   font-size: 0.875em;
-  color: #00377a;
+  color: var(--Bagel-Rescue-Text-Dark-Blue);
 }
 
 .search-results-list {
@@ -163,12 +163,12 @@
 }
 
 .search-result:hover {
-  background-color: #ECF2F9;
+  background-color: var(--Bagel-Rescue-Light-Blue);
 }
 
 .search-result-name {
   font-weight: bold;
-  color: #00377a;
+  color: var(--Bagel-Rescue-Text-Dark-Blue);
 }
 
 /* Volunteer search specific styles */
@@ -183,12 +183,12 @@
 }
 
 .volunteer-search-result:hover {
-  background-color: #ECF2F9;
+  background-color: var(--Bagel-Rescue-Light-Blue);
 }
 
 .volunteer-search-result-name {
   font-weight: bold;
-  color: #00377a;
+  color: var(--Bagel-Rescue-Text-Dark-Blue);
 }
 
 /* Selected volunteers styling */
@@ -218,7 +218,7 @@
 }
 
 .selected-volunteer-name {
-  color: #00377a;
+  color: var(--Bagel-Rescue-Text-Dark-Blue);
   font-size: 1em;
   font-weight: 400;
 }
@@ -241,14 +241,14 @@
 
 /* Date input styling */
 .date-input-enabled {
-  border: 1px solid #2563eb;
+  border: 1px solid var(--Bagel-Rescue-Blue);
   background-color: white;
   color: #072B68;
   cursor: pointer;
 }
 
 .date-input-disabled {
-  border: 1px solid #2563eb;
+  border: 1px solid var(--Bagel-Rescue-Blue);
   background-color: white;
   color: #9CA3AF;
   cursor: not-allowed;
