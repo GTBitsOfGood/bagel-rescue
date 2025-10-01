@@ -92,9 +92,7 @@ export default function NewShiftPage() {
   }
 
   function addVolunteer(index: number): void {
-    const newVolunteers = [...volunteers];
-    newVolunteers.push(searchVolunteers[index]);
-    setVolunteers(newVolunteers);
+    setVolunteers([...volunteers, searchVolunteers[index]]);
 
     const newSearchVolunteers = [...searchVolunteers];
     newSearchVolunteers.splice(index, 1);
@@ -362,7 +360,7 @@ export default function NewShiftPage() {
         const shiftData = JSON.parse(shiftResult);
         const shiftId = shiftData._id;
         const routeId = shiftData.routeId;
-        
+
         // Create UserShift records for each volunteer
         for (const volunteer of volunteers) {
           await createUserShift({
