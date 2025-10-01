@@ -150,10 +150,9 @@ export default function LoginScreen() {
                         await setPersistence(auth, persistenceType);
                         
                         const res = await loginWithCredentials(email, password);
-                        console.log(res.success)
                         if (res.success) {
                           if ('isAdmin' in res) {
-                            router.push(res.isAdmin 
+                            router.push(res.isAdmin === 'admin' 
                               ? "/AdminNavView/WeeklyShiftDashboard" 
                               : "/VolunteerNavView/Homepage");
                           }
