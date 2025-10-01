@@ -32,25 +32,6 @@ interface Shift extends Document {
   recurrences: Recurrence[];
 }
 
-/*
-  _id: ObjectId,
-  routeId: ObjectId,
-  shiftStartTime: Number (Time in minutes since midnight),
-  shiftEndTime: Number (Time in minutes since midnight),
-  shiftStartDate: Datetime,
-  shiftEndDate: Datetime,
-  recurrenceDates: Array<String> (["Monday", "Wednesday", ...]),
-  timeSpecific: boolean,
-  confirmationForm: Dict(
-      date: Datetime -> ObjectId (Confirmation Form Id)
-  ),
-  canceledShifts: Array<Datetime>,
-  comments: Dict(
-      date: Datetime -> String
-  ),
-  creationDate: Datetime
-*/
-
 const recurrenceSchema: Schema = new Schema({
   date: {
     type: Date,
