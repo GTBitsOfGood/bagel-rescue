@@ -8,8 +8,10 @@ import User, { IUser } from "../models/User";
 import adminAnalytics, { IAdminAnalytics } from "../models/adminAnalytics";
 import { Types,  Error } from "mongoose";
 import { act } from "react";
+import { requireAdmin } from "../auth/auth";
 
 export async function getNumberOfShiftsThisMonth(): Promise<number> {
+    await requireAdmin();
     const date = new Date();
     const year = date.getFullYear();
     const month = date.getMonth();
@@ -34,6 +36,7 @@ export async function getNumberOfShiftsThisMonth(): Promise<number> {
 }
 
 export async function getNumberOfShiftsThisYear(): Promise<number> {
+    await requireAdmin();
     const date = new Date();
     const year = date.getFullYear();
     const startDate = new Date(year, 0, 1);
@@ -58,6 +61,7 @@ export async function getNumberOfShiftsThisYear(): Promise<number> {
 }
 
 export async function getAverageNumberOfShiftsMonthly(): Promise<number> {
+    await requireAdmin();
     const today = new Date();
     const twelveMonthsAgo = new Date();
     twelveMonthsAgo.setFullYear(today.getFullYear() - 1);
@@ -105,6 +109,7 @@ export async function getAverageNumberOfShiftsMonthly(): Promise<number> {
 }
 
 export async function getAverageNumberOfShiftsYearly(): Promise<number> {
+    await requireAdmin();
     const today = new Date();
     const twoYearsAgo = new Date();
     twoYearsAgo.setFullYear(today.getFullYear() - 2);
@@ -148,6 +153,7 @@ export async function getAverageNumberOfShiftsYearly(): Promise<number> {
 }
 
 export async function getTotalShiftDurationThisMonth(): Promise<number> {
+    await requireAdmin();
     const date = new Date();
     const year = date.getFullYear();
     const month = date.getMonth(); 
@@ -203,6 +209,7 @@ export async function getTotalShiftDurationThisMonth(): Promise<number> {
 }
 
 export async function getTotalShiftDurationThisYear(): Promise<number> {
+    await requireAdmin();
     const date = new Date();
     const year = date.getFullYear();
     const startDate = new Date(year, 0, 1);
@@ -256,6 +263,7 @@ export async function getTotalShiftDurationThisYear(): Promise<number> {
 }
 
 export async function getAverageShiftDurationMonthly(): Promise<number> {
+    await requireAdmin();
     const today = new Date();
     const twelveMonthsAgo = new Date();
     twelveMonthsAgo.setFullYear(today.getFullYear() - 1);
@@ -307,6 +315,7 @@ export async function getAverageShiftDurationMonthly(): Promise<number> {
 }
 
 export async function getAverageShiftDurationYearly(): Promise<number> {
+    await requireAdmin();
     const today = new Date();
     const twoYearsAgo = new Date();
     twoYearsAgo.setFullYear(today.getFullYear() - 2);
@@ -365,6 +374,7 @@ export interface RecentShift {
     duration: number;
 }
 export async function getRecentShifts(): Promise<RecentShift[]> {
+    await requireAdmin();
     try {
       await dbConnect();
       
@@ -445,7 +455,7 @@ function calculateDuration(startDate: Date, endDate: Date): number {
 }
 
 export async function getNumberOfVolunteers(): Promise<number> {
-
+    await requireAdmin();
     try {
         await dbConnect();
 
@@ -463,6 +473,7 @@ interface shiftCompleted {
 }
 
 export async function getNumberOfActiveVolunteers(): Promise<number> {
+    await requireAdmin();
     try {
         await dbConnect();
         const volunteers = await User.find().lean<IUser[]>();
@@ -510,6 +521,7 @@ export async function getNumberOfActiveVolunteers(): Promise<number> {
 }
 
 export async function getNumberOfNewVolunteersThisMonth(): Promise<number> {
+    await requireAdmin();
     try {
         await dbConnect();
 
@@ -533,6 +545,7 @@ export async function getNumberOfNewVolunteersThisMonth(): Promise<number> {
 }
 
 export async function getNewVolunteersThisMonth(limit: number): Promise<any[]> {
+    await requireAdmin();
     try {
         await dbConnect();
 
@@ -559,6 +572,7 @@ export async function getNewVolunteersThisMonth(limit: number): Promise<any[]> {
 }
 
 export async function getVolunteersWithMultipleShifts(limit: number): Promise<any[]> {
+    await requireAdmin();
     try {
         await dbConnect();
 
@@ -587,7 +601,7 @@ export async function getVolunteersWithMultipleShifts(limit: number): Promise<an
 }
 
 export async function updateAdminAnalytics(): Promise<void> {
-    
+    await requireAdmin();
     try {
         await dbConnect();
         
@@ -663,6 +677,7 @@ export async function updateAdminAnalytics(): Promise<void> {
 
 
 export async function getAdminAnalytics(): Promise<string | null> {
+    await requireAdmin();
     try {
         await dbConnect();
 

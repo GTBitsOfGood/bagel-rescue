@@ -1,19 +1,16 @@
 'use client'
 import AdminSidebar from '@/components/AdminSidebar';
-import Sidebar from '@/components/Sidebar';
 import Spinner from '@/components/Spinner';
 import { getAdminAnalytics } from '@/server/db/actions/adminAnalytics';
-import { faEllipsis } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useRouter } from 'next/navigation';
+import { handleAuthError } from '@/lib/authErrorHandler';
+import { redirect, useRouter } from 'next/navigation';
 import react, { useEffect, useState } from 'react';
-import { FaEllipsis } from 'react-icons/fa6';
 
 export default function AdminAnalytics() {
+  const router = useRouter();
   const [timeView, setTimeView] = useState<'monthly' | 'yearly'>('monthly');
   const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const router = useRouter();
 
   type ShiftDummy = {
     routeName: string;
@@ -25,11 +22,12 @@ export default function AdminAnalytics() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await getAdminAnalytics();
-      if (!response) {
-        console.error('Failed to fetch admin analytics data');
-        return;
-      }
+      try {
+        const response = await getAdminAnalytics();
+        if (!response) {
+          console.error('Failed to fetch admin analytics data');
+          return;
+        }
 
       const data = JSON.parse(response || "[]");
 
@@ -38,9 +36,16 @@ export default function AdminAnalytics() {
         return;
       }
       setAnalyticsData(data); 
+      } catch (error) {
+        if (handleAuthError(error, router)) {
+          return; // Auth error handled, user redirected
+        }
+        console.error('Error fetching admin analytics:', error);
+      } finally {
+        setLoading(false);
+      }
     }
-    fetchData()
-    setLoading(false);
+    fetchData();
   }
   , []);
   const viewData = {
