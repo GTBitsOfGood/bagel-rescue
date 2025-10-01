@@ -21,20 +21,31 @@ interface ShiftSidebarProps {
 }
 
 const WeeklyShiftSidebar: React.FC<ShiftSidebarProps> = ({ shiftSidebarInfo, onOpenSidebar }) => {
-  const { shifts, route } = shiftSidebarInfo;
+  const { shifts, route, volunteersPerShift } = shiftSidebarInfo;
   const [locations, setLocations] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<string>("---");
   const [days, setDays] = useState<string>("---");
   const [timeRange, setTimeRange] = useState<string>("---");
+  const [volunteerMap, setVolunteerMap] = useState<Map<Shift, string>>(new Map());
 
   const getLocations = async (locationIds: string[]) => {
     const locations = await getAllLocationsById(locationIds);
     const parsed = locations ? JSON.parse(locations) : [];
     setLocations(parsed.map((loc: Location) => loc.locationName));
-  };
+  };    
 
-  const getVolunteers = (shifts: Shift[]) => {
-    
+  const getShiftVolunteers = () => {
+    const newMap = new Map<Shift, string>();
+  
+    shifts.forEach(shift => {
+      const volunteerName = volunteersPerShift.get(shift._id.toString());
+      if (volunteerName) {
+        newMap.set(shift, volunteerName);
+      }
+    });
+  
+    setVolunteerMap(newMap);
+  };
 
   const getDays = (shifts: Shift[]) => {
     const dayMap: Record<string, string> = {
@@ -82,6 +93,7 @@ const WeeklyShiftSidebar: React.FC<ShiftSidebarProps> = ({ shiftSidebarInfo, onO
     getLocations(route.locations.map((loc: ILocation) => loc.location.toString()));
     getDays(shifts);
     getTime(shifts);
+    getShiftVolunteers();
   }, [shiftSidebarInfo]);
 
   return (
@@ -128,6 +140,15 @@ const WeeklyShiftSidebar: React.FC<ShiftSidebarProps> = ({ shiftSidebarInfo, onO
         <div className="sidebar-content-header">
           <h3>Volunteer(s) Assigned</h3>
           <div className="volunteer-container">
+          {Array.from(volunteerMap.entries()).map(([shift, volunteerName]) => (
+            <div className="volunteer-item" key={shift._id.toString()}>
+              <p>Volunteer: {volunteerName}</p>
+              <p>
+                Assigned Period:{" "}
+                {new Date(shift.shiftDate).toLocaleString()} – {new Date(shift.shiftEndDate).toLocaleString()}
+              </p>
+            </div>
+          ))}
           </div>
         </div>
       </div>

@@ -1,14 +1,11 @@
 .main-sidebar {
     position: fixed; 
     right: 0;               
-    height: 100%; 
     width: 30rem;     
-    z-index: 50;    
-    
+    z-index: 50;
     background: #fff;
-    box-shadow: -2px 0 6px rgba(0,0,0,0.1);
+    box-shadow: -2px 0 6px rgba(84, 70, 70, 0.1);
     padding: 24px 36px 53px 36px;
-  
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -27,6 +24,8 @@
 
 .sidebar-content {
     display: flex;
+    overflow-y: scroll;
+
     flex-direction: column;
     align-items: flex-start;
     gap: 24px;

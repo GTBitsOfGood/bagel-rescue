@@ -5,6 +5,7 @@ import dbConnect from "../dbConnect";
 import { UserShiftModel, UserShift } from "../models/userShift";
 import Route from "../models/Route";
 import { ObjectId } from "mongodb";
+import User, { IUser } from "../models/User";
 
 export type UserRoute = {
   name: string;
@@ -418,30 +419,67 @@ export async function getCurrentUserUniqueRoutes(): Promise<UserRoute[]> {
 }
 
 
-export async function getUsersForShifts(shiftIds: ObjectId[]): Promise<Map<string, string>> {
+export async function getShiftUsers(shiftIds: string[]) {
   await dbConnect();
-  
+
+  const newShiftIds = shiftIds.map(id => new ObjectId(id));
+
   try {
-    
-    // Get UserShift documents filtered by shiftIds
-    const userShifts = await UserShiftModel.find({
-      shiftId: { $in: shiftIds }
-    }).lean();
-    
-    // Create a map of shift IDs to user IDs
-    const shiftToUserMap = new Map<string, string>();
-    
-    userShifts.forEach((userShift) => {
-      if (userShift.shiftId && userShift.userId) {
-        const shiftId = userShift.shiftId.toString();
-        const userId = userShift.userId.toString();
-        shiftToUserMap.set(shiftId, userId);
+
+    const results = await UserShiftModel.aggregate([
+      { $match: { shiftId: { $in: newShiftIds } } },
+      {
+        $lookup: {
+          from: "users",          
+          localField: "userId",
+          foreignField: "_id",
+          as: "user"
+        }
+      },
+      { $unwind: "$user" }, // since each shift has exactly 1 user
+      {
+        $project: {
+          _id: 0,
+          shiftId: 1,
+          userId: "$user._id",
+          fullName: {
+            $concat: ["$user.firstName", " ", "$user.lastName"]
+          }
+        }
       }
-    });
-    
-    return shiftToUserMap;
+    ]);
+
+    return results;
   } catch (error) {
-    console.error("Error fetching users for shifts:", error);
-    throw new Error("Failed to fetch users for shifts");
+    console.error("Error fetching shift users:", error);
+    throw new Error("Failed to fetch shift users");
   }
 }
+
+// export async function getUsersForShifts(shiftIds: ObjectId[]): Promise<Map<string, string>> {
+//   await dbConnect();
+  
+//   try {
+    
+//     // Get UserShift documents filtered by shiftIds
+//     const userShifts = await UserShiftModel.find({
+//       shiftId: { $in: shiftIds }
+//     }).lean();
+    
+//     // Create a map of shift IDs to user IDs
+//     const shiftToUserMap = new Map<string, string>();
+    
+//     userShifts.forEach((userShift) => {
+//       if (userShift.shiftId && userShift.userId) {
+//         const shiftId = userShift.shiftId.toString();
+//         const userId = userShift.userId.toString();
+//         shiftToUserMap.set(shiftId, userId);
+//       }
+//     });
+    
+//     return shiftToUserMap;
+//   } catch (error) {
+//     console.error("Error fetching users for shifts:", error);
+//     throw new Error("Failed to fetch users for shifts");
+//   }
+// }

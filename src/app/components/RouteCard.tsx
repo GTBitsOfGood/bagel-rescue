@@ -6,13 +6,14 @@ import { WeeklyShiftSidebarInfo } from "../AdminNavView/WeeklyShiftDashboard/pag
 
 interface RouteCardProps {
   route: IRoute;
-  shiftsPerRoute: Map<string, Shift[]>;
-  onOpenSidebar: (route: IRoute, shifts: Shift[]) => void;
+  shifts: Shift[]
+  volunteersPerShift: Map<string, string>;
+  onOpenSidebar: (route: IRoute, shifts: Shift[], volunteersPerShift: Map<string, string>) => void;
 }
 
-export default function RouteCard({ route, shiftsPerRoute, onOpenSidebar }: RouteCardProps) {
-  const getTimesHeader = (r: IRoute) => {
-    const dates = getDatesHelper(r)
+export default function RouteCard({ route, shifts, volunteersPerShift, onOpenSidebar }: RouteCardProps) {
+  const getTimesHeader = () => {
+    const dates = getDatesHelper()
       .flat()
       .sort((a: Date, b: Date) => {
         return a.toTimeString().localeCompare(b.toTimeString());
@@ -32,16 +33,16 @@ export default function RouteCard({ route, shiftsPerRoute, onOpenSidebar }: Rout
     );
   };
 
-  const getShiftsForRoute = (
-    shiftsPerRoute: Map<string, Shift[]>,
-    r: IRoute
-  ): Shift[] => {
-    const routeId = r["_id"].toString(); // make sure it's a string
-    return shiftsPerRoute.get(routeId) ?? [];
-  };
+  // const getShiftsForRoute = (
+  //   shiftsPerRoute: Map<string, Shift[]>,
+  //   r: IRoute
+  // ): Shift[] => {
+  //   const routeId = r["_id"].toString(); // make sure it's a string
+  //   return shiftsPerRoute.get(routeId) ?? [];
+  // };
 
-  const getDaysHeader = (r: IRoute) => {
-    return getDatesHelper(r)
+  const getDaysHeader = () => {
+    return getDatesHelper()
       .flat()
       .sort((a: Date, b: Date) => a.getDay() - b.getDay())
       .map((d: Date) => {
@@ -52,16 +53,15 @@ export default function RouteCard({ route, shiftsPerRoute, onOpenSidebar }: Rout
       .join(", ");
   };
 
-  const getVolunteers = (r: IRoute) => {
+  const getVolunteers = () => {
     return (
-      shiftsPerRoute
-        .get(r["_id"].toString())
+      shifts
         ?.map((s) => "Volunteer") || []
     );
   };
 
-  const getDays = (r: IRoute) => {
-    return getDatesHelper(r).map((s: Date[]) => {
+  const getDays = () => {
+    return getDatesHelper().map((s: Date[]) => {
       return (
         s
           .sort((a, b) => a.getDay() - b.getDay())
@@ -75,9 +75,9 @@ export default function RouteCard({ route, shiftsPerRoute, onOpenSidebar }: Rout
     });
   };
 
-  const getDatesHelper = (r: IRoute) => {
+  const getDatesHelper = () => {
     return (
-      shiftsPerRoute.get(r["_id"].toString())?.map((s) => {
+      shifts.map((s) => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const nextWeek = new Date(today);
@@ -94,15 +94,15 @@ export default function RouteCard({ route, shiftsPerRoute, onOpenSidebar }: Rout
     );
   };
 
-  const getAreas = (r: IRoute) => {
+  const getAreas = () => {
     return (
-      shiftsPerRoute.get(r["_id"].toString())?.map((s) => "Area") || []
+      shifts?.map((s) => "Area") || []
     );
   };
 
-  const getNextShifts = (r: IRoute) => {
+  const getNextShifts = () => {
     return (
-      shiftsPerRoute.get(r["_id"].toString())?.map((s) => {
+      shifts?.map((s) => {
         const firstShift = s["recurrences"]
           .sort(
             (a, b) =>
@@ -126,12 +126,12 @@ export default function RouteCard({ route, shiftsPerRoute, onOpenSidebar }: Rout
 
   return (
     <div className="route-card"
-      onClick={() => onOpenSidebar(route, getShiftsForRoute(shiftsPerRoute, route))}>
+      onClick={() => onOpenSidebar(route, shifts, volunteersPerShift)}>
       <div className="route-card-header">
         <p className="route-card-name">{route["routeName"]}</p>
         <div className="route-card-header-right-section">
           <p className="route-card-time">
-            {getTimesHeader(route)} {getDaysHeader(route)}
+            {getTimesHeader()} {getDaysHeader()}
           </p>
           <button title="More options">
             <FontAwesomeIcon
@@ -144,7 +144,7 @@ export default function RouteCard({ route, shiftsPerRoute, onOpenSidebar }: Rout
       <div className="route-card-body">
         <div className="route-card-section">
           <p className="route-card-section-header">Volunteer</p>
-          {getVolunteers(route).map((s, sInd) => (
+          {getVolunteers().map((s, sInd) => (
             <p key={sInd} className="route-card-section-body">
               {s}
             </p>
@@ -152,7 +152,7 @@ export default function RouteCard({ route, shiftsPerRoute, onOpenSidebar }: Rout
         </div>
         <div className="route-card-section">
           <p className="route-card-section-header">Days</p>
-          {getDays(route).map((s, sInd) => (
+          {getDays().map((s, sInd) => (
             <p key={sInd} className="route-card-section-body">
               {s}
             </p>
@@ -160,7 +160,7 @@ export default function RouteCard({ route, shiftsPerRoute, onOpenSidebar }: Rout
         </div>
         <div className="route-card-section">
           <p className="route-card-section-header">Area</p>
-          {getAreas(route).map((s, sInd) => (
+          {getAreas().map((s, sInd) => (
             <p key={sInd} className="route-card-section-body">
               {s}
             </p>
@@ -168,7 +168,7 @@ export default function RouteCard({ route, shiftsPerRoute, onOpenSidebar }: Rout
         </div>
         <div className="route-card-section">
           <p className="route-card-section-header">Next Shift</p>
-          {getNextShifts(route).map((s, sInd) => (
+          {getNextShifts().map((s, sInd) => (
             <p key={sInd} className="route-card-section-body">
               {s}
             </p>

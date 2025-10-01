@@ -16,13 +16,13 @@ import { getAllRoutes } from "@/server/db/actions/Route";
 import WeeklyDashboardHeader from '../../components/WeeklyDashboard';
 import AdminSidebar from '../../../components/AdminSidebar';
 import RouteCard from '../../components/RouteCard';
-import { ObjectId } from "mongodb";
 import WeeklyShiftSidebar from "@/app/components/WeeklyShiftSidebar";
-import { getUsersForShifts } from "@/server/db/actions/userShifts";
+import { getShiftUsers } from "@/server/db/actions/userShifts";
 
 export type WeeklyShiftSidebarInfo = {
   route: IRoute;
   shifts: Shift[];
+  volunteersPerShift: Map<string, string>;
 }
 
 function WeeklyShiftDashboard() {
@@ -32,9 +32,8 @@ function WeeklyShiftDashboard() {
     new Map()
   );
   const [selectedItem, setSelectedItem] = useState<WeeklyShiftSidebarInfo | null>(null);
-  const [volunteersPerShift, setVolunteersPerShift] = useState<Map<Shift, string>>(
-    new Map()
-  );
+  const [volunteersPerShift, setVolunteersPerShift] = useState<Map<string, string>>(new Map());
+
 
   useEffect(() => {
     const fetchRoutes = async () => {
@@ -61,25 +60,24 @@ function WeeklyShiftDashboard() {
     fetchShifts();
   }, []);
 
-
   useEffect(() => {
     const fetchVolunteers = async () => {
-      const shiftIdList = new Array<ObjectId>();
-      shiftsPerRoute.forEach((shifts, routeId) => {
-        shifts.forEach((shift) => {
-          shiftIdList.push(new ObjectId(shift._id));
-        });
+      const shiftIdList = Array.from(shiftsPerRoute.values())
+        .flat()
+        .map(shift => shift._id.toString());
+      
+      const usersPerShift = await getShiftUsers(shiftIdList);
+
+      const map = new Map<string, string>();
+      usersPerShift.forEach(item => {
+        map.set(item.shiftId, item.fullName);
       });
-
-      const usersPerShift = await getUsersForShifts(shiftIdList);
-
-
-
-
-
+  
+      setVolunteersPerShift(map);
     };
+  
     fetchVolunteers();
-  }, []);
+  }, [shiftsPerRoute]);
 
   const [date, setDate] = useState<Date>(new Date());
 
@@ -90,29 +88,34 @@ function WeeklyShiftDashboard() {
     setDate(newDate);
   };
 
+
+  // Can definitely be made more efficient - do not need to pass entire shiftsPerRoute into every Route card
   function routesList() {
     return (
       <div className="routes-list">
-        {routes.map((route, routeInd) => {
-          return (
-            <RouteCard
-              key={routeInd}
-              route={route}
-              shiftsPerRoute={shiftsPerRoute}
-              onOpenSidebar={(route: IRoute, shifts: Shift[]) => {
-                setSelectedItem({route, shifts});
-              }}
-            />
-          );
-        })}
-      </div>
+      {routes.map((route) => {
+        const shiftsForRoute = shiftsPerRoute.get(route._id.toString()) ?? [];
+
+        return (
+          <RouteCard
+            key={route._id.toString()}
+            route={route}
+            shifts={shiftsForRoute}   
+            volunteersPerShift={volunteersPerShift}
+            onOpenSidebar={(route: IRoute, shifts: Shift[], volunteersPerShift: Map<string, string>) => {
+              setSelectedItem({ route, shifts, volunteersPerShift });
+            }}
+          />
+        );
+      })}
+    </div>
     );
   }
 
   return (
     <div className="flex">
       <AdminSidebar />
-      <div className='flex flex-col flex-1'>
+      <div className='flex flex-col flex-1 relative'>
         <WeeklyDashboardHeader date={date} AddDays={AddDays} />
         <div className="container">
         {selectedItem && 
