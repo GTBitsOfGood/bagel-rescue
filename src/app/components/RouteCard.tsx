@@ -2,13 +2,15 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsis } from "@fortawesome/free-solid-svg-icons";
 import { Shift } from "@/server/db/models/shift";
 import { IRoute } from "@/server/db/models/Route";
+import { WeeklyShiftSidebarInfo } from "../AdminNavView/WeeklyShiftDashboard/page";
 
 interface RouteCardProps {
   route: IRoute;
   shiftsPerRoute: Map<string, Shift[]>;
+  onOpenSidebar: (route: IRoute, shifts: Shift[]) => void;
 }
 
-export default function RouteCard({ route, shiftsPerRoute }: RouteCardProps) {
+export default function RouteCard({ route, shiftsPerRoute, onOpenSidebar }: RouteCardProps) {
   const getTimesHeader = (r: IRoute) => {
     const dates = getDatesHelper(r)
       .flat()
@@ -28,6 +30,14 @@ export default function RouteCard({ route, shiftsPerRoute }: RouteCardProps) {
       " - " +
       maxTime?.toLocaleTimeString("en-US", options)
     );
+  };
+
+  const getShiftsForRoute = (
+    shiftsPerRoute: Map<string, Shift[]>,
+    r: IRoute
+  ): Shift[] => {
+    const routeId = r["_id"].toString(); // make sure it's a string
+    return shiftsPerRoute.get(routeId) ?? [];
   };
 
   const getDaysHeader = (r: IRoute) => {
@@ -115,7 +125,8 @@ export default function RouteCard({ route, shiftsPerRoute }: RouteCardProps) {
   };
 
   return (
-    <div className="route-card">
+    <div className="route-card"
+      onClick={() => onOpenSidebar(route, getShiftsForRoute(shiftsPerRoute, route))}>
       <div className="route-card-header">
         <p className="route-card-name">{route["routeName"]}</p>
         <div className="route-card-header-right-section">

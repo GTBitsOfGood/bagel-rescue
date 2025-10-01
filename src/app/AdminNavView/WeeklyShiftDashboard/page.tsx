@@ -16,12 +16,23 @@ import { getAllRoutes } from "@/server/db/actions/Route";
 import WeeklyDashboardHeader from '../../components/WeeklyDashboard';
 import AdminSidebar from '../../../components/AdminSidebar';
 import RouteCard from '../../components/RouteCard';
+import { ObjectId } from "mongodb";
+import WeeklyShiftSidebar from "@/app/components/WeeklyShiftSidebar";
+import { getUsersForShifts } from "@/server/db/actions/userShifts";
 
+export type WeeklyShiftSidebarInfo = {
+  route: IRoute;
+  shifts: Shift[];
+}
 
 function WeeklyShiftDashboard() {
   const [shiftSearchText, setShiftSearchText] = useState("");
   const [routes, setRoutes] = useState<IRoute[]>([]);
   const [shiftsPerRoute, setShiftsPerRoute] = useState<Map<string, Shift[]>>(
+    new Map()
+  );
+  const [selectedItem, setSelectedItem] = useState<WeeklyShiftSidebarInfo | null>(null);
+  const [volunteersPerShift, setVolunteersPerShift] = useState<Map<Shift, string>>(
     new Map()
   );
 
@@ -50,6 +61,26 @@ function WeeklyShiftDashboard() {
     fetchShifts();
   }, []);
 
+
+  useEffect(() => {
+    const fetchVolunteers = async () => {
+      const shiftIdList = new Array<ObjectId>();
+      shiftsPerRoute.forEach((shifts, routeId) => {
+        shifts.forEach((shift) => {
+          shiftIdList.push(new ObjectId(shift._id));
+        });
+      });
+
+      const usersPerShift = await getUsersForShifts(shiftIdList);
+
+
+
+
+
+    };
+    fetchVolunteers();
+  }, []);
+
   const [date, setDate] = useState<Date>(new Date());
 
   const AddDays = (e: number) => {
@@ -68,6 +99,9 @@ function WeeklyShiftDashboard() {
               key={routeInd}
               route={route}
               shiftsPerRoute={shiftsPerRoute}
+              onOpenSidebar={(route: IRoute, shifts: Shift[]) => {
+                setSelectedItem({route, shifts});
+              }}
             />
           );
         })}
@@ -81,6 +115,14 @@ function WeeklyShiftDashboard() {
       <div className='flex flex-col flex-1'>
         <WeeklyDashboardHeader date={date} AddDays={AddDays} />
         <div className="container">
+        {selectedItem && 
+              <WeeklyShiftSidebar
+                  shiftSidebarInfo={selectedItem}
+                  onOpenSidebar={() => {
+                      setSelectedItem(null);
+                  }}
+              />
+          }
           <div className="spacer-50"></div>
           <div className="search-settings">
             <button className="sort-by-btn">

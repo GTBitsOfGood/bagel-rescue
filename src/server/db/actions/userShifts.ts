@@ -416,3 +416,32 @@ export async function getCurrentUserUniqueRoutes(): Promise<UserRoute[]> {
 
   return getUserUniqueRoutes(userId);
 }
+
+
+export async function getUsersForShifts(shiftIds: ObjectId[]): Promise<Map<string, string>> {
+  await dbConnect();
+  
+  try {
+    
+    // Get UserShift documents filtered by shiftIds
+    const userShifts = await UserShiftModel.find({
+      shiftId: { $in: shiftIds }
+    }).lean();
+    
+    // Create a map of shift IDs to user IDs
+    const shiftToUserMap = new Map<string, string>();
+    
+    userShifts.forEach((userShift) => {
+      if (userShift.shiftId && userShift.userId) {
+        const shiftId = userShift.shiftId.toString();
+        const userId = userShift.userId.toString();
+        shiftToUserMap.set(shiftId, userId);
+      }
+    });
+    
+    return shiftToUserMap;
+  } catch (error) {
+    console.error("Error fetching users for shifts:", error);
+    throw new Error("Failed to fetch users for shifts");
+  }
+}
