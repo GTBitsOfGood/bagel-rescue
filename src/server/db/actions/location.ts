@@ -14,7 +14,7 @@ export async function createLocation(newLocation: string): Promise<string | null
   }
 }
 
-export async function getAllLocationById(id: string[]): Promise<string | null> {
+export async function getAllLocationsById(id: string[]): Promise<string | null> {
   await dbConnect();
   try {
     const location = await LocationModel.find({_id: id});
