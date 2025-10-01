@@ -3,21 +3,16 @@
 import "./stylesheet.css";
 import AdminSidebar from "@/components/AdminSidebar";
 import { getAllLocationById } from "@/server/db/actions/location";
-import { createRoute, getAllRoutes, getLocations } from "@/server/db/actions/Route";
+import { getAllRoutes } from "@/server/db/actions/Route";
 import { createShift } from "@/server/db/actions/shift";
 import { getAllUsers } from "@/server/db/actions/User";
 import { createUserShift } from "@/server/db/actions/userShifts";
 import { Location } from "@/server/db/models/location";
 import { IRoute } from "@/server/db/models/Route";
-import { Shift } from "@/server/db/models/shift";
-import User from "@/server/db/models/User";
-import { regular } from "@fortawesome/fontawesome-svg-core/import.macro";
-import { faArrowLeft, faGripVertical, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ObjectId } from "mongoose";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 
 
 export default function NewShiftPage() {
@@ -355,6 +350,8 @@ export default function NewShiftPage() {
         additionalInfo: additionalInfo,
         recurrenceRule: "FREQ=WEEKLY;BYDAY=" + targetDay.toUpperCase().substring(0, 2),
       };
+
+      var shiftCreationComplete = false;
       
       try {
         // Create the shift first
@@ -363,7 +360,7 @@ export default function NewShiftPage() {
           throw new Error("Failed to create shift");
         }
         const shiftData = JSON.parse(shiftResult);
-        const shiftId = shiftData.shiftId;
+        const shiftId = shiftData._id;
         const routeId = shiftData.routeId;
         
         // Create UserShift records for each volunteer
@@ -376,10 +373,16 @@ export default function NewShiftPage() {
             shiftEndDate: finalEndDay
           });
         }
+
+        shiftCreationComplete = true;
       } catch (error) {
         console.error("Error creating shift or user shifts:", error);
         alert("Error creating shift. Please try again.");
         return;
+      } finally {
+        if (shiftCreationComplete) {
+          router.push("/AdminNavView/DailyShiftDashboard");
+        }
       }
     }
 
