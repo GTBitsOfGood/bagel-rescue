@@ -24,7 +24,6 @@ export default function AdminAnalytics() {
     const fetchData = async () => {
       try {
         const response = await getAdminAnalytics();
-        console.log(response)
         if (!response) {
           console.error('Failed to fetch admin analytics data');
           return;
