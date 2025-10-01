@@ -28,6 +28,7 @@ export default function LoginScreen() {
     }
   };
   
+
   // Add useEffect to check if user is already logged in
   useEffect(() => {
     const checkUserAuth = async () => {
@@ -50,7 +51,7 @@ export default function LoginScreen() {
   return (
     <div className="flex absolute bg-[#D6E9FF]">
       <div className="h-screen w-screen">
-        <div className="flex flex-col w-full h-full sm:flex-row">
+        <div className=" flex flex-col w-full h-full sm:flex-row">
           <HalfScreen />
           <div className="relative flex flex-col w-full h-full justify-center items-center mt-8 sm:mt-0 sm:w-1/2 bg-white rounded-l-3xl">
             <div className={`relative flex flex-col w-[90%] sm:w-[60%] sm:items-center`}>
