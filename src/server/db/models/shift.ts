@@ -11,15 +11,45 @@ interface Recurrence {
 
 interface Shift extends Document {
   routeId: mongoose.Types.ObjectId;
-  shiftDate: Date;
+  shiftStartTime: number;
+  shiftEndTime: number;
+  shiftStartDate: Date;
   shiftEndDate: Date;
+  recurrenceDates: string[];
+  timeSpecific: boolean;
+  confirmationForm: { [date: string]: mongoose.Types.ObjectId };
+  canceledShifts: Date[];
+  comments: { [date: string]: string };
+  creationDate: Date;
+
+  // Old Schema
+  // routeId: mongoose.Types.ObjectId;
+  shiftDate: Date;
+  // shiftEndDate: Date;
   capacity: number;
   currSignedUp: number;
   recurrenceRule: string;
   recurrences: Recurrence[];
-  timeSpecific: boolean;
-  additionalInfo: string;
 }
+
+/*
+  _id: ObjectId,
+  routeId: ObjectId,
+  shiftStartTime: Number (Time in minutes since midnight),
+  shiftEndTime: Number (Time in minutes since midnight),
+  shiftStartDate: Datetime,
+  shiftEndDate: Datetime,
+  recurrenceDates: Array<String> (["Monday", "Wednesday", ...]),
+  timeSpecific: boolean,
+  confirmationForm: Dict(
+      date: Datetime -> ObjectId (Confirmation Form Id)
+  ),
+  canceledShifts: Array<Datetime>,
+  comments: Dict(
+      date: Datetime -> String
+  ),
+  creationDate: Datetime
+*/
 
 const recurrenceSchema: Schema = new Schema({
   date: {
@@ -41,12 +71,51 @@ const shiftSchema: Schema = new Schema({
     type: ObjectId,
     ref: "Route",
   },
-  shiftDate: {
+  shiftStartTime: {
+    type: Number,
+  },
+  shiftEndTime: {
+    type: Number,
+  },
+  shiftStartDate: {
     type: Date,
   },
   shiftEndDate: {
     type: Date,
   },
+  recurrenceDates: {
+    type: [String],
+    default: [],
+  },
+  timeSpecific: {
+    type: Boolean,
+  },
+  confirmationForm: {
+    type: Map,
+    of: ObjectId
+  },
+  canceledShifts: {
+    type: [Date],
+  },
+  comments: {
+    type: Map,
+    of: String
+  },
+  creationDate: {
+    type: Date,
+  },
+
+  // Old Schema
+  // routeId: {
+  //   type: ObjectId,
+  //   ref: "Route",
+  // },
+  shiftDate: {
+    type: Date,
+  },
+  // shiftEndDate: {
+  //   type: Date,
+  // },
   capacity: {
     type: Number,
     default: 0,
@@ -72,14 +141,6 @@ const shiftSchema: Schema = new Schema({
   recurrences: {
     type: [recurrenceSchema],
     default: [],
-  },
-  timeSpecific: {
-    type: Boolean,
-    default: false,
-  },
-  additionalInfo: {
-    type: String,
-    default: "",
   },
 });
 
