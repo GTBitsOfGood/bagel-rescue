@@ -56,7 +56,7 @@ async function getUserByEmail(
   email: string,
   session?: ClientSession
 ): Promise<IUser | null> {
-  await requireUser();
+  // await requireUser();
   await dbConnect();
 
   const document = await User.findOne(
