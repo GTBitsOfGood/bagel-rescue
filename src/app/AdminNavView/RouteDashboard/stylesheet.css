@@ -1,9 +1,9 @@
-.container {
+.route-dash-container {
   padding: 1.5em 0em;
   background-color: var(--Bagel-Rescue-Background-Grey);
 }
 
-.header {
+.route-dash-header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -17,6 +17,6 @@
   font-weight: bold;
 }
 
-.separator {
+.route-dash-separator {
   border-top: 1px solid var(--Bagel-Rescue-Light-Grey);
 } 
