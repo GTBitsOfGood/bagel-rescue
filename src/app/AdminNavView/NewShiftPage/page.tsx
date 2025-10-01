@@ -483,9 +483,9 @@ export default function NewShiftPage() {
                                                          setSelectedDays([...selectedDays, day]);
                                                      }
                                                  }}
-                                                 className={`w-14 h-14 rounded-full border border-blue-600 ${
+                                                 className={`w-14 h-14 rounded-full border border-[#0F7AFF] ${
                                                      isSelected 
-                                                         ? 'bg-blue-600 text-white' 
+                                                         ? 'bg-[#0F7AFF] text-white' 
                                                          : 'bg-white text-[#072B68] hover:bg-gray-100'
                                                  }`}
                                              >
