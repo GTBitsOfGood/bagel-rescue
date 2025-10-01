@@ -5,6 +5,7 @@ import dbConnect from "../dbConnect";
 import { UserShiftModel, UserShift } from "../models/userShift";
 import Route from "../models/Route";
 import { ObjectId } from "mongodb";
+import { requireUser } from "../auth/auth";
 
 export type UserRoute = {
   name: string;
@@ -45,7 +46,7 @@ async function getCurrentUserId(): Promise<string | null> {
 
   // For now, return a placeholder value
   console.warn("getCurrentUserId is not implemented yet. Using placeholder.");
-  return "507f1f77bcf86cd799439011"; // Test user ID from sample data
+  return "66de3986953f6364945c3c5e"; // Test user ID from sample data
   // return "placeholder-user-id";
 }
 
@@ -62,6 +63,7 @@ export async function getUserShifts(
   page: number = 1,
   limit: number = 10
 ): Promise<PaginatedResult> {
+  await requireUser();
   await dbConnect();
   
   try {
@@ -146,8 +148,10 @@ export async function getUserShiftsByDateRange(
   page: number = 1,
   limit: number = 10
 ): Promise<PaginatedResult> {
+  await requireUser();
+
   await dbConnect();
-  
+
   try {
     const skip = (page - 1) * limit;
     
@@ -156,10 +160,11 @@ export async function getUserShiftsByDateRange(
       userId: new mongoose.Types.ObjectId(userId),
       shiftDate: { $gte: startDate, $lte: endDate }
     })
-      .sort({ shiftDate: 1 })  // Sort by shiftDate ascending
       .skip(skip)
       .limit(limit)
       .lean();
+
+    userShifts.sort((a, b) => new Date(a.shiftDate).getTime() - new Date(b.shiftDate).getTime());
     
     // Get total count for pagination
     const total = await UserShiftModel.countDocuments({
@@ -169,12 +174,12 @@ export async function getUserShiftsByDateRange(
     
     // Get unique route IDs
     const routeIds = Array.from(new Set(userShifts.map(shift => shift.routeId)));
-    
+
     // Get route details
     const routes = await Route.find({
       _id: { $in: routeIds }
     }).lean();
-    
+
     // Create a map of route IDs to route details
     const routeMap = new Map();
     routes.forEach(route => {
@@ -230,6 +235,8 @@ export async function updateUserShiftStatus(
   shiftId: string,
   status: "Complete" | "Incomplete"
 ): Promise<UserShift | null> {
+  await requireUser();
+
   await dbConnect();
   
   try {
@@ -257,6 +264,8 @@ export async function getCurrentUserShifts(
   page: number = 1,
   limit: number = 10
 ): Promise<PaginatedResult> {
+  await requireUser();
+
   const userId = await getCurrentUserId();
   
   if (!userId) {
@@ -290,6 +299,7 @@ export async function getCurrentUserShiftsByDateRange(
   page: number = 1,
   limit: number = 10
 ): Promise<PaginatedResult> {
+  await requireUser();
   const userId = await getCurrentUserId();
   
   if (!userId) {

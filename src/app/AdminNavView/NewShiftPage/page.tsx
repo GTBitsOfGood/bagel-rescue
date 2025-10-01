@@ -2,7 +2,7 @@
 
 import "./stylesheet.css";
 import AdminSidebar from "@/components/AdminSidebar";
-import { getAllLocationById } from "@/server/db/actions/location";
+import { getAllLocationsById } from "@/server/db/actions/location";
 import { getAllRoutes } from "@/server/db/actions/Route";
 import { createShift } from "@/server/db/actions/shift";
 import { getAllUsers } from "@/server/db/actions/User";
@@ -60,7 +60,7 @@ export default function NewShiftPage() {
   useEffect(() => {
     const fetchLocations = async () => {
       if (routes.length === 0) return;
-      const response = await getAllLocationById(routes[0].locations.map((loc) => String(loc.location)));
+      const response = await getAllLocationsById(routes[0].locations.map((loc) => String(loc.location)));
       const data = JSON.parse(response || "[]");
       setLocations(data || []);
     };

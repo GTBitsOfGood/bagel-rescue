@@ -8,15 +8,18 @@ import {
   faEllipsis,
 } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { Shift } from "@/server/db/models/shift";
 import { IRoute } from "@/server/db/models/Route";
 import { getAllShifts } from "@/server/db/actions/shift";
 import { getAllRoutes } from "@/server/db/actions/Route";
-import DashboardHeader from '../../components/DailyDashboard';
+import WeeklyDashboardHeader from '../../components/WeeklyDashboard';
 import AdminSidebar from '../../../components/AdminSidebar';
+import { handleAuthError } from "@/lib/authErrorHandler";
 
 function WeeklyShiftDashboard() {
+  const router = useRouter();
   const [shiftSearchText, setShiftSearchText] = useState("");
   const [routes, setRoutes] = useState<IRoute[]>([]);
   const [shiftsPerRoute, setShiftsPerRoute] = useState<Map<string, Shift[]>>(
@@ -25,23 +28,37 @@ function WeeklyShiftDashboard() {
 
   useEffect(() => {
     const fetchRoutes = async () => {
-      const routes_response = await getAllRoutes();
-      const routes_data = JSON.parse(routes_response || "[]");
-      setRoutes(routes_data || []);
+      try {
+        const routes_response = await getAllRoutes();
+        const routes_data = JSON.parse(routes_response || "[]");
+        setRoutes(routes_data || []);
+      } catch (error) {
+        if (handleAuthError(error, router)) {
+          return; // Auth error handled, user redirected
+        }
+        console.error("Error fetching routes:", error);
+      }
     };
 
     const fetchShifts = async () => {
-      const shift_response = await getAllShifts();
-      const shift_data: Shift[] = JSON.parse(shift_response || "[]");
-      const routeToShiftsMap = new Map<string, Shift[]>();
-      shift_data.forEach((s) => {
-        if (routeToShiftsMap.has(s["routeId"].toString())) {
-          routeToShiftsMap.get(s["routeId"].toString())?.push(s);
-        } else {
-          routeToShiftsMap.set(s["routeId"].toString(), [s]);
+      try {
+        const shift_response = await getAllShifts();
+        const shift_data: Shift[] = JSON.parse(shift_response || "[]");
+        const routeToShiftsMap = new Map<string, Shift[]>();
+        shift_data.forEach((s) => {
+          if (routeToShiftsMap.has(s["routeId"].toString())) {
+            routeToShiftsMap.get(s["routeId"].toString())?.push(s);
+          } else {
+            routeToShiftsMap.set(s["routeId"].toString(), [s]);
+          }
+        });
+        setShiftsPerRoute(routeToShiftsMap);
+      } catch (error) {
+        if (handleAuthError(error, router)) {
+          return; // Auth error handled, user redirected
         }
-      });
-      setShiftsPerRoute(routeToShiftsMap);
+        console.error("Error fetching shifts:", error);
+      }
     };
 
     fetchRoutes();
@@ -52,10 +69,9 @@ function WeeklyShiftDashboard() {
 
   const AddDays = (e: number) => {
     const newDate = new Date(date);
-    if (newDate.getDate() - new Date().getDate() !== 7 || e === -1) {
-      newDate.setDate(newDate.getDate() + e);
-      setDate(newDate);
-    }
+    // For weekly view, we move by 7 days (1 week) at a time
+    newDate.setDate(newDate.getDate() + e);
+    setDate(newDate);
   };
 
   function routesList() {
@@ -175,7 +191,7 @@ function WeeklyShiftDashboard() {
                   <p className="route-card-time">
                     {getTimesHeader(route)} {getDaysHeader(route)}
                   </p>
-                  <button>
+                  <button title="More options">
                     <FontAwesomeIcon
                       icon={faEllipsis}
                       className="route-card-ellipsis-icon"
@@ -228,9 +244,9 @@ function WeeklyShiftDashboard() {
     <div className="flex">
       <AdminSidebar />
       <div className='flex flex-col flex-1'>
-        <DashboardHeader date={date} AddDays={AddDays} />
+        <WeeklyDashboardHeader date={date} AddDays={AddDays} />
         <div className="container">
-          <div style={{ height: "50px" }}></div>
+          <div className="spacer-50"></div>
           <div className="search-settings">
             <button className="sort-by-btn">
               <FontAwesomeIcon icon={faArrowUpShortWide} />

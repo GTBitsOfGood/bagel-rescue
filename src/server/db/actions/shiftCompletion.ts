@@ -3,6 +3,7 @@
 import dbConnect from "../dbConnect";
 import { ShiftModel } from "../models/shift";
 import User from "../models/User";
+import { requireUser } from "../auth/auth";
 
 export interface ShiftFormValues {
     routeCompleted: string;
@@ -12,6 +13,7 @@ export interface ShiftFormValues {
   }
 
 export async function submitCompletionForm(data: ShiftFormValues, userId: string, shiftId: string): Promise<void> {
+  await requireUser();
   try {
     await dbConnect();
 

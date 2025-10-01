@@ -1,20 +1,15 @@
-.container {
-  padding: 1.5em 4em;
+.route-dash-container {
+  padding: 1.5em 0em;
+  background-color: var(--Bagel-Rescue-Background-Grey);
 }
 
-.back-btn {
-  color: var(--Bagel-Rescue-Blue);
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 0.75em;
-}
-
-.header {
+.route-dash-header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  padding: 1.5em 0em;
+  padding: 2em 4em;
+  color: var(--Bagel-Rescue-Dark-Blue);
+  align-items: center;
 }
 
 .header-text {
@@ -22,17 +17,6 @@
   font-weight: bold;
 }
 
-.complete-route-btn {
-  border-radius: 16px;
-  font-size: 1em;
-  font-weight: bold;
-  color: white;
-  padding: 1em;
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-}
-
-.separator {
-  border-top: 1px solid var(--Bagel-Rescue-Light-Blue);
+.route-dash-separator {
+  border-top: 1px solid var(--Bagel-Rescue-Light-Grey);
 } 
