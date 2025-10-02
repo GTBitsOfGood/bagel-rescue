@@ -440,8 +440,8 @@ export async function getShiftUsers(shiftIds: string[]) {
       {
         $project: {
           _id: 0,
-          shiftId: 1,
-          userId: "$user._id",
+          shiftId: { $toString: "$shiftId" },   // 👈 convert to string
+          userId: { $toString: "$user._id" },
           fullName: {
             $concat: ["$user.firstName", " ", "$user.lastName"]
           }

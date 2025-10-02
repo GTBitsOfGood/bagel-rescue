@@ -34,6 +34,16 @@ const WeeklyShiftSidebar: React.FC<ShiftSidebarProps> = ({ shiftSidebarInfo, onO
     setLocations(parsed.map((loc: Location) => loc.locationName));
   };    
 
+  const dayMap: Record<string, string> = {
+    MO: "Monday",
+    TU: "Tuesday",
+    WE: "Wednesday",
+    TH: "Thursday",
+    FR: "Friday",
+    SA: "Saturday",
+    SU: "Sunday",
+  };
+
   const getShiftVolunteers = () => {
     const newMap = new Map<Shift, string>();
   
@@ -48,16 +58,6 @@ const WeeklyShiftSidebar: React.FC<ShiftSidebarProps> = ({ shiftSidebarInfo, onO
   };
 
   const getDays = (shifts: Shift[]) => {
-    const dayMap: Record<string, string> = {
-      MO: "Monday",
-      TU: "Tuesday",
-      WE: "Wednesday",
-      TH: "Thursday",
-      FR: "Friday",
-      SA: "Saturday",
-      SU: "Sunday",
-    };
-
     const daySet = new Set<string>();
 
     shifts.forEach((shift) => {
@@ -95,6 +95,13 @@ const WeeklyShiftSidebar: React.FC<ShiftSidebarProps> = ({ shiftSidebarInfo, onO
     getTime(shifts);
     getShiftVolunteers();
   }, [shiftSidebarInfo]);
+
+
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    month: "2-digit",
+    day: "2-digit",
+    year: "2-digit",
+  });
 
   return (
     <div className="main-sidebar">
@@ -138,15 +145,19 @@ const WeeklyShiftSidebar: React.FC<ShiftSidebarProps> = ({ shiftSidebarInfo, onO
         </div>
 
         <div className="sidebar-content-header">
-          <h3>Volunteer(s) Assigned</h3>
+          <h3 className="margin-bottom-15px">Volunteer(s) Assigned</h3>
           <div className="volunteer-container">
           {Array.from(volunteerMap.entries()).map(([shift, volunteerName]) => (
             <div className="volunteer-item" key={shift._id.toString()}>
-              <p>Volunteer: {volunteerName}</p>
-              <p>
+              <p className="volunteer-name">{volunteerName}</p>
+              <p className="volunteer-period">
                 Assigned Period:{" "}
-                {new Date(shift.shiftDate).toLocaleString()} – {new Date(shift.shiftEndDate).toLocaleString()}
-              </p>
+                {formatter.format(new Date(shift.shiftDate))} - {formatter.format(new Date(shift.shiftEndDate))}
+                </p>
+                <p className="volunteer-period">
+                Recurrence:{" "}
+                {dayMap[shift.recurrenceRule.split(";")[1].split("=")[1]]}
+                </p>
             </div>
           ))}
           </div>
