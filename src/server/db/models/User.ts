@@ -1,4 +1,3 @@
-import { create } from "domain";
 import mongoose from "mongoose";
 import { ObjectId } from "mongoose";
 
@@ -9,7 +8,6 @@ interface shiftCompleted {
   timeTakenToComplete: number;
 }
 
-
 export interface IUser {
   _id?: ObjectId;
   username: string;
@@ -18,10 +16,35 @@ export interface IUser {
   lastName: string;
   email: string;
   bagelsDelivered?: number;
-  bagelsPickedUp?: number;
+  bagelsReceived?: number;
+  totalShifts?: number;
+  phoneNumber?: string;
+  locations?: [String];
+
+  monthlyShifts?: {
+    [date: string]: {
+      shiftTime: number;
+      bagelsDelivered: number;
+      bagelsReceived: number;
+      totalShifts: number;
+    };
+  };
+  createdAt?: Date; 
+
+
+
+  // Old Schema
+  // _id?: ObjectId;
+  // username: string;
+  // isAdmin?: boolean;
+  // firstName: string;
+  // lastName: string;
+  // email: string;
+  // bagelsDelivered?: number;
+  // bagelsPickedUp?: number;
   shiftsCompleted?: shiftCompleted[];
   totalDeliveries?: number;
-  phoneNumber?: string;
+  // phoneNumber?: string;
   acceptableLocations?: string;
   lifetimeHoursVolunteered?: number;
   monthlyHoursVolunteered?: number;
@@ -29,7 +52,7 @@ export interface IUser {
   monthlyShiftAmount?: number;
   yearlyShiftAmount?: number;
   lastMonthlyReset?: Date;
-  createdAt?: Date; 
+  // createdAt?: Date; 
 }
 
 const shiftCompletedSchema = new Schema({
@@ -74,6 +97,67 @@ const userSchema = new Schema({
     type: Number,
     default: 0,
   },
+  bagelsReceived: {
+    type: Number,
+    default: 0,
+  },
+  totalShifts: {
+    type: Number,
+    default: 0,
+  },
+  phoneNumber: {
+    type: String,
+    default: null,
+  },
+  locations: {
+    type: [String],
+    default: [],
+  },
+  monthlyShifts: {
+    type: Map,
+    of: {
+      shiftTime: Number,
+      bagelsDelivered: Number,
+      bagelsReceived: Number,
+      totalShifts: Number,
+    },
+    default: {},
+  },
+  createdAt: {
+    type: Date,
+    deafault: Date.now, 
+  },
+
+  // Old Schema
+  // username: {
+  //   type: String,
+  //   required: true,
+  //   unique: true,
+  // },
+  // isAdmin: {
+  //   type: Boolean,
+  //   default: false,
+  // },
+  // firstName: {
+  //   type: String,
+  //   required: true,
+  // },
+  // lastName: {
+  //   type: String,
+  //   required: true,
+  // },
+  // email: {
+  //   type: String,
+  //   required: true,
+  //   match: [
+  //     /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+  //     "Invalid email format",
+  //   ],
+  // },
+  // bagelsDelivered: {
+  //   type: Number,
+  //   default: 0,
+  // },
   bagelsPickedUp: {
     type: Number,
     default: 0,
@@ -86,10 +170,10 @@ const userSchema = new Schema({
     type: Number,
     default: 0,
   },
-  phoneNumber: {
-    type: String,
-    default: null,
-  },
+  // phoneNumber: {
+  //   type: String,
+  //   default: null,
+  // },
   acceptableLocations: {
     type: String,
     default: "",
@@ -118,10 +202,10 @@ const userSchema = new Schema({
     type: Date,
     default: new Date(),
   },
-  createdAt: {
-    type: Date,
-    deafault: Date.now, 
-  }
+  // createdAt: {
+  //   type: Date,
+  //   deafault: Date.now, 
+  // }
 });
 
 userSchema.methods.populateDeliveries = function () {
