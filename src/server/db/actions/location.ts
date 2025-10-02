@@ -2,8 +2,10 @@
 
 import { LocationModel, Location, Address } from "../models/location";
 import dbConnect from "../dbConnect";
+import { requireAdmin } from "../auth/auth";
 
 export async function createLocation(newLocation: string): Promise<string | null> {
+  await requireAdmin();
   await dbConnect();
   try {
     const newShift = new LocationModel(JSON.parse(newLocation || "{}"));
@@ -15,6 +17,7 @@ export async function createLocation(newLocation: string): Promise<string | null
 }
 
 export async function getAllLocationsById(id: string[]): Promise<string | null> {
+  await requireAdmin();
   await dbConnect();
   try {
     const location = await LocationModel.find({_id: id});
@@ -30,6 +33,7 @@ export async function updateLocationName(
   id: string,
   newLocationName: string
 ): Promise<Location | null> {
+  await requireAdmin();
   await dbConnect();
   try {
     const location = await LocationModel.findByIdAndUpdate(
@@ -48,6 +52,7 @@ export async function updateNotes(
   id: string,
   newNote: string
 ): Promise<Location | null> {
+  await requireAdmin();
   await dbConnect();
   try {
     const location = await LocationModel.findByIdAndUpdate(
@@ -66,6 +71,7 @@ export async function updateAddress(
   id: string,
   newAddress: Address
 ): Promise<Location | null> {
+  await requireAdmin();
   await dbConnect();
   try {
     const location = await LocationModel.findByIdAndUpdate(
@@ -81,6 +87,7 @@ export async function updateAddress(
 }
 
 export async function getAllLocations(): Promise<string | null> {
+  await requireAdmin();
   try {
     await dbConnect();
     const locations = await LocationModel.find();

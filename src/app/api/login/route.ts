@@ -15,10 +15,6 @@ export async function POST(req: Request) {
   }
 
 
-  // const sessionCookie = await adminAuth.createSessionCookie(token, {
-  // expiresIn: 60 * 60 * 24 * 7 * 1000,
-  // });
-
   cookies().set("authToken", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

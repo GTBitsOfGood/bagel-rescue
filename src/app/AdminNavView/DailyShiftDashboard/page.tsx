@@ -30,7 +30,16 @@ function DailyShiftDashboardPage() {
     const [routes, setRoutes] = useState<{ [key: string]: IRoute }>({});
     const [locations, setLocations] = useState<{ [key: string]: string[] }>({});
     const [selectedItem, setSelectedItem] = useState<DailyShiftSidebarInfo | null>(null);
-     
+
+    const handleDeleteShift = (shift: Shift) => {
+        // TODO: Implement delete shift functionality
+        console.log('Delete shift:', shift);
+        // You can add confirmation dialog here
+        if (confirm('Are you sure you want to delete this shift?')) {
+            // Call delete API here
+            console.log('Confirmed deletion of shift:', shift._id);
+        }
+    };
 
     useEffect(() => {
         const fetchShifts = async () => {
@@ -116,6 +125,7 @@ function DailyShiftDashboardPage() {
                     <DailyShiftBar onOpenSidebar={(shift: Shift, route: IRoute, location_list: string[]) => {
                             setSelectedItem({shift, route, location_list});
                         }}
+                        onDeleteShift={handleDeleteShift}
                         shift={currShifts}
                         routes={routes} 
                         locations={locations}
@@ -133,7 +143,9 @@ function DailyShiftDashboardPage() {
         <div className="flex">
             <AdminSidebar />
             <div className='flex flex-col flex-1 relative'>
+                {/* header location */}
                 <DashboardHeader date={date} AddDays={AddDays} />
+                {/* main content */}
                 <div className='bg-[#ECF2F9] flex flex-col pl-9 pr-9 gap-6 min-h-screen'>
                 {selectedItem && 
                     <ShiftSidebar

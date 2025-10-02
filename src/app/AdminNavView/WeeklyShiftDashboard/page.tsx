@@ -8,6 +8,7 @@ import {
   faEllipsis,
 } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { Shift } from "@/server/db/models/shift";
 import { IRoute } from "@/server/db/models/Route";
@@ -24,8 +25,10 @@ export type WeeklyShiftSidebarInfo = {
   shifts: Shift[];
   volunteersPerShift: Map<string, string>;
 }
+import { handleAuthError } from "@/lib/authErrorHandler";
 
 function WeeklyShiftDashboard() {
+  const router = useRouter();
   const [shiftSearchText, setShiftSearchText] = useState("");
   const [routes, setRoutes] = useState<IRoute[]>([]);
   const [shiftsPerRoute, setShiftsPerRoute] = useState<Map<string, Shift[]>>(
@@ -37,23 +40,37 @@ function WeeklyShiftDashboard() {
 
   useEffect(() => {
     const fetchRoutes = async () => {
-      const routes_response = await getAllRoutes();
-      const routes_data = JSON.parse(routes_response || "[]");
-      setRoutes(routes_data || []);
+      try {
+        const routes_response = await getAllRoutes();
+        const routes_data = JSON.parse(routes_response || "[]");
+        setRoutes(routes_data || []);
+      } catch (error) {
+        if (handleAuthError(error, router)) {
+          return; // Auth error handled, user redirected
+        }
+        console.error("Error fetching routes:", error);
+      }
     };
 
     const fetchShifts = async () => {
-      const shift_response = await getAllShifts();
-      const shift_data: Shift[] = JSON.parse(shift_response || "[]");
-      const routeToShiftsMap = new Map<string, Shift[]>();
-      shift_data.forEach((s) => {
-        if (routeToShiftsMap.has(s["routeId"].toString())) {
-          routeToShiftsMap.get(s["routeId"].toString())?.push(s);
-        } else {
-          routeToShiftsMap.set(s["routeId"].toString(), [s]);
+      try {
+        const shift_response = await getAllShifts();
+        const shift_data: Shift[] = JSON.parse(shift_response || "[]");
+        const routeToShiftsMap = new Map<string, Shift[]>();
+        shift_data.forEach((s) => {
+          if (routeToShiftsMap.has(s["routeId"].toString())) {
+            routeToShiftsMap.get(s["routeId"].toString())?.push(s);
+          } else {
+            routeToShiftsMap.set(s["routeId"].toString(), [s]);
+          }
+        });
+        setShiftsPerRoute(routeToShiftsMap);
+      } catch (error) {
+        if (handleAuthError(error, router)) {
+          return; // Auth error handled, user redirected
         }
-      });
-      setShiftsPerRoute(routeToShiftsMap);
+        console.error("Error fetching shifts:", error);
+      }
     };
 
     fetchRoutes();

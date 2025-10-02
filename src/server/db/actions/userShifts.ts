@@ -6,6 +6,7 @@ import { UserShiftModel, UserShift } from "../models/userShift";
 import Route from "../models/Route";
 import { ObjectId } from "mongodb";
 import User, { IUser } from "../models/User";
+import { requireUser } from "../auth/auth";
 
 export type UserRoute = {
   name: string;
@@ -63,6 +64,7 @@ export async function getUserShifts(
   page: number = 1,
   limit: number = 10
 ): Promise<PaginatedResult> {
+  await requireUser();
   await dbConnect();
   
   try {
@@ -147,6 +149,8 @@ export async function getUserShiftsByDateRange(
   page: number = 1,
   limit: number = 10
 ): Promise<PaginatedResult> {
+  await requireUser();
+
   await dbConnect();
 
   try {
@@ -232,6 +236,8 @@ export async function updateUserShiftStatus(
   shiftId: string,
   status: "Complete" | "Incomplete"
 ): Promise<UserShift | null> {
+  await requireUser();
+
   await dbConnect();
   
   try {
@@ -259,6 +265,8 @@ export async function getCurrentUserShifts(
   page: number = 1,
   limit: number = 10
 ): Promise<PaginatedResult> {
+  await requireUser();
+
   const userId = await getCurrentUserId();
   
   if (!userId) {
@@ -292,6 +300,7 @@ export async function getCurrentUserShiftsByDateRange(
   page: number = 1,
   limit: number = 10
 ): Promise<PaginatedResult> {
+  await requireUser();
   const userId = await getCurrentUserId();
   
   if (!userId) {
@@ -456,30 +465,29 @@ export async function getShiftUsers(shiftIds: string[]) {
   }
 }
 
-// export async function getUsersForShifts(shiftIds: ObjectId[]): Promise<Map<string, string>> {
-//   await dbConnect();
-  
-//   try {
+export async function createUserShift(userShiftData: {
+  userId: string;
+  shiftId: string;
+  routeId: string;
+  shiftDate: Date;
+  shiftEndDate: Date;
+}): Promise<string> {
+  try {
+    await dbConnect();
     
-//     // Get UserShift documents filtered by shiftIds
-//     const userShifts = await UserShiftModel.find({
-//       shiftId: { $in: shiftIds }
-//     }).lean();
-    
-//     // Create a map of shift IDs to user IDs
-//     const shiftToUserMap = new Map<string, string>();
-    
-//     userShifts.forEach((userShift) => {
-//       if (userShift.shiftId && userShift.userId) {
-//         const shiftId = userShift.shiftId.toString();
-//         const userId = userShift.userId.toString();
-//         shiftToUserMap.set(shiftId, userId);
-//       }
-//     });
-    
-//     return shiftToUserMap;
-//   } catch (error) {
-//     console.error("Error fetching users for shifts:", error);
-//     throw new Error("Failed to fetch users for shifts");
-//   }
-// }
+    const newUserShift = new UserShiftModel({
+      userId: userShiftData.userId,
+      shiftId: userShiftData.shiftId,
+      routeId: userShiftData.routeId,
+      shiftDate: userShiftData.shiftDate,
+      shiftEndDate: userShiftData.shiftEndDate,
+      status: "Incomplete"
+    });
+
+    await newUserShift.save();
+    return "UserShift created successfully";
+  } catch (error) {
+    console.error("Error creating UserShift:", error);
+    throw error;
+  }
+}

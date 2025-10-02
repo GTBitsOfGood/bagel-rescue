@@ -12,8 +12,21 @@ interface Recurrence {
 interface Shift extends Document {
   _id: mongoose.Types.ObjectId;
   routeId: mongoose.Types.ObjectId;
-  shiftDate: Date;
+  shiftStartTime: number;
+  shiftEndTime: number;
+  shiftStartDate: Date;
   shiftEndDate: Date;
+  recurrenceDates: string[];
+  timeSpecific: boolean;
+  confirmationForm: { [date: string]: mongoose.Types.ObjectId };
+  canceledShifts: Date[];
+  comments: { [date: string]: string };
+  creationDate: Date;
+
+  // Old Schema
+  // routeId: mongoose.Types.ObjectId;
+  shiftDate: Date;
+  // shiftEndDate: Date;
   capacity: number;
   currSignedUp: number;
   recurrenceRule: string;
@@ -40,12 +53,51 @@ const shiftSchema: Schema = new Schema({
     type: ObjectId,
     ref: "Route",
   },
-  shiftDate: {
+  shiftStartTime: {
+    type: Number,
+  },
+  shiftEndTime: {
+    type: Number,
+  },
+  shiftStartDate: {
     type: Date,
   },
   shiftEndDate: {
     type: Date,
   },
+  recurrenceDates: {
+    type: [String],
+    default: [],
+  },
+  timeSpecific: {
+    type: Boolean,
+  },
+  confirmationForm: {
+    type: Map,
+    of: ObjectId
+  },
+  canceledShifts: {
+    type: [Date],
+  },
+  comments: {
+    type: Map,
+    of: String
+  },
+  creationDate: {
+    type: Date,
+  },
+
+  // Old Schema
+  // routeId: {
+  //   type: ObjectId,
+  //   ref: "Route",
+  // },
+  shiftDate: {
+    type: Date,
+  },
+  // shiftEndDate: {
+  //   type: Date,
+  // },
   capacity: {
     type: Number,
     default: 0,

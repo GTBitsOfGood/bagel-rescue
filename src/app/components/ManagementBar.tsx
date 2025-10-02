@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faTrash, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 import { sendVolunteerSignupEmails } from "@/server/db/actions/email";
+import { handleAuthError } from "@/lib/authErrorHandler";
 
 function ManagementBar() {
   const router = useRouter();
@@ -42,6 +43,9 @@ function ManagementBar() {
         alert("Invitation(s) sent successfully!");
       }
     } catch (error) {
+      if (handleAuthError(error, router)) {
+        return; // Auth error handled, user redirected
+      }
       console.error("Error sending invitation:", error);
       alert("An error occurred while sending the invitation(s).");
     }

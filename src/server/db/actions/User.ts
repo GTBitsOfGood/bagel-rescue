@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import { ClientSession, UpdateQuery } from "mongoose";
 import User, { IUser } from "../models/User";
 import dbConnect from "../dbConnect";
+import { requireUser } from "../auth/auth";
 
 export type UserStats = {
   bagelsDelivered: number;
@@ -35,6 +36,7 @@ async function getUser(
   id: mongoose.Types.ObjectId,
   session?: ClientSession
 ): Promise<IUser | null> {
+  await requireUser();
   await dbConnect();
 
   const document = await User.findById(
@@ -54,6 +56,7 @@ async function getUserByEmail(
   email: string,
   session?: ClientSession
 ): Promise<IUser | null> {
+  // await requireUser();
   await dbConnect();
 
   const document = await User.findOne(
@@ -74,6 +77,7 @@ async function updateUser(
   updated: UpdateQuery<IUser>,
   session?: ClientSession
 ): Promise<IUser | null> {
+  await requireUser();
   await dbConnect();
 
   const document = await User.findByIdAndUpdate(id, updated, {
@@ -90,6 +94,7 @@ async function getUserStats(
   id: mongoose.Types.ObjectId,
   session?: ClientSession
 ): Promise<UserStats | null> {
+  await requireUser();
   await dbConnect();
 
   const document = await User.findById(
@@ -109,6 +114,7 @@ async function getUserStats(
 }
 
 async function getAllUserStats(): Promise<string | null> {
+  await requireUser();
   await dbConnect();
 
   const documents = await User.find(
@@ -119,12 +125,24 @@ async function getAllUserStats(): Promise<string | null> {
 }
 
 async function getTotalBagelsDelivered(): Promise<number | null> {
+  await requireUser();
   await dbConnect();
 
   const totalBagelsDelivered = await User.aggregate([
     { $group: { _id: null, total: { $sum: "$bagelsDelivered" } } },
   ]);
   return totalBagelsDelivered[0]?.total || 0;
+}
+
+async function getAllUsers(): Promise<string> {
+  try {
+    await dbConnect();
+    const users = await User.find({}).select("firstName lastName email");
+    return JSON.stringify(users);
+  } catch (error) {
+    console.error("Error fetching all users:", error);
+    return JSON.stringify([]);
+  }
 }
 
 export {
@@ -135,4 +153,5 @@ export {
   getUserStats,
   getAllUserStats,
   getTotalBagelsDelivered,
+  getAllUsers,
 };

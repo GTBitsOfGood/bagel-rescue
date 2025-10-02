@@ -5,8 +5,10 @@ import { RRule } from "rrule";
 import dbConnect from "../dbConnect";
 import { RecurrenceModel, Shift, ShiftModel } from "../models/shift";
 import { UserShiftModel } from "../models/userShift";
+import { requireAdmin } from "../auth/auth";
 
 export async function createShift(shiftObject: string): Promise<string | null> {
+  await requireAdmin();
   try {
     await dbConnect();
     const newShift = new ShiftModel(JSON.parse(shiftObject || "{}"));
@@ -18,6 +20,7 @@ export async function createShift(shiftObject: string): Promise<string | null> {
 }
 
 export async function getShift(shiftId: ObjectId): Promise<Shift | null> {
+  await requireAdmin();
   try {
     await dbConnect();
 
@@ -33,6 +36,7 @@ export async function updateRoute(
   shiftId: ObjectId,
   routeId: ObjectId
 ): Promise<Shift | null> {
+  await requireAdmin();
   try {
     await dbConnect();
 
@@ -64,6 +68,7 @@ export async function updateDate(
   shiftId: ObjectId,
   newDate: Date
 ): Promise<Shift | null> {
+  await requireAdmin();
   try {
     await dbConnect();
 
@@ -118,6 +123,7 @@ export async function updateCapacity(
   shiftId: ObjectId,
   newCapacity: number
 ): Promise<Shift | null> {
+  await requireAdmin();
   try {
     await dbConnect();
 
@@ -146,6 +152,7 @@ export async function updateRecurrenceRule(
   shiftId: ObjectId,
   newRule: string
 ): Promise<Shift | null> {
+  await requireAdmin();
   try {
     await dbConnect();
 
@@ -178,6 +185,7 @@ export async function newSignUp(
   userId: ObjectId,
   shiftDate?: Date
 ): Promise<boolean> {
+  await requireAdmin();
   try {
     await dbConnect();
 
@@ -274,6 +282,7 @@ async function recurrenceSignup(
 }
 
 export async function getAllShifts(): Promise<string | null> {
+  await requireAdmin();
   try {
     await dbConnect();
     const shifts = await ShiftModel.find();
@@ -285,6 +294,7 @@ export async function getAllShifts(): Promise<string | null> {
 }
 
 export async function getShiftAnalytics(): Promise<string | null> {
+  await requireAdmin();
   try {
     await dbConnect();
     const shifts = await ShiftModel.find();
@@ -333,6 +343,7 @@ interface TempRecentShift {
 export async function getRecentShifts(
   numRecentShifts: number
 ): Promise<string | null> {
+  await requireAdmin();
   try {
     await dbConnect();
     const shifts = await ShiftModel.find();
