@@ -89,7 +89,8 @@ function WeeklyShiftDashboard() {
   };
 
 
-  // Can definitely be made more efficient - do not need to pass entire shiftsPerRoute into every Route card
+  // TODO: Can definitely be made more efficient - probably not need 
+  // to pass entire volunteersPerShift into every Route card
   function routesList() {
     return (
       <div className="routes-list">
