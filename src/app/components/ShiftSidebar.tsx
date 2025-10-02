@@ -4,9 +4,9 @@ import { Shift } from "@/server/db/models/shift";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAngleDoubleRight, faArrowUpShortWide } from "@fortawesome/free-solid-svg-icons";
 import { faPenClip } from "@fortawesome/free-solid-svg-icons";
-import { ShiftSidebarInfo } from "../AdminNavView/DailyShiftDashboard/page";
+import { DailyShiftSidebarInfo } from "../AdminNavView/DailyShiftDashboard/page";
 interface ShiftSidebarProps {
-    shiftSidebarInfo: ShiftSidebarInfo;
+    shiftSidebarInfo: DailyShiftSidebarInfo;
     onOpenSidebar: () => void;
 }
 import "./stylesheet.css";

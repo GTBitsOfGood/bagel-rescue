@@ -5,6 +5,7 @@ import dbConnect from "../dbConnect";
 import { UserShiftModel, UserShift } from "../models/userShift";
 import Route from "../models/Route";
 import { ObjectId } from "mongodb";
+import User, { IUser } from "../models/User";
 import { requireUser } from "../auth/auth";
 
 export type UserRoute = {
@@ -424,6 +425,44 @@ export async function getCurrentUserUniqueRoutes(): Promise<UserRoute[]> {
   }
 
   return getUserUniqueRoutes(userId);
+}
+
+
+export async function getShiftUsers(shiftIds: string[]) {
+  await dbConnect();
+
+  const newShiftIds = shiftIds.map(id => new ObjectId(id));
+
+  try {
+
+    const results = await UserShiftModel.aggregate([
+      { $match: { shiftId: { $in: newShiftIds } } },
+      {
+        $lookup: {
+          from: "users",          
+          localField: "userId",
+          foreignField: "_id",
+          as: "user"
+        }
+      },
+      { $unwind: "$user" }, // since each shift has exactly 1 user
+      {
+        $project: {
+          _id: 0,
+          shiftId: { $toString: "$shiftId" },   // 👈 convert to string
+          userId: { $toString: "$user._id" },
+          fullName: {
+            $concat: ["$user.firstName", " ", "$user.lastName"]
+          }
+        }
+      }
+    ]);
+
+    return results;
+  } catch (error) {
+    console.error("Error fetching shift users:", error);
+    throw new Error("Failed to fetch shift users");
+  }
 }
 
 export async function createUserShift(userShiftData: {

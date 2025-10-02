@@ -10,6 +10,7 @@ interface Recurrence {
 }
 
 interface Shift extends Document {
+  _id: mongoose.Types.ObjectId;
   routeId: mongoose.Types.ObjectId;
   shiftStartTime: number;
   shiftEndTime: number;

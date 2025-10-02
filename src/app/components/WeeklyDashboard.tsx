@@ -58,7 +58,7 @@ const WeeklyDashboardHeader: React.FC<WeeklyDashboardHeaderProps> = ({ date, Add
   const debouncedAddDays = useCallback(debounce(AddDays, 300), [AddDays]);
 
   return (
-    <div className="flex flex-row justify-between p-9 border-b-[1px] border-b-[#D3D8DE]">
+    <div className="flex flex-row justify-between p-9 border-b-[1px] border-b-[#D3D8DE] sticky top-0 bg-white z-50">
       <span className="text-[#072B68] mt-2 font-[700] text-4xl">Dashboard</span>
       <div className="flex gap-6">
         <div className="flex justify-between gap-4">
