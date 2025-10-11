@@ -279,6 +279,27 @@ export default function NewShiftPage() {
 
   async function saveEdits() {
 
+    // Validate required fields marked with asterisks
+    if (!startTime.trim()) {
+      alert("Please enter a start time.");
+      return;
+    }
+    
+    if (!endTime.trim()) {
+      alert("Please enter an end time.");
+      return;
+    }
+    
+    if (dateRange && !startDate.trim()) {
+      alert("Please enter a start date.");
+      return;
+    }
+    
+    if (dateRange && !endDate.trim()) {
+      alert("Please enter an end date.");
+      return;
+    }
+    
     if (routes.length === 0) {
       alert("Please add a route.");
       return;
@@ -416,11 +437,11 @@ export default function NewShiftPage() {
                             <div className="flex space-x-12">
                               <div className="flex flex-col space-y-2 flex-1">
                                   <p className="text-[#072B68] font-bold text-lg">Start Time <span className="text-red-500">*</span></p>
-                                   <input onChange={(e) => setStartTime(e.target.value)} ref={timeStartInputRef} onClick={() => handleClick()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
+                                   <input onChange={(e) => setStartTime(e.target.value)} ref={timeStartInputRef} onClick={() => handleClick()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here" required/>
                               </div>
                               <div className="flex flex-col space-y-2 flex-1">
                                 <p className="text-[#072B68] font-bold text-lg">End Time <span className="text-red-500">*</span></p>
-                                <input onChange={(e) => setEndTime(e.target.value)} ref={timeEndInputRef} onClick={() => handleClickEnd()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
+                                <input onChange={(e) => setEndTime(e.target.value)} ref={timeEndInputRef} onClick={() => handleClickEnd()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here" required/>
                               </div>
                             </div>
                             {/* this is the time specific area */}
@@ -449,6 +470,7 @@ export default function NewShiftPage() {
                                       value={startDate}
                                       onChange={(e) => dateRange ? setStartDate(e.target.value) : null}
                                       onClick={(e) => !dateRange && e.preventDefault()}
+                                      required={dateRange}
                                     />
                                 </div>
                                 <div className="flex flex-col space-y-2 flex-1">
@@ -462,6 +484,7 @@ export default function NewShiftPage() {
                                     value={endDate}
                                     onChange={(e) => dateRange ? setEndDate(e.target.value) : null}
                                     onClick={(e) => !dateRange && e.preventDefault()}
+                                    required={dateRange}
                                   />
                                 </div>
                               </div>
