@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Sidebar from "../../../components/Sidebar";
 import styles from "./page.module.css";
 import {
@@ -15,6 +16,7 @@ import DateNavigation from "./components/DateNavigation";
 import ShiftsTable from "./components/ShiftsTable";
 import Pagination from "./components/Pagination";
 import { ViewMode } from "./components/types";
+import { handleAuthError } from "@/lib/authErrorHandler";
 import { useRouter } from "next/navigation";
 import { auth } from "@/server/db/firebase";
 
@@ -39,6 +41,7 @@ import { auth } from "@/server/db/firebase";
  */
 
 const MyShiftsPage: React.FC = () => {
+  const router = useRouter();
   const [shifts, setShifts] = useState<UserShiftData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -204,6 +207,9 @@ const MyShiftsPage: React.FC = () => {
         setPagination(shiftsData.pagination);
         
       } catch (error) {
+        if (handleAuthError(error, router)) {
+          return; // Auth error handled, user redirected
+        }
         console.error("Error fetching shifts:", error);
         setError("Error loading shifts. Please try again later.");
       } finally {

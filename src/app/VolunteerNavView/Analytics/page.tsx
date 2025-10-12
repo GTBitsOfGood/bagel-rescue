@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import SideBar from "../../../components/Sidebar";
 import Overview from "./overview";
 import RecentRoutes from "./recent_routes";
@@ -11,6 +12,7 @@ import {
   getUserUniqueRoutes,
   UserRoute,
 } from "@/server/db/actions/userShifts";
+import { handleAuthError } from "@/lib/authErrorHandler";
 // import { auth } from "@/server/db/firebase"; // Import Firebase auth
 // import { onAuthStateChanged } from "firebase/auth";
 
@@ -23,6 +25,7 @@ type AnalyticsData = {
 };
 
 function AnalyticsPage() {
+  const router = useRouter();
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData>({
     hoursThisMonth: 0,
     hoursThisYear: 0,
@@ -124,6 +127,9 @@ function AnalyticsPage() {
           )}:${String(now.getSeconds()).padStart(2, "0")}`
         );
       } catch (error) {
+        if (handleAuthError(error, router)) {
+          return; // Auth error handled, user redirected
+        }
         console.error("Error fetching user data:", error);
         setError("Error loading analytics data. Please try again later.");
       } finally {

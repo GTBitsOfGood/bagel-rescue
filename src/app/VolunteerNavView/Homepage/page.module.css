@@ -110,7 +110,7 @@
 }
 
 .requestSubButton:hover {
-  background-color: #2563eb;
+  background-color: var(--Bagel-Rescue-Blue);
 }
 
 .shiftsTable {
@@ -236,13 +236,13 @@
 }
 
 .activePage {
-  background-color: #3b82f6;
+  background-color: var(--Bagel-Rescue-Blue);
   color: white;
-  border-color: #3b82f6;
+  border-color: var(--Bagel-Rescue-Blue);
 }
 
 .activePage:hover {
-  background-color: #2563eb;
+  background-color: var(--Bagel-Rescue-Blue);
 }
 
 .paginationInfo {

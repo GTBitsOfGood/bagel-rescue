@@ -11,6 +11,7 @@ import { Location } from "@/server/db/models/location";
 
 import AdminSidebar from '../../../components/AdminSidebar';
 import { useRouter } from "next/navigation";
+import { handleAuthError } from "@/lib/authErrorHandler";
 
 
 function LocationDashboardPage() {
@@ -20,10 +21,17 @@ function LocationDashboardPage() {
 
   useEffect(() => {
     const fetchLocations = async () => {
-      const response = await getAllLocations();
-      const data = JSON.parse(response || "[]");
-
-      setLocations(data || []);
+      try {
+        const response = await getAllLocations();
+        const data = JSON.parse(response || "[]");
+        setLocations(data || []);
+      } catch (error) {
+        if (handleAuthError(error, router)) {
+          return; // Auth error handled, user redirected
+        }
+        console.error("Error fetching locations:", error);
+        setLocations([]);
+      }
     };
     fetchLocations();
   }, [sortOption]);
@@ -53,25 +61,21 @@ function LocationDashboardPage() {
     <div className="flex">
       <AdminSidebar />
       <div className="flex flex-col flex-1">
-      <div className="container">
-      <button className="back-btn"
-      onClick={() => window.history.back()}>
-        <FontAwesomeIcon icon={faAngleLeft} />
-        <p>Back</p>
-      </button>
-      <div className="header">
-        <p className="header-text">Locations</p>
-        <div className="flex flex-row justify-between text-center align-middle">
-          <button
-            className={styles.newLocationButton}
-            onClick={() => router.push("/AdminNavView/LocationCreationPage")}>
-            <FontAwesomeIcon icon={faPlus} className="mr-2" />
-            New Location
-          </button>
+        <div className={styles.header}>
+          <p className={styles.headerText}>Locations</p>
+          <div className="flex flex-row justify-between text-center align-middle">
+            <button
+              className={styles.newLocationButton}
+              onClick={() => router.push("/AdminNavView/LocationCreationPage")}>
+              <FontAwesomeIcon icon={faPlus} className="mr-2" />
+              New Location
+            </button>
+          </div>
         </div>
-      </div>
-      <hr className="separator" />
-        <div className={styles.container}>
+      
+      <hr className={styles.separator} />
+        <div className={styles.wrapper}>
+          <div className={styles.container}>
           <div className={styles.searchAndSort}>
             <div className={styles.searchInputContainer}>
               <FontAwesomeIcon icon={faMagnifyingGlass} className={styles.searchIcon} />
@@ -120,8 +124,8 @@ function LocationDashboardPage() {
             </div>
           </div>
         </div>
+        </div>
       </div>
-    </div>
     </div>
   );
 };

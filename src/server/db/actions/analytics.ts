@@ -3,8 +3,10 @@
 import dbConnect from "../dbConnect";
 import { AnalyticsModel, Analytics } from "../models/analytics";
 import User from "../models/User";
+import { requireUser } from "../auth/auth";
 
 async function updateAnalytics(): Promise<Analytics> {
+  await requireUser();
   try {
     await dbConnect();
 
@@ -44,6 +46,7 @@ async function updateAnalytics(): Promise<Analytics> {
 }
 
 async function getAnalytics(): Promise<string | null> {
+  await requireUser();
   try {
     await dbConnect();
 

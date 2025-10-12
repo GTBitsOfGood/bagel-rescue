@@ -2,19 +2,17 @@
 
 import "./stylesheet.css";
 import AdminSidebar from "@/components/AdminSidebar";
-import { getAllLocationById } from "@/server/db/actions/location";
-import { createRoute, getAllRoutes, getLocations } from "@/server/db/actions/Route";
+import { getAllLocationsById } from "@/server/db/actions/location";
+import { getAllRoutes } from "@/server/db/actions/Route";
 import { createShift } from "@/server/db/actions/shift";
+import { getAllUsers } from "@/server/db/actions/User";
+import { createUserShift } from "@/server/db/actions/userShifts";
 import { Location } from "@/server/db/models/location";
 import { IRoute } from "@/server/db/models/Route";
-import { Shift } from "@/server/db/models/shift";
-import { regular } from "@fortawesome/fontawesome-svg-core/import.macro";
-import { faArrowLeft, faGripVertical, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { ObjectId } from "mongoose";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 
 
 export default function NewShiftPage() {
@@ -23,14 +21,20 @@ export default function NewShiftPage() {
     const [searchRoutes, setSearchRoutes] = useState<IRoute[]>([]);
     const [routes, setRoutes] = useState<IRoute[]>([]);
     const [searchText, setSearchText] = useState<string>("");
-    const [isAddingRoute, setIsAddingRoute] = useState<boolean>(false);
+    const [volunteerSearchText, setVolunteerSearchText] = useState<string>("");
+    const [searchVolunteers, setSearchVolunteers] = useState<any[]>([]);
+    const [volunteers, setVolunteers] = useState<any[]>([]);
+    const [isSearchingVolunteers, setIsSearchingVolunteers] = useState<boolean>(false);
+    const [hasAddedRoute, setHasAddedRoute] = useState<boolean>(false);
     const [locations, setLocations] = useState<Location[]>([]);
-    const [day, setDay] = useState<string>("Monday");
+    const [selectedDays, setSelectedDays] = useState<string[]>([]);
     const [startTime, setStartTime] = useState<string>("");
     const [endTime, setEndTime] = useState<string>("");
-    const [routesIsPickUp, setRoutesIsPickUp] = useState<
-    Map<string, boolean>
-  >(new Map());
+    const [timeSpecific, setTimeSpecific] = useState<boolean>(false);
+    const [dateRange, setDateRange] = useState<boolean>(false);
+    const [startDate, setStartDate] = useState<string>("");
+    const [endDate, setEndDate] = useState<string>("");
+    const [additionalInfo, setAdditionalInfo] = useState<string>("");
 
     const router = useRouter();
     
@@ -45,9 +49,18 @@ export default function NewShiftPage() {
   }, []);
 
   useEffect(() => {
+    const fetchVolunteers = async () => {
+      const response = await getAllUsers();
+      const data = JSON.parse(response || "[]");
+      setSearchVolunteers(data || []);
+    };
+    fetchVolunteers();
+  }, []);
+
+  useEffect(() => {
     const fetchLocations = async () => {
       if (routes.length === 0) return;
-      const response = await getAllLocationById(routes[0].locations.map((loc) => String(loc.location)));
+      const response = await getAllLocationsById(routes[0].locations.map((loc) => String(loc.location)));
       const data = JSON.parse(response || "[]");
       setLocations(data || []);
     };
@@ -63,7 +76,7 @@ export default function NewShiftPage() {
     newSearchRoutes.splice(index, 1);
     setSearchRoutes(newSearchRoutes);
 
-    setIsAddingRoute(!isAddingRoute);
+    setHasAddedRoute(true);
   }
 
   function removeRoute(index: number): void {
@@ -74,7 +87,31 @@ export default function NewShiftPage() {
     const newRoutes = [...routes];
     newRoutes.splice(index, 1);
     setRoutes(newRoutes);
+    
+    setHasAddedRoute(false);
   }
+
+  function addVolunteer(index: number): void {
+    setVolunteers([...volunteers, searchVolunteers[index]]);
+
+    const newSearchVolunteers = [...searchVolunteers];
+    newSearchVolunteers.splice(index, 1);
+    setSearchVolunteers(newSearchVolunteers);
+
+    setVolunteerSearchText("");
+    setIsSearchingVolunteers(false);
+  }
+
+  function removeVolunteer(index: number): void {
+    const newSearchVolunteers = [...searchVolunteers];
+    newSearchVolunteers.push(volunteers[index]);
+    setSearchVolunteers(newSearchVolunteers);
+
+    const newVolunteers = [...volunteers];
+    newVolunteers.splice(index, 1);
+    setVolunteers(newVolunteers);
+  }
+
   function locationsList() {
     if (locations.length === 0) return <div></div>;
     return locations.map((loc) => {
@@ -88,93 +125,44 @@ export default function NewShiftPage() {
   }
 
 
-  function routesCards() {
-    function handleOnDragEnd(result: any) {
-      if (!result.destination) return;
-
-      const items = Array.from(routes);
-      const [reorderedItem] = items.splice(result.source.index, 1);
-      items.splice(result.destination.index, 0, reorderedItem);
-
-      setRoutes(items);
-    }
-
+  function selectedRoute() {
+    if (routes.length === 0) return null;
+    
     return (
-      <DragDropContext onDragEnd={handleOnDragEnd}>
-        <Droppable droppableId="location-cards-list">
-          {(provided) => (
-            <div
-              className="location-cards-list"
-              style={{
-                display: isAddingRoute
-                  ? "none"
-                  : routes.length > 0
-                  ? "flex"
-                  : "none",
-              }}
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-            >
-              {routes.map((route, ind) => {
-                return (
-                  <Draggable
-                    key={route["routeName"]}
-                    draggableId={route["routeName"]}
-                    index={ind}
-                  >
-                    {(provided) => (
-                      <div
-                        key={ind}
-                        className={route["routeName"] + " location-card"}
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                      >
-                        <div className="location-card-section">
-                          <FontAwesomeIcon
-                            icon={faGripVertical}
-                            className="drag-drop-icon"
-                          />
-                          <p className="location-number">{ind + 1}</p>
-                          <p className="location-name">
-                            {route["routeName"]}
-                          </p>
-                        </div>
-                        <div className="location-card-section">
-                          <button
-                            className="x-btn"
-                            onClick={() => removeRoute(ind)}
-                          >
-                            <FontAwesomeIcon icon={faXmark} />
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </Draggable>
-                );
-              })}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+      <div className="selected-route">
+        <div className="route-info justify-between">
+          <div className="flex flex-col gap-2">
+          <p className="route-name">{routes[0]["routeName"]}</p>
+          <p className="route-description">{routes[0]["locationDescription"]}</p>
+          </div>
+        </div>
+        <div className="flex flex-col gap-2">
+            <p className="route-description">{routes[0]["locations"].length} stops</p>
+        </div>
+        <button
+          className="x-btn"
+          onClick={() => removeRoute(0)}
+        >
+          <FontAwesomeIcon icon={faXmark} />
+        </button>
+      </div>
     );
   }
 
   function searchRoutesList() {
     return (
       <div
-        className="search-location-list"
-        style={{ display: isAddingRoute ? "flex" : "none" }}
+        className="search-results-list"
+        style={{ display: hasAddedRoute ? "none" : "flex" }}
       >
         {searchRoutes.map((route, ind) => {
           return (
             <div
               key={ind}
-              className="search-location"
+              className="search-result"
               onClick={() => addRoute(ind)}
               style={{
-                display: route["routeName"]
+                display: searchText === "" || route["routeName"]
                   .toLowerCase()
                   .includes(searchText.toLowerCase())
                   ? "flex"
@@ -182,19 +170,76 @@ export default function NewShiftPage() {
               }}
             >
               <div className="search-location-section">
-                <p className="search-location-name">
+                <p className="search-result-name">
                   {route["routeName"]}
                 </p>
                 <p className="search-location-address">
                   {route["locationDescription"]}
                 </p>
               </div>
-              {/* <div className="search-location-section">
-                <p>Data here</p>
-              </div> */}
             </div>
           );
         })}
+      </div>
+    );
+  }
+
+  function searchVolunteersList() {
+    return (
+      <div className="search-results-list bg-white">
+        {searchVolunteers.map((volunteer, ind) => {
+          return (
+            <div
+              key={ind}
+              className="volunteer-search-result"
+              onClick={() => addVolunteer(ind)}
+              style={{
+                display: volunteerSearchText === "" || `${volunteer.firstName} ${volunteer.lastName}`
+                  .toLowerCase()
+                  .includes(volunteerSearchText.toLowerCase())
+                  ? "flex"
+                  : "none",
+              }}
+            >
+              <p className="volunteer-search-result-name">{volunteer.firstName} {volunteer.lastName}</p>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  function selectedVolunteersList() {
+    return (
+      <div className="selected-volunteers-list">
+        {volunteers.map((volunteer, index) => (
+          <div key={index} className="selected-volunteer">
+            <div className="selected-volunteer-name">
+              {volunteer.firstName} {volunteer.lastName}
+            </div>
+            <button
+              className="x-btn"
+              onClick={() => removeVolunteer(index)}
+            >
+              <FontAwesomeIcon icon={faXmark} />
+            </button>
+          </div>
+        ))}
+        <input
+          type="text"
+          placeholder="Type to search..."
+          value={volunteerSearchText}
+          onChange={(e) => setVolunteerSearchText(e.target.value)}
+          onClick={() => setIsSearchingVolunteers(true)}
+          style={{
+            border: 'none',
+            outline: 'none',
+            background: 'transparent',
+            padding: '0.5em',
+            fontSize: '1em',
+            minWidth: '150px'
+          }}
+        />
       </div>
     );
   }
@@ -232,69 +277,138 @@ export default function NewShiftPage() {
   
   }
 
-  function saveEdits() {
-    let finalStartDay = new Date(); 
-    let finalEndDay = new Date();
+  async function saveEdits() {
 
+    // Validate required fields marked with asterisks
+    if (!startTime.trim()) {
+      alert("Please enter a start time.");
+      return;
+    }
+    
+    if (!endTime.trim()) {
+      alert("Please enter an end time.");
+      return;
+    }
+    
+    if (dateRange) {
+      if (!startDate.trim()) {
+        alert("Please enter a start date.");
+        return;
+      }
+      
+      if (!endDate.trim()) {
+        alert("Please enter an end date.");
+        return;
+      }
+    }
+    
     if (routes.length === 0) {
       alert("Please add a route.");
       return;
     }
-    const selectedRoute = routes[0]._id;
-    const targetDay = day.toLowerCase();
-
-    const today = new Date();
-    const todayName = today.toLocaleString("en-us", { weekday: "long" }).toLowerCase();
-
-    if (targetDay === todayName) {
-      finalStartDay = today;
-      finalEndDay = today;
+    
+    if (volunteers.length === 0) {
+      alert("Please add at least one volunteer.");
+      return;
     }
+    
+    if (selectedDays.length === 0) {
+      alert("Please select at least one day.");
+      return;
+    }
+    
+    const selectedRoute = routes[0]._id;
+    
+    for (const day of selectedDays) {
+      const targetDay = day.toLowerCase();
+      let finalStartDay = new Date(); 
+      let finalEndDay = new Date();
 
-    for (let i = 1; i < 7; i++) {
-      const temp = new Date(today);
-      temp.setDate(today.getDate() + i);
-      if (temp.toLocaleString("en-us", { weekday: "long" }).toLowerCase() === targetDay) {
-        finalStartDay = temp;
-        finalEndDay = temp;
-        break;
+      const today = new Date();
+      const todayName = today.toLocaleString("en-us", { weekday: "long" }).toLowerCase();
+
+      if (targetDay === todayName) {
+        finalStartDay = today;
+        finalEndDay = today;
+      }
+
+      for (let i = 1; i < 7; i++) {
+        const temp = new Date(today);
+        temp.setDate(today.getDate() + i);
+        if (temp.toLocaleString("en-us", { weekday: "long" }).toLowerCase() === targetDay) {
+          finalStartDay = temp;
+          finalEndDay = temp;
+          break;
+        }
+      }
+
+      const [startHour, startMinute] = timeIntoHoursandMinutes(startTime);
+      const [endHour, endMinute] = timeIntoHoursandMinutes(endTime);
+
+      if (startHour === 0 && startMinute === 0 || 
+        endHour === 0 && endMinute === 0 || 
+        endHour < startHour || 
+        (endHour === startHour && endMinute <= startMinute)) {
+        alert("Please enter a valid start time.");
+        return;
+      }
+
+      finalStartDay = new Date(finalStartDay);
+      finalStartDay.setHours(startHour);
+      finalStartDay.setMinutes(startMinute);
+      finalStartDay.setSeconds(0);
+
+      finalEndDay = new Date(finalEndDay);
+      finalEndDay.setHours(endHour);
+      finalEndDay.setMinutes(endMinute);
+      finalEndDay.setSeconds(0);
+
+      const newShift = {
+        routeId: selectedRoute,
+        shiftDate: finalStartDay,
+        shiftEndDate: finalEndDay,
+        timeSpecific: timeSpecific ?? false,
+        additionalInfo: additionalInfo ?? "",
+        currSignedUp: volunteers.length,
+        recurrenceRule: "FREQ=WEEKLY;BYDAY=" + targetDay.toUpperCase().substring(0, 2),
+      };
+
+      var shiftCreationComplete = false;
+      
+      try {
+        // Create the shift first
+        const shiftResult = await createShift(JSON.stringify(newShift));
+        if (!shiftResult) {
+          throw new Error("Failed to create shift");
+        }
+        const shiftData = JSON.parse(shiftResult);
+        const shiftId = shiftData._id;
+        const routeId = shiftData.routeId;
+
+        // Create UserShift records for each volunteer
+        for (const volunteer of volunteers) {
+          await createUserShift({
+            userId: volunteer._id,
+            shiftId: shiftId,
+            routeId: routeId,
+            shiftDate: finalStartDay,
+            shiftEndDate: finalEndDay
+          });
+        }
+
+        shiftCreationComplete = true;
+      } catch (error) {
+        console.error("Error creating shift or user shifts:", error);
+        alert("Error creating shift. Please try again.");
+        return;
+      } finally {
+        if (shiftCreationComplete) {
+          router.push("/AdminNavView/DailyShiftDashboard");
+        }
       }
     }
 
-    const [startHour, startMinute] = timeIntoHoursandMinutes(startTime);
-    const [endHour, endMinute] = timeIntoHoursandMinutes(endTime);
-
-    if (startHour === 0 && startMinute === 0 || 
-      endHour === 0 && endMinute === 0 || 
-      endHour < startHour || 
-      (endHour === startHour && endMinute <= startMinute)) {
-      alert("Please enter a valid start time.");
-      return;
-    }
-
-    finalStartDay = new Date(finalStartDay);
-    finalStartDay.setHours(startHour);
-    finalStartDay.setMinutes(startMinute);
-    finalStartDay.setSeconds(0);
-
-    finalEndDay = new Date(finalEndDay);
-    finalEndDay.setHours(endHour);
-    finalEndDay.setMinutes(endMinute);
-    finalEndDay.setSeconds(0);
-
-    const newShift = {
-      routeId: selectedRoute,
-      shiftDate: finalStartDay,
-      shiftEndDate: finalEndDay,
-      recurrenceRule: "FREQ=WEEKLY;BYDAY=" + targetDay.toUpperCase().substring(0, 2),
-    };
-    
-
-    createShift(JSON.stringify(newShift));
-
-    alert("Shift created successfully.");
-
-
+    alert("Shift(s) created successfully.");
   }
 
 
@@ -303,82 +417,141 @@ export default function NewShiftPage() {
         <div className="flex min-h-screen">
             <AdminSidebar/>
             <div className="flex flex-col w-full min-h-screen">
-                <div className="flex flex-col p-9 space-y-6 border border-b-[#D3D8DE]">
+              {/* this is the top bar */}
+                <div className="flex flex-col p-4 space-y-2 border border-b-[#D3D8DE]">
                     <div onClick={() => router.push("/AdminNavView/DailyShiftDashboard")} className="flex space-x-2 cursor-pointer">
                         <FontAwesomeIcon  icon={faArrowLeft} className="text-[#6C7D93] size-5 mt-[.1rem]"/>
                         <span className="font-semibold text-base text-[#6C7D93]">Back</span>
                     </div>
                     <div className="flex justify-between text-center align-middle">
                         <div className="text-[#072B68] font-bold text-4xl content-center">New Shift</div>
-                        <div className="flex justify-between space-x-4">
-                            <button onClick={() => router.push("/AdminNavView/DailyShiftDashboard")} className="bg-[#ECF2F9] font-bold text-[#6C7D93] px-4 py-[.8rem] rounded-xl text-base border border-[#D3D8DE]">Cancel</button>
-                            <button onClick={() => saveEdits()} className="bg-[#0F7AFF] font-bold text-white px-4 py-[.8rem] rounded-xl">Save edits</button>
+                        <div className="flex justify-end">
+                            <button onClick={() => saveEdits()} className="font-bold text-white px-6 py-[.8rem] rounded-xl text-base" style={{backgroundColor: '#A3A3A3'}}>Complete Shift</button>
                         </div>
                     </div>
                 </div>
-                <div className="flex justify-between pt-16 px-16 bg-[#ECF2F9] space-x-16 flex-grow">
-                    <div className="h-[36rem] w-full flex space-x-16">
+
+                {/* main content area */}
+                <div className="flex justify-between pt-8 px-16 bg-white space-x-16 flex-grow">
+                    <div className="h-full w-full flex space-x-16 pb-6">
+                        {/* this is the left side of the main content area */}
                         <div className="flex flex-col space-y-6 w-2/5">
-                            <div className="flex flex-col space-y-2">
-                                <label htmlFor="day" className="text-[#072B68] font-bold text-lg">Shift Day</label>
-                                <select onChange={(e) => setDay(e.target.value)} id="day" name="day" className="px-4 py-[.8rem] rounded-xl border-r-[1.25rem] border-r-transparent outline outline-[#57A0D5]">
-                                    <option value="Monday">Monday</option>
-                                    <option value="Tuesday">Tuesday</option>
-                                    <option value="Wednesday">Wednesday</option>
-                                    <option value="Thursday">Thursday</option>
-                                    <option value="Friday">Friday</option>
-                                    <option value="Saturday">Saturday</option>
-                                    <option value="Sunday">Sunday</option>
-                                </select>
+                            {/* this is the time input area */}
+                            <div className="flex space-x-12">
+                              <div className="flex flex-col space-y-2 flex-1">
+                                  <p className="text-[#072B68] font-bold text-lg">Start Time <span className="text-red-500">*</span></p>
+                                   <input onChange={(e) => setStartTime(e.target.value)} ref={timeStartInputRef} onClick={() => handleClick()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
+                              </div>
+                              <div className="flex flex-col space-y-2 flex-1">
+                                <p className="text-[#072B68] font-bold text-lg">End Time <span className="text-red-500">*</span></p>
+                                <input onChange={(e) => setEndTime(e.target.value)} ref={timeEndInputRef} onClick={() => handleClickEnd()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
+                              </div>
                             </div>
+                            {/* this is the time specific area */}
                             <div className="flex flex-col space-y-2">
-                                <p className="text-[#072B68] font-bold text-lg">Shift Start Time</p>
-                                  <input onChange={(e) => setStartTime(e.target.value)} ref={timeStartInputRef} onClick={() => handleClick()} className="px-4 py-[.8rem] rounded-xl border border-[#57A0D5] h-full" type="time" placeholder="Enter additional information here"/>
+                              <div className="flex flex-row gap-2 items-center">
+                                <label className="text-[#072B68] font-bold text-lg" htmlFor="timeSpecific">Time Specific?</label>
+                                <input type="checkbox" id="timeSpecific" className="w-5 h-5 border-2 border-blue-500 rounded" checked={timeSpecific} onChange={() => setTimeSpecific(!timeSpecific)}></input>
+                              </div>
+                              <p className="text-[#072B68] text-sm">This shift must be done exactly within this timeframe</p>
                             </div>
-                            <div className="flex flex-col space-y-2">
-                                <p className="text-[#072B68] font-bold text-lg">Shift End Time</p>
-                                  <input onChange={(e) => setEndTime(e.target.value)} ref={timeEndInputRef} onClick={() => handleClickEnd()} className="px-4 py-[.8rem] rounded-xl border border-[#57A0D5] h-full" type="time" placeholder="Enter additional information here"/>
-                            </div>
-                        </div>
-                        <div className="flex flex-col justify-start w-3/5 space-y-2">
-                            <p className="text-[#072B68] font-bold text-lg">Route</p>
-                            <div className="flex flex-col justify-between px-4 py-[.8rem] rounded-xl border border-[#57A0D5] h-full bg-white">
-                                    <div className="locations-box">
-                                        <div
-                                        className="location-input"
-                                        style={{ display: isAddingRoute ? "flex" : "none" }}
-                                        >
-                                        <input
-                                            className="field-input"
-                                            type="text"
-                                            placeholder="Start typing here"
-                                            onChange={(e) => setSearchText(e.target.value)}
-                                        />
-                                        <button
-                                            className="exit-add-location-btn x-btn"
-                                            onClick={() => setIsAddingRoute(!isAddingRoute)}
-                                        >
-                                            <FontAwesomeIcon icon={faXmark} />
-                                        </button>
-                                        </div>
-                                        {routesCards()}
-                                        {searchRoutesList()}
-                                        {routes.length > 0 ? <div></div>:<button
-                                        className="add-location-btn"
-                                        onClick={() => setIsAddingRoute(!isAddingRoute)}
-                                        style={{ display: isAddingRoute ? "none" : "flex" }}
-                                        >
-                                        Add a Route
-                                        </button>}
-                                    </div>
-                                
-                                <div className="flex px-2 py-4 border-t-2 border-[#C6E3F9]">
-                                    <h1 className="text-[#072B68] font-bold text-sm pr-2 border-r-2 border-[#57A0D5]">Route Locations</h1>
-                                    <div className="flex pl-2 space-x-3">
-                                        {routes.length > 0 ? <div className="flex flex-wrap">{locationsList()}</div> : (<div className="text-[#072B68] font-bold text-sm opacity-30">No locations have been selected yet.</div>)}
-                                    </div>
+                            {/* this is the date range area */}
+                            <div className="flex flex-col space-y-4">
+                              <div className="flex flex-row gap-2 items-center">
+                                <p className="text-[#072B68] font-bold text-lg">Date Range?</p>
+                                <input type="checkbox" id="dateRange" className="w-5 h-5 border-2 border-blue-500 rounded" checked={dateRange} onChange={() => setDateRange(!dateRange)}></input>
+                              </div>
+                              <div className="flex space-x-12">
+                                <div className="flex flex-col space-y-2 flex-1">
+                                    <p className={`font-bold text-lg ${dateRange ? 'label-enabled' : 'label-disabled'}`}>
+                                      Start Date <span className="text-red-500">*</span>
+                                    </p>
+                                    <input 
+                                      className={`px-4 py-[.8rem] rounded-lg h-full ${dateRange ? 'date-input-enabled' : 'date-input-disabled'}`} 
+                                      type="date" 
+                                      placeholder="Enter additional information here" 
+                                      value={startDate}
+                                      onChange={(e) => dateRange ? setStartDate(e.target.value) : null}
+                                      onClick={(e) => !dateRange && e.preventDefault()}
+                                    />
                                 </div>
+                                <div className="flex flex-col space-y-2 flex-1">
+                                  <p className={`font-bold text-lg ${dateRange ? 'label-enabled' : 'label-disabled'}`}>
+                                    End Date <span className="text-red-500">*</span>
+                                  </p>
+                                  <input 
+                                    className={`px-4 py-[.8rem] rounded-lg h-full ${dateRange ? 'date-input-enabled' : 'date-input-disabled'}`} 
+                                    type="date" 
+                                    placeholder="Enter additional information here" 
+                                    value={endDate}
+                                    onChange={(e) => dateRange ? setEndDate(e.target.value) : null}
+                                    onClick={(e) => !dateRange && e.preventDefault()}
+                                  />
+                                </div>
+                              </div>
                             </div>
+                             {/* this is the shift day area */}
+                             <div className="flex flex-col space-y-2">
+                                 <label htmlFor="day" className="text-[#072B68] font-bold text-lg">Day(s)<span className="text-red-500 ml-1">*</span></label>
+                                  <div className="flex justify-between">
+                                     {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day, index) => {
+                                         const isSelected = selectedDays.includes(day);
+                                         return (
+                                             <button
+                                                 key={day}
+                                                 type="button"
+                                                 onClick={() => {
+                                                     if (isSelected) {
+                                                         setSelectedDays(selectedDays.filter(d => d !== day));
+                                                     } else {
+                                                         setSelectedDays([...selectedDays, day]);
+                                                     }
+                                                 }}
+                                                 className={`w-14 h-14 rounded-full border border-[#0F7AFF] ${
+                                                     isSelected 
+                                                         ? 'bg-[#0F7AFF] text-white' 
+                                                         : 'bg-white text-[#072B68] hover:bg-gray-100'
+                                                 }`}
+                                             >
+                                                 {day}
+                                             </button>
+                                         );
+                                     })}
+                                 </div>
+                             </div>
+                             {/* this is the volunteer area */}
+                             <div className="flex flex-col space-y-2">
+                                 <label htmlFor="volunteer" className="text-[#072B68] font-bold text-lg">Volunteer<span className="text-red-500 ml-1">*</span></label>
+                                 {selectedVolunteersList()}
+                             </div>
+                             {searchVolunteersList()}
+                        </div>
+                        {/* this is the right side of the main content area */}
+                        <div className="flex flex-col justify-start w-3/5 space-y-2">
+                            {/* this is the route area */}
+                            <p className="text-[#072B68] font-bold text-lg">Route<span className="text-red-500 ml-1">*</span></p>
+                            <div className="flex flex-col justify-between px-4 py-[.8rem] rounded-xl border border-[#57A0D5] bg-white">
+                                    <div className="route-box">
+                                        {hasAddedRoute ? selectedRoute() : (
+                                            <div className="route-input">
+                                                <input
+                                                    className="field-input"
+                                                    type="text"
+                                                    placeholder="Start typing here"
+                                                    onChange={(e) => setSearchText(e.target.value)}
+                                                />
+                                            </div>
+                                        )}
+                                        {searchRoutesList()}
+                                    </div>
+                            </div>
+                            {/* this is the additional information area */}
+                            <p className="text-[#072B68] font-bold text-lg">Additional Information</p>
+                            <textarea
+                                className="additional-info-textarea"
+                                placeholder="Enter additional information here"
+                                onChange={(e) => setAdditionalInfo(e.target.value)}
+                            />
                         </div>
                     </div>
                 </div>

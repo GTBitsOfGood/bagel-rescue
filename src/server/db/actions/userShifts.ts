@@ -89,6 +89,7 @@ export async function getUserShifts(
   page: number = 1,
   limit: number = 10
 ): Promise<PaginatedResult> {
+  await requireUser();
   await dbConnect();
   
   try {
@@ -173,8 +174,10 @@ export async function getUserShiftsByDateRange(
   page: number = 1,
   limit: number = 10
 ): Promise<PaginatedResult> {
+  await requireUser();
+
   await dbConnect();
-  
+
   try {
     const skip = (page - 1) * limit;
     
@@ -183,10 +186,11 @@ export async function getUserShiftsByDateRange(
       userId: new mongoose.Types.ObjectId(userId),
       shiftDate: { $gte: startDate, $lte: endDate }
     })
-      .sort({ shiftDate: 1 })  // Sort by shiftDate ascending
       .skip(skip)
       .limit(limit)
       .lean();
+
+    userShifts.sort((a, b) => new Date(a.shiftDate).getTime() - new Date(b.shiftDate).getTime());
     
     // Get total count for pagination
     const total = await UserShiftModel.countDocuments({
@@ -196,12 +200,12 @@ export async function getUserShiftsByDateRange(
     
     // Get unique route IDs
     const routeIds = Array.from(new Set(userShifts.map(shift => shift.routeId)));
-    
+
     // Get route details
     const routes = await Route.find({
       _id: { $in: routeIds }
     }).lean();
-    
+
     // Create a map of route IDs to route details
     const routeMap = new Map();
     routes.forEach(route => {
@@ -257,6 +261,8 @@ export async function updateUserShiftStatus(
   shiftId: string,
   status: "Complete" | "Incomplete"
 ): Promise<UserShift | null> {
+  await requireUser();
+
   await dbConnect();
   
   try {
@@ -284,6 +290,8 @@ export async function getCurrentUserShifts(
   page: number = 1,
   limit: number = 10
 ): Promise<PaginatedResult> {
+  await requireUser();
+
   const userId = await getCurrentUserId();
   
   if (!userId) {
@@ -317,6 +325,7 @@ export async function getCurrentUserShiftsByDateRange(
   page: number = 1,
   limit: number = 10
 ): Promise<PaginatedResult> {
+  await requireUser();
   const userId = await getCurrentUserId();
   
   if (!userId) {
@@ -441,4 +450,69 @@ export async function getCurrentUserUniqueRoutes(): Promise<UserRoute[]> {
   }
 
   return getUserUniqueRoutes(userId);
+}
+
+
+export async function getShiftUsers(shiftIds: string[]) {
+  await dbConnect();
+
+  const newShiftIds = shiftIds.map(id => new ObjectId(id));
+
+  try {
+
+    const results = await UserShiftModel.aggregate([
+      { $match: { shiftId: { $in: newShiftIds } } },
+      {
+        $lookup: {
+          from: "users",          
+          localField: "userId",
+          foreignField: "_id",
+          as: "user"
+        }
+      },
+      { $unwind: "$user" }, // since each shift has exactly 1 user
+      {
+        $project: {
+          _id: 0,
+          shiftId: { $toString: "$shiftId" },   // 👈 convert to string
+          userId: { $toString: "$user._id" },
+          fullName: {
+            $concat: ["$user.firstName", " ", "$user.lastName"]
+          }
+        }
+      }
+    ]);
+
+    return results;
+  } catch (error) {
+    console.error("Error fetching shift users:", error);
+    throw new Error("Failed to fetch shift users");
+  }
+}
+
+export async function createUserShift(userShiftData: {
+  userId: string;
+  shiftId: string;
+  routeId: string;
+  shiftDate: Date;
+  shiftEndDate: Date;
+}): Promise<string> {
+  try {
+    await dbConnect();
+    
+    const newUserShift = new UserShiftModel({
+      userId: userShiftData.userId,
+      shiftId: userShiftData.shiftId,
+      routeId: userShiftData.routeId,
+      shiftDate: userShiftData.shiftDate,
+      shiftEndDate: userShiftData.shiftEndDate,
+      status: "Incomplete"
+    });
+
+    await newUserShift.save();
+    return "UserShift created successfully";
+  } catch (error) {
+    console.error("Error creating UserShift:", error);
+    throw error;
+  }
 }

@@ -46,7 +46,7 @@ export default function TextInput({
           key={key}
           type={label === "Password" && !seePassword ? "password" : "text"}
           {...formValue}
-          className={`w-full py-3 px-4 bg-secondary-background items-center border rounded-lg text-sm ${disabled ? "!bg-light-gray" : "!bg-secondary-background"} ${error ? "border-error-red" : "border-light-gray"}`}
+          className={`w-full py-3 px-4 bg-secondary-background items-center border rounded-lg text-sm ${disabled ? "!bg-light-gray" : "!bg-secondary-background"} ${error ? "border-red-400" : "border-light-gray"}`}
           onClick={(event) => {
             event.stopPropagation();
           }}

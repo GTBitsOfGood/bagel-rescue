@@ -6,7 +6,7 @@ interface Props {
     return (
       <>
         {error ? (
-          <div className="text-sm font-normal text-error-red mt-[0.3125rem]">
+          <div className="text-sm font-normal text-red-400 mt-2 mb-4">
             {error}
           </div>
         ) : (

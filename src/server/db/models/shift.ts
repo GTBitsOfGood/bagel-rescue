@@ -10,9 +10,23 @@ interface Recurrence {
 }
 
 interface Shift extends Document {
+  _id: mongoose.Types.ObjectId;
   routeId: mongoose.Types.ObjectId;
-  shiftDate: Date;
+  shiftStartTime: number;
+  shiftEndTime: number;
+  shiftStartDate: Date;
   shiftEndDate: Date;
+  recurrenceDates: string[];
+  timeSpecific: boolean;
+  confirmationForm: { [date: string]: mongoose.Types.ObjectId };
+  canceledShifts: Date[];
+  comments: { [date: string]: string };
+  creationDate: Date;
+
+  // Old Schema
+  // routeId: mongoose.Types.ObjectId;
+  shiftDate: Date;
+  // shiftEndDate: Date;
   capacity: number;
   currSignedUp: number;
   recurrenceRule: string;
@@ -26,7 +40,7 @@ const recurrenceSchema: Schema = new Schema({
   },
   capacity: {
     type: Number,
-    default: 0,
+    required: true,
   },
   currSignedUp: {
     type: Number,
@@ -39,15 +53,54 @@ const shiftSchema: Schema = new Schema({
     type: ObjectId,
     ref: "Route",
   },
-  shiftDate: {
+  shiftStartTime: {
+    type: Number,
+  },
+  shiftEndTime: {
+    type: Number,
+  },
+  shiftStartDate: {
     type: Date,
   },
   shiftEndDate: {
     type: Date,
   },
+  recurrenceDates: {
+    type: [String],
+    default: [],
+  },
+  timeSpecific: {
+    type: Boolean,
+  },
+  confirmationForm: {
+    type: Map,
+    of: ObjectId
+  },
+  canceledShifts: {
+    type: [Date],
+  },
+  comments: {
+    type: Map,
+    of: String
+  },
+  creationDate: {
+    type: Date,
+  },
+
+  // Old Schema
+  // routeId: {
+  //   type: ObjectId,
+  //   ref: "Route",
+  // },
+  shiftDate: {
+    type: Date,
+  },
+  // shiftEndDate: {
+  //   type: Date,
+  // },
   capacity: {
     type: Number,
-    default: 0,
+    required: true,
   },
   currSignedUp: {
     type: Number,
@@ -73,11 +126,28 @@ const shiftSchema: Schema = new Schema({
   },
 });
 
-const ShiftModel: Model<Shift> =
-  mongoose.models?.Shift || mongoose.model<Shift>("Shift", shiftSchema);
-const RecurrenceModel: Model<Recurrence> =
-  mongoose.models?.Recurrence ||
-  mongoose.model<Recurrence>("Recurrence", recurrenceSchema);
+// Force mongoose to rebuild the model if it already exists
+if (mongoose.models.Shift) {
+  delete mongoose.models.Shift;
+}
+if (mongoose.models.Recurrence) {
+  delete mongoose.models.Recurrence;
+}
+
+const ShiftModel: Model<Shift> = mongoose.model<Shift>("Shift", shiftSchema);
+const RecurrenceModel: Model<Recurrence> = mongoose.model<Recurrence>(
+  "Recurrence",
+  recurrenceSchema
+);
 
 export { ShiftModel, RecurrenceModel };
 export type { Shift, Recurrence };
+
+// const ShiftModel: Model<Shift> =
+//   mongoose.models?.Shift || mongoose.model<Shift>("Shift", shiftSchema);
+// const RecurrenceModel: Model<Recurrence> =
+//   mongoose.models?.Recurrence ||
+//   mongoose.model<Recurrence>("Recurrence", recurrenceSchema);
+
+// export { ShiftModel, RecurrenceModel };
+// export type { Shift, Recurrence };

@@ -65,24 +65,40 @@
   border-radius: 12px;
   border: 1px solid var(--Bagel-Rescue-Blue);
   width: 100%;
+  height: 100%;
 }
 
-.locations {
+.field-input-smaller {
+  padding: 1em;
+  border-radius: 12px;
+  border: 1px solid var(--Bagel-Rescue-Blue);
+  width: 100%;
+  height: 30%;
+}
+
+.additional-info-textarea {
+  padding: 1em;
+  border-radius: 12px;
+  border: 1px solid var(--Bagel-Rescue-Blue);
+  width: 100%;
+  height: 30%;
+}
+
+/* Route selection styling */
+.route-container {
   width: 60%;
 }
 
-.locations-box {
+.route-box {
   border-radius: 12px;
-  /* border: 1px solid var(--Bagel-Rescue-Blue); */
   height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* padding: 1em; */
   gap: 1em;
 }
 
-.location-input {
+.route-input {
   width: 100%;
   position: relative;
 }
@@ -91,86 +107,127 @@
   color: red;
 }
 
-.exit-add-location-btn {
+.exit-btn {
   position: absolute;
   top: 1.1em;
   right: 1em;
 }
 
-.location-cards-list {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 1em;
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.location-card {
+.selected-route {
   width: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
   align-items: center;
   padding: 1em;
+  gap: 1em;
   border-radius: 8px;
   border: 1px solid var(--Bagel-Rescue-Blue);
+  background: white;
 }
 
-.location-card-section {
+.route-info {
   display: flex;
   flex-direction: row;
   gap: 1em;
   align-items: center;
+  margin-right: auto;
 }
 
-.location-number {
-  border-radius: 50%;
-  background: var(--Bagel-Rescue-Light-Blue);
-  width: 2.25em;
-  height: 2.25em;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.location-name {
-  color: #00377a;
+.route-name {
+  color: var(--Bagel-Rescue-Text-Dark-Blue);
   font-size: 1em;
   font-weight: 700;
 }
 
-.location-pick-drop {
-  border-radius: 84px;
-  background: #a4f4b6;
-  padding: 0.25em 0.75em;
+.route-description {
+  font-size: 0.875em;
+  color: var(--Bagel-Rescue-Text-Dark-Blue);
 }
 
-.search-location-list {
+.search-results-list {
   display: flex;
   flex-direction: column;
   width: 100%;
   padding: 1em;
   border-radius: 12px;
   border: 1px solid var(--Bagel-Rescue-Blue);
-  width: 100%;
-  gap: 1.5em;
-  max-height: 300px;
+  max-height: 150px;
   overflow-y: auto;
 }
 
-.search-location {
+.search-result {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   cursor: pointer;
 }
 
-.search-location-name {
-  font-weight: bold;
+.search-result:hover {
+  background-color: var(--Bagel-Rescue-Light-Blue);
 }
 
-.add-location-btn {
+.search-result-name {
+  font-weight: bold;
+  color: var(--Bagel-Rescue-Text-Dark-Blue);
+}
+
+/* Volunteer search specific styles */
+.volunteer-search-result {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 0.5em;
+}
+
+.volunteer-search-result:hover {
+  background-color: var(--Bagel-Rescue-Light-Blue);
+}
+
+.volunteer-search-result-name {
+  font-weight: bold;
+  color: var(--Bagel-Rescue-Text-Dark-Blue);
+}
+
+/* Selected volunteers styling */
+.selected-volunteers-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  max-height: 116px;
+  overflow-y: auto;
+  border: 1px solid var(--Bagel-Rescue-Blue);
+  border-radius: 12px;
+  padding: 0.75em;
+  background-color: white;
+  align-items: flex-start;
+}
+
+.selected-volunteer {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0.5em 1em;
+  gap: 0.5em;
+  border-radius: 8px;
+  border: 1px solid var(--Bagel-Rescue-Blue);
+  background: white;
+  position: relative;
+}
+
+.selected-volunteer-name {
+  color: var(--Bagel-Rescue-Text-Dark-Blue);
+  font-size: 1em;
+  font-weight: 400;
+}
+
+.selected-volunteer .x-btn {
+  color: red;
+}
+
+.add-route-btn {
   width: 100%;
   border: 1px solid var(--Bagel-Rescue-Blue);
   background: var(--Bagel-Rescue-Light-Blue);
@@ -180,4 +237,28 @@
   border-radius: 12px;
   font-size: 1em;
   font-weight: bold;
+}
+
+/* Date input styling */
+.date-input-enabled {
+  border: 1px solid var(--Bagel-Rescue-Blue);
+  background-color: white;
+  color: #072B68;
+  cursor: pointer;
+}
+
+.date-input-disabled {
+  border: 1px solid var(--Bagel-Rescue-Blue);
+  background-color: white;
+  color: #9CA3AF;
+  cursor: not-allowed;
+}
+
+/* Label styling for disabled state */
+.label-disabled {
+  color: #9CA3AF;
+}
+
+.label-enabled {
+  color: #072B68;
 }
