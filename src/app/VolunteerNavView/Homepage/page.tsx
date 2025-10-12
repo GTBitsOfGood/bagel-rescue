@@ -46,6 +46,7 @@ const MyShiftsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [viewMode, setViewMode] = useState<ViewMode>("Day");
+  const [activeTab, setActiveTab] = useState<"myShifts" | "openShifts">("myShifts");
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [firebaseReady, setFirebaseReady] = useState<boolean>(false);
   const [pagination, setPagination] = useState({
@@ -231,6 +232,21 @@ const MyShiftsPage: React.FC = () => {
             onNext={goToNext}
             onViewModeChange={handleViewModeChange}
           />
+        </div>
+
+        <div className={styles.tabContainer}>
+          <button 
+            className={`${styles.tabButton} ${activeTab === "myShifts" ? styles.activeTab : ""}`}
+            onClick={() => setActiveTab("myShifts")}
+          >
+            My Shifts ({shifts.length})
+          </button>
+          <button 
+            className={`${styles.tabButton} ${activeTab === "openShifts" ? styles.activeTab : ""}`}
+            onClick={() => setActiveTab("openShifts")}
+          >
+            Open Shifts (0)
+          </button>
         </div>
 
         <ShiftsTable 

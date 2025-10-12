@@ -265,6 +265,35 @@
   height: 1rem;
 }
 
+/* Tab Navigation */
+.tabContainer {
+  display: flex;
+  margin: 0 2rem;
+  margin-top: 1.5rem;
+}
+
+.tabButton {
+  background: none;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #6C7D93;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.tabButton:hover {
+  color: #374151;
+}
+
+.tabButton.activeTab {
+  color: #072B68 !important;
+  background-color: #E1E7EE;
+}
+
 /* New styles for the shifts table */
 
 /* Header section */
