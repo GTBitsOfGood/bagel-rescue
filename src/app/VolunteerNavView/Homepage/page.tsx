@@ -17,7 +17,6 @@ import ShiftsTable from "./components/ShiftsTable";
 import Pagination from "./components/Pagination";
 import { ViewMode } from "./components/types";
 import { handleAuthError } from "@/lib/authErrorHandler";
-import { useRouter } from "next/navigation";
 import { auth } from "@/server/db/firebase";
 
 /**
@@ -55,9 +54,6 @@ const MyShiftsPage: React.FC = () => {
     limit: 10,
     totalPages: 0
   });
-
-  const router = useRouter();
-
   // Auto-login bypass for local development
   useEffect(() => {
     if (process.env.NEXT_PUBLIC_DEV_SKIP_AUTH === "true") {
