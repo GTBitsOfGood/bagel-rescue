@@ -1,6 +1,7 @@
 "use server";
 
 import { ObjectId } from "mongoose";
+import mongoose from "mongoose";
 import { RRule } from "rrule";
 import dbConnect from "../dbConnect";
 import { RecurrenceModel, Shift, ShiftModel } from "../models/shift";
@@ -31,6 +32,36 @@ export async function getShift(shiftId: ObjectId): Promise<Shift | null> {
     throw new Error(`Error has occurred when getting shift: ${err.message}`);
   }
 }
+
+export async function updateComment(data: string): Promise<any> {
+  await requireAdmin(); 
+  try {
+    await dbConnect();
+
+    const parsed = JSON.parse(data);
+    const { shiftId, date, comment } = parsed;
+    
+    // Use findOne instead of findById - there seems to be a Mongoose quirk
+    const shift = await ShiftModel.findOne({ _id: shiftId });
+    
+    if (!shift) {
+      throw new Error("Shift not found");
+    }
+
+    shift.comments = shift.comments || {};
+    shift.comments[date] = comment;
+
+    await shift.save();
+    
+    // Return null or a success message instead of the full document
+    // The client doesn't need the updated shift returned
+    return null;
+  } catch (error) {
+    const err = error as Error;
+    throw new Error(`Error updating shift comment: ${err.message}`);
+  }
+}
+
 
 export async function updateRoute(
   shiftId: ObjectId,

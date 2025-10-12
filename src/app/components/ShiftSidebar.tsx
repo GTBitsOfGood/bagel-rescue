@@ -1,6 +1,8 @@
-import { useRouter } from "next/router";
-import React, { useCallback, useState } from "react";
+"use client";
+
+import React, { useCallback, useState, useEffect } from "react";
 import { Shift } from "@/server/db/models/shift";
+import { updateComment } from "@/server/db/actions/shift";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
   faCommentDots, 
@@ -48,6 +50,26 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({shiftSidebarInfo, onOpenSide
   const [isEditing, setIsEditing] = useState(false);
   const [comment, setComment] = useState(''); 
   const [draft, setDraft] = useState(''); 
+  const [hasLoaded, setHasLoaded] = useState(false);
+
+  useEffect(() => {
+    // Only load once when component first mounts or shift changes
+    if (!hasLoaded) {
+      const comments = shiftSidebarInfo.shift.comments;
+      if (comments && typeof comments === 'object' && Object.keys(comments).length > 0) {
+        const dates = Object.keys(comments).sort().reverse();
+        const mostRecentComment = comments[dates[0]];
+        setComment(mostRecentComment);
+        setDraft(mostRecentComment);
+      }
+      setHasLoaded(true);
+    }
+  }, [shiftSidebarInfo.shift._id, hasLoaded]);
+
+  // Reset loaded flag when shift changes
+  useEffect(() => {
+    setHasLoaded(false);
+  }, [shiftSidebarInfo.shift._id]);
 
   return (
     <div className="main-sidebar">
@@ -92,9 +114,28 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({shiftSidebarInfo, onOpenSide
                 />
                 <div className="flex gap-2">
                   <button
-                    onClick={() => {
-                      setComment(draft);
-                      setIsEditing(false);
+                    onClick={async () => {
+                      if (!shiftSidebarInfo.shift._id) return;
+
+                      const dateKey = new Date().toISOString().split("T")[0];
+                      console.log(dateKey);
+                      console.log("shiftSidebarInfo.shift:", shiftSidebarInfo.shift);
+                      console.log("shiftSidebarInfo.shift._id:", shiftSidebarInfo.shift._id);
+
+                      try {
+                        await updateComment(JSON.stringify({
+                          shiftId: shiftSidebarInfo.shift._id.toString(),
+                          date: dateKey,
+                          comment: draft,
+                        }));
+
+                        setComment(draft);
+                        setIsEditing(false);
+                      } catch (error) {
+                        console.error(error);
+                        alert("Could not save comment");
+                      }
+                      
                     }}
                     className="w-10 h-10 flex items-center justify-center rounded hover:bg-gray-200 transition"
                     >
