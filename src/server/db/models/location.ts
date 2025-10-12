@@ -14,6 +14,7 @@ interface Location {
   contact: string;
   address: Address;
   type: "Pick-Up" | "Drop-Off";
+  area: string;
   bags: number | "All Bags";
 }
 
@@ -30,6 +31,7 @@ const LocationSchema: Schema = new Schema({
   contact: { type: String, default: "" },
   address: { type: AddressSchema, required: true },
   type: { type: String, enum: ["Pick-Up", "Drop-Off"], required: true },
+  area: { type: String, default: "", required: true },
   bags: { type: Number, default: 0 },
 });
 
