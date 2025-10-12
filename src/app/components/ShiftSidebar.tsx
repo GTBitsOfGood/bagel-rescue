@@ -2,8 +2,12 @@ import { useRouter } from "next/router";
 import React, { useCallback, useState } from "react";
 import { Shift } from "@/server/db/models/shift";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAngleDoubleRight, faArrowUpShortWide, faCommentDots} from "@fortawesome/free-solid-svg-icons";
-import { faPenClip } from "@fortawesome/free-solid-svg-icons";
+import { 
+  faCommentDots, 
+  faCheck, 
+  faTrashCan, 
+  faPenClip
+} from "@fortawesome/free-solid-svg-icons";
 import { DailyShiftSidebarInfo } from "../AdminNavView/DailyShiftDashboard/page";
 interface ShiftSidebarProps {
     shiftSidebarInfo: DailyShiftSidebarInfo;
@@ -40,6 +44,11 @@ const getDays = (recurrenceRule: string): string => {
 }
 
 const ShiftSidebar: React.FC<ShiftSidebarProps> = ({shiftSidebarInfo, onOpenSidebar}) => {
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [comment, setComment] = useState(''); 
+  const [draft, setDraft] = useState(''); 
+
   return (
     <div className="main-sidebar">
         <div className="sidebar-header">
@@ -59,9 +68,58 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({shiftSidebarInfo, onOpenSide
           <div className="sidebar-route-name">
             {shiftSidebarInfo.route.routeName ? shiftSidebarInfo.route.routeName : "Route"}
           </div>
-          <div className="comment-content">
-            <FontAwesomeIcon icon={faCommentDots}/>
-            <span>Add Comment</span>
+          <div className="comment-content flex flex-col w-full">
+            {!isEditing && !comment && (
+              <div onClick={() => setIsEditing(true)}>
+                <FontAwesomeIcon icon={faCommentDots} />
+                <span>Add Comment</span>
+              </div>
+            )}
+
+            {isEditing && (
+              <div className="flex flex-col gap-4">
+                <textarea
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  className="border rounded-[8px] border-[var(--Bagel-Rescue-Dark-Blue)] p-2 w-full h-[52px] resize-none"
+                  placeholder="Add Comment"
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setComment(draft);
+                      setIsEditing(false);
+                    }}
+                    >
+                    <FontAwesomeIcon icon={faCheck} className="h-7 w-8 text-[var(--Bagel-Rescue-Dark-Blue)]" />
+                  </button>
+                  <button
+                    onClick={() => {
+                      setDraft(comment);
+                      setIsEditing(false);
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faTrashCan} className="h-6 w-6 text-[var(--Bagel-Rescue-Error-Red)]"/>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {!isEditing && comment && (
+              <div className="sidebar-content-header flex flex-col gap-1">
+                <div>
+                  <FontAwesomeIcon icon={faPenClip} />
+                  <span><h3>Edit Comment</h3></span>
+                </div>
+                <p className="text-gray-700">{comment}</p>
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="text-sm text-blue-600 hover:underline self-start"
+                >
+                  
+                </button>
+              </div>
+            )}
           </div>
           <div className="sidebar-content-header">
             <h3> Route Locations</h3>
