@@ -20,7 +20,7 @@ import RouteCard from '../../components/RouteCard';
 import WeeklyShiftSidebar from "@/app/components/WeeklyShiftSidebar";
 import { getShiftUsers } from "@/server/db/actions/userShifts";
 
-export type WeeklyShiftSidebarInfo = {
+export interface WeeklyShiftSidebarInfo {
   route: IRoute;
   shifts: Shift[];
   volunteersPerShift: Map<string, string>;

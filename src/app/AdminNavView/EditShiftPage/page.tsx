@@ -1,8 +1,4 @@
-import "./stylesheet.css";
-
-
 'use client'
-
 import "./stylesheet.css";
 import AdminSidebar from "@/components/AdminSidebar";
 import { getAllLocationsById } from "@/server/db/actions/location";
@@ -16,11 +12,10 @@ import { faArrowLeft, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-
-interface EditShiftPageProps {
-}
+import { useShiftStore } from '../../store/shiftStore';
 
 export default function EditShiftPage() {
+    const shiftSidebarInfo = useShiftStore((state) => state.shiftSidebarInfo);
     const timeStartInputRef = useRef<HTMLInputElement>(null);
     const timeEndInputRef = useRef<HTMLInputElement>(null);
     const [searchRoutes, setSearchRoutes] = useState<IRoute[]>([]);
@@ -40,10 +35,17 @@ export default function EditShiftPage() {
     const [startDate, setStartDate] = useState<string>("");
     const [endDate, setEndDate] = useState<string>("");
     const [additionalInfo, setAdditionalInfo] = useState<string>("");
-
     const router = useRouter();
-    
 
+
+
+  useEffect(() => {
+    if (shiftSidebarInfo) {
+      setStartTime(shiftSidebarInfo.timeRange.split("-")[0]);
+      setEndTime(shiftSidebarInfo.timeRange.split("-")[1]);
+      setSelectedDays(shiftSidebarInfo.days.split(",").map(day => day.substring(0, 3)));
+    }
+  }, [shiftSidebarInfo]);
   useEffect(() => {
     const fetchRoutes = async () => {
       const response = await getAllRoutes();
@@ -421,11 +423,11 @@ export default function EditShiftPage() {
                             <div className="flex space-x-12">
                               <div className="flex flex-col space-y-2 flex-1">
                                   <p className="text-[#072B68] font-bold text-lg">Start Time <span className="text-red-500">*</span></p>
-                                   <input onChange={(e) => setStartTime(e.target.value)} ref={timeStartInputRef} onClick={() => handleClick()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
+                                   <input value={startTime} onChange={(e) => setStartTime(e.target.value)} ref={timeStartInputRef} onClick={() => handleClick()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
                               </div>
                               <div className="flex flex-col space-y-2 flex-1">
                                 <p className="text-[#072B68] font-bold text-lg">End Time <span className="text-red-500">*</span></p>
-                                <input onChange={(e) => setEndTime(e.target.value)} ref={timeEndInputRef} onClick={() => handleClickEnd()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
+                                <input value={endTime} onChange={(e) => setEndTime(e.target.value)} ref={timeEndInputRef} onClick={() => handleClickEnd()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
                               </div>
                             </div>
                             {/* this is the time specific area */}

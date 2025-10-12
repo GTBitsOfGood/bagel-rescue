@@ -1,4 +1,6 @@
-import { useRouter } from "next/router";
+
+'use client';
+import router, { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useState } from "react";
 import { Shift } from "@/server/db/models/shift";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -9,6 +11,10 @@ import "./stylesheet.css";
 import { getAllLocationsById } from "@/server/db/actions/location";
 import { Location } from "@/server/db/models/location";
 import { ILocation } from "@/server/db/models/Route";
+import { useShiftStore } from '../store/shiftStore'
+import { IRoute } from "@/server/db/models/Route";
+
+
 
 //TODO: implement getShiftDateRange
 function getShiftDateRange(shifts: Shift[]): string {
@@ -20,6 +26,14 @@ interface ShiftSidebarProps {
   onOpenSidebar: () => void;
 }
 
+export interface EditShiftProps {
+  timeRange: string;
+  dateRange: string;
+  days: string;
+  volunteersPerShift: Map<string, string>;
+  route: IRoute;
+}
+
 const WeeklyShiftSidebar: React.FC<ShiftSidebarProps> = ({ shiftSidebarInfo, onOpenSidebar }) => {
   const { shifts, route, volunteersPerShift } = shiftSidebarInfo;
   const [locations, setLocations] = useState<string[]>([]);
@@ -27,6 +41,8 @@ const WeeklyShiftSidebar: React.FC<ShiftSidebarProps> = ({ shiftSidebarInfo, onO
   const [days, setDays] = useState<string>("---");
   const [timeRange, setTimeRange] = useState<string>("---");
   const [volunteerMap, setVolunteerMap] = useState<Map<Shift, string>>(new Map());
+  const setShiftSidebarInfo = useShiftStore((state) => state.setShiftSidebarInfo);
+  const router = useRouter();
 
   const getLocations = async (locationIds: string[]) => {
     const locations = await getAllLocationsById(locationIds);
@@ -103,6 +119,20 @@ const WeeklyShiftSidebar: React.FC<ShiftSidebarProps> = ({ shiftSidebarInfo, onO
     year: "2-digit",
   });
 
+  const handleEditClick = () => {
+    setShiftSidebarInfo({
+      timeRange,
+      dateRange,
+      days,
+      volunteersPerShift,
+      route
+    });
+    router.push('/AdminNavView/EditShiftPage');
+  };
+
+  console.log(volunteerMap)
+  console.log("HIIII")
+
   return (
     <div className="main-sidebar">
       <div className="sidebar-header">
@@ -113,7 +143,8 @@ const WeeklyShiftSidebar: React.FC<ShiftSidebarProps> = ({ shiftSidebarInfo, onO
         </div>
         <div className="bg-white text-[#00377A] font-[500] p-[.8rem] px-5 gap-2 rounded-xl 
             hover:bg-[#005bb5] border-2 border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] 
-            hover:text-white cursor-pointer">
+            hover:text-white cursor-pointer"
+            onClick={handleEditClick}>
           <FontAwesomeIcon icon={faPenClip} className="mr-3" />
           <span>Edit Shift</span>
         </div>
