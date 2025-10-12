@@ -290,14 +290,16 @@ export default function NewShiftPage() {
       return;
     }
     
-    if (dateRange && !startDate.trim()) {
-      alert("Please enter a start date.");
-      return;
-    }
-    
-    if (dateRange && !endDate.trim()) {
-      alert("Please enter an end date.");
-      return;
+    if (dateRange) {
+      if (!startDate.trim()) {
+        alert("Please enter a start date.");
+        return;
+      }
+      
+      if (!endDate.trim()) {
+        alert("Please enter an end date.");
+        return;
+      }
     }
     
     if (routes.length === 0) {
