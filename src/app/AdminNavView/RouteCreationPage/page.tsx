@@ -20,7 +20,8 @@ import AdminSidebar from "../../../components/AdminSidebar";
 
 function RouteCreationPage() {
   const [routeName, setRouteName] = useState<string>("");
-  const [routeArea, setRouteArea] = useState<string>("");
+  // const [routeArea, setRouteArea] = useState<string>("");
+  const [routeArea, setRouteArea] = useState<string[]>([]);
   const [additionalInfo, setAdditionalInfo] = useState<string>("");
   const [searchText, setSearchText] = useState<string>("");
   const [isAddingLocation, setIsAddingLocation] = useState<boolean>(false);
@@ -61,7 +62,7 @@ useEffect(() => {
 
       // prefill fields
       setRouteName((route.routeName ?? "") + " Copy");
-      setRouteArea(route.locationDescription ?? "");
+      setRouteArea(route.locationDescription.split(", ") ?? []);
       setAdditionalInfo(route.additionalInfo ?? "");
 
       const idToLocation = new Map<string, Location>();
@@ -80,6 +81,7 @@ useEffect(() => {
               notes: "",
               contact: "",
               address: { street: "", city: "", state: "", zipCode: 0 },
+              area: "",
               type: "Pick-Up",
               bags: 0,
             };
@@ -125,6 +127,8 @@ useEffect(() => {
     const newLocations = [...locations, locToAdd];
     setLocations(newLocations);
 
+    setRouteArea([...routeArea, locToAdd.area].toSorted());
+
     const newIsPickUp = new Map(locationsIsPickUp);
     newIsPickUp.set(
       String(locToAdd._id),
@@ -157,7 +161,7 @@ useEffect(() => {
     }));
     const route = {
       routeName: routeName,
-      locationDescription: routeArea,
+      locationDescription: routeArea.join(", "),
       additionalInfo: additionalInfo,
       locations: locs,
     };
@@ -323,11 +327,11 @@ useEffect(() => {
               onClick={completeRoute}
               style={{
                 backgroundColor:
-                  routeName != "" && routeArea != "" && locations.length > 0
+                  routeName != "" && locations.length > 0
                     ? "#3d97ff"
                     : "#a3a3a3",
                 cursor:
-                  routeName != "" && routeArea != "" && locations.length > 0
+                  routeName != "" && locations.length > 0
                     ? "pointer"
                     : "default",
               }}
@@ -353,9 +357,8 @@ useEffect(() => {
                 <input
                   className="field-input"
                   type="text"
-                  placeholder="ie. Atlanta, Norcross, Marietta"
-                  value={routeArea}
-                  onChange={(e) => setRouteArea(e.target.value)}
+                  value={routeArea.join(", ")}
+                  disabled
                 />
               </div>
               <div className="field-container">
