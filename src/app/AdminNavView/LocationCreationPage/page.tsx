@@ -149,9 +149,9 @@ function LocationCreationPage() {
                                     name="Select Area"
                                     onChange={(e) => setArea(e.target.value)}
                                 >
-                                    <option value="None">---</option>
+                                    <option key="None" value="None">---</option>
                                     {locations.map((loc) => (
-                                        <option value={loc}>{loc}</option>
+                                        <option key={loc} value={loc}>{loc}</option>
                                     ))}
                                 </select>
                             </div>
