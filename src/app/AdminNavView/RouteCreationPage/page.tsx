@@ -163,9 +163,13 @@ useEffect(() => {
       location: new mongoose.Types.ObjectId(item["_id"]!),
       type: locationsIsPickUp.get(String(item["_id"])) ? "pickup" : "dropoff",
     }));
+
+    const areas = Object.keys(routeArea);
+    areas.sort();
+
     const route = {
       routeName: routeName,
-      locationDescription: Array.from(Object.keys(routeArea)).toSorted().join(", "),
+      locationDescription: areas.join(", "),
       additionalInfo: additionalInfo,
       locations: locs,
     };
@@ -361,7 +365,11 @@ useEffect(() => {
                 <input
                   className="field-input"
                   type="text"
-                  value={Array.from(Object.keys(routeArea)).toSorted().join(", ")}
+                  value={(() => {
+                    const areas = Object.keys(routeArea);
+                    areas.sort();
+                    return areas.join(", ");
+                  })()}
                   disabled
                 />
               </div>
