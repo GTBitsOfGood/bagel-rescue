@@ -2,7 +2,7 @@ import { useRouter } from "next/router";
 import React, { useCallback, useState } from "react";
 import { Shift } from "@/server/db/models/shift";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAngleDoubleRight, faArrowUpShortWide } from "@fortawesome/free-solid-svg-icons";
+import { faAngleDoubleRight, faArrowUpShortWide, faCommentDots} from "@fortawesome/free-solid-svg-icons";
 import { faPenClip } from "@fortawesome/free-solid-svg-icons";
 import { DailyShiftSidebarInfo } from "../AdminNavView/DailyShiftDashboard/page";
 interface ShiftSidebarProps {
@@ -58,6 +58,10 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({shiftSidebarInfo, onOpenSide
         <div className="sidebar-content">
           <div className="sidebar-route-name">
             {shiftSidebarInfo.route.routeName ? shiftSidebarInfo.route.routeName : "Route"}
+          </div>
+          <div className="comment-content">
+            <FontAwesomeIcon icon={faCommentDots}/>
+            <span>Add Comment</span>
           </div>
           <div className="sidebar-content-header">
             <h3> Route Locations</h3>
