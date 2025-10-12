@@ -279,6 +279,29 @@ export default function NewShiftPage() {
 
   async function saveEdits() {
 
+    // Validate required fields marked with asterisks
+    if (!startTime.trim()) {
+      alert("Please enter a start time.");
+      return;
+    }
+    
+    if (!endTime.trim()) {
+      alert("Please enter an end time.");
+      return;
+    }
+    
+    if (dateRange) {
+      if (!startDate.trim()) {
+        alert("Please enter a start date.");
+        return;
+      }
+      
+      if (!endDate.trim()) {
+        alert("Please enter an end date.");
+        return;
+      }
+    }
+    
     if (routes.length === 0) {
       alert("Please add a route.");
       return;
@@ -344,8 +367,9 @@ export default function NewShiftPage() {
         routeId: selectedRoute,
         shiftDate: finalStartDay,
         shiftEndDate: finalEndDay,
-        timeSpecific: timeSpecific,
-        additionalInfo: additionalInfo,
+        timeSpecific: timeSpecific ?? false,
+        additionalInfo: additionalInfo ?? "",
+        currSignedUp: volunteers.length,
         recurrenceRule: "FREQ=WEEKLY;BYDAY=" + targetDay.toUpperCase().substring(0, 2),
       };
 
