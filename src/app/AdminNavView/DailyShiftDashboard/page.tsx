@@ -16,7 +16,7 @@ import { Location } from '@/server/db/models/location';
 import { ILocation } from '@/server/db/models/Route';
 import { getAllLocationsById } from '@/server/db/actions/location';
 
-export type ShiftSidebarInfo = {
+export type DailyShiftSidebarInfo = {
     shift: Shift;
     route: IRoute;
     location_list: string[]
@@ -29,7 +29,7 @@ function DailyShiftDashboardPage() {
     const [shifts, setShifts] = useState<Shift[]>([]);
     const [routes, setRoutes] = useState<{ [key: string]: IRoute }>({});
     const [locations, setLocations] = useState<{ [key: string]: string[] }>({});
-    const [selectedItem, setSelectedItem] = useState<ShiftSidebarInfo | null>(null);
+    const [selectedItem, setSelectedItem] = useState<DailyShiftSidebarInfo | null>(null);
 
     const handleDeleteShift = (shift: Shift) => {
         // TODO: Implement delete shift functionality
@@ -153,7 +153,8 @@ function DailyShiftDashboardPage() {
                         onOpenSidebar={() => {
                             setSelectedItem(null);
                         }}
-                    />}
+                    />
+                }
                     <div className='flex justify-between text-[#6C7D93] mt-6'>
                         <div className='px-5 py-[.6rem] rounded-xl space-x-2'>
                             {/* <FontAwesomeIcon icon={faArrowUpShortWide} />
