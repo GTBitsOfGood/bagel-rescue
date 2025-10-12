@@ -15,6 +15,8 @@ import DateNavigation from "./components/DateNavigation";
 import ShiftsTable from "./components/ShiftsTable";
 import Pagination from "./components/Pagination";
 import { ViewMode } from "./components/types";
+import { useRouter } from "next/navigation";
+import { auth } from "@/server/db/firebase";
 
 /**
  * MyShiftsPage is a React functional component that displays a user's shifts.
@@ -51,6 +53,8 @@ const MyShiftsPage: React.FC = () => {
     totalPages: 0
   });
 
+  const router = useRouter();
+
   // Auto-login bypass for local development
   useEffect(() => {
     if (process.env.NEXT_PUBLIC_DEV_SKIP_AUTH === "true") {
@@ -65,12 +69,16 @@ const MyShiftsPage: React.FC = () => {
     if (typeof window === "undefined") return;
 
     // TODO: Firebase authentication implementation
-    // For now, we'll assume authentication exists and set default values
-
-    // Simulating successful authentication
-    setUserEmail("testuser@example.com");
-    setFirebaseReady(true);
-  }, []);
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      unsubscribe();
+      if (user && user.email) {
+        setUserEmail(user.email);
+        setFirebaseReady(true);
+      } else {
+        router.push("/Login");
+      }
+    });
+  }, [router]);
 
   // Function to get start and end dates for day view
   const getDayRange = (date: Date) => {
