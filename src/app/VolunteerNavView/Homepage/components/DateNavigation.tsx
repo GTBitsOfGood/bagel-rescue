@@ -76,10 +76,6 @@ const DateNavigation: React.FC<DateNavigationProps> = ({
         <option value="Day">Day</option>
         <option value="Week">Week</option>
       </select>
-
-      <button className={styles.requestSubButton}>
-        Request a Sub
-      </button>
     </div>
   );
 };
