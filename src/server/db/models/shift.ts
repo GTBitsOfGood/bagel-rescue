@@ -5,6 +5,7 @@ const { ObjectId } = Schema.Types;
 
 interface Recurrence {
   date: Date;
+  capacity: number;
   currSignedUp: number;
 }
 
@@ -12,6 +13,7 @@ interface Shift extends Document {
   routeId: mongoose.Types.ObjectId;
   shiftDate: Date;
   shiftEndDate: Date;
+  capacity: number;
   currSignedUp: number;
   recurrenceRule: string;
   recurrences: Recurrence[];
@@ -22,6 +24,10 @@ interface Shift extends Document {
 const recurrenceSchema: Schema = new Schema({
   date: {
     type: Date,
+    required: true,
+  },
+  capacity: {
+    type: Number,
     required: true,
   },
   currSignedUp: {
@@ -40,6 +46,10 @@ const shiftSchema: Schema = new Schema({
   },
   shiftEndDate: {
     type: Date,
+  },
+  capacity: {
+    type: Number,
+    required: true,
   },
   currSignedUp: {
     type: Number,
