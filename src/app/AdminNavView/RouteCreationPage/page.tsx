@@ -20,8 +20,7 @@ import AdminSidebar from "../../../components/AdminSidebar";
 
 function RouteCreationPage() {
   const [routeName, setRouteName] = useState<string>("");
-  // const [routeArea, setRouteArea] = useState<string>("");
-  const [routeArea, setRouteArea] = useState<string[]>([]);
+  const routeArea: {[key: string]: number} = {};
   const [additionalInfo, setAdditionalInfo] = useState<string>("");
   const [searchText, setSearchText] = useState<string>("");
   const [isAddingLocation, setIsAddingLocation] = useState<boolean>(false);
@@ -62,7 +61,6 @@ useEffect(() => {
 
       // prefill fields
       setRouteName((route.routeName ?? "") + " Copy");
-      setRouteArea(route.locationDescription.split(", ") ?? []);
       setAdditionalInfo(route.additionalInfo ?? "");
 
       const idToLocation = new Map<string, Location>();
@@ -86,6 +84,7 @@ useEffect(() => {
               bags: 0,
             };
         locationObj.bags = rloc.bags ?? 0;
+        routeArea[locationObj.area] = (routeArea[locationObj.area] ?? 0) + 1;
         return locationObj;
       });
 
@@ -127,7 +126,7 @@ useEffect(() => {
     const newLocations = [...locations, locToAdd];
     setLocations(newLocations);
 
-    setRouteArea([...routeArea, locToAdd.area].toSorted());
+    routeArea[locToAdd.area] = (routeArea[locToAdd.area] ?? 0) + 1;
 
     const newIsPickUp = new Map(locationsIsPickUp);
     newIsPickUp.set(
@@ -148,6 +147,11 @@ useEffect(() => {
     const [removed] = newLocations.splice(index, 1);
     setLocations(newLocations);
 
+    routeArea[removed.area] = (routeArea[removed.area] ?? 0) - 1;
+    if (routeArea[removed.area] === 0) {
+      delete routeArea[removed.area];
+    }
+
     const newIsPickUp = new Map(locationsIsPickUp);
     newIsPickUp.delete(String(removed._id));
     setLocationsIsPickUp(newIsPickUp);
@@ -161,7 +165,7 @@ useEffect(() => {
     }));
     const route = {
       routeName: routeName,
-      locationDescription: routeArea.join(", "),
+      locationDescription: Object.keys(routeArea).toSorted().join(", "),
       additionalInfo: additionalInfo,
       locations: locs,
     };
@@ -357,7 +361,7 @@ useEffect(() => {
                 <input
                   className="field-input"
                   type="text"
-                  value={routeArea.join(", ")}
+                  value={Object.keys(routeArea).toSorted().join(", ")}
                   disabled
                 />
               </div>
