@@ -20,7 +20,7 @@ import AdminSidebar from "../../../components/AdminSidebar";
 
 function RouteCreationPage() {
   const [routeName, setRouteName] = useState<string>("");
-  const routeArea: {[key: string]: number} = {};
+  const [routeArea, setRouteArea] = useState<{[key: string]: number}>({});
   const [additionalInfo, setAdditionalInfo] = useState<string>("");
   const [searchText, setSearchText] = useState<string>("");
   const [isAddingLocation, setIsAddingLocation] = useState<boolean>(false);
