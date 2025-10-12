@@ -37,6 +37,19 @@ function WeeklyShiftDashboard() {
   const [selectedItem, setSelectedItem] = useState<WeeklyShiftSidebarInfo | null>(null);
   const [volunteersPerShift, setVolunteersPerShift] = useState<Map<string, string>>(new Map());
 
+  // Calculate the start and end of the week (Monday to Sunday)
+  const getWeekRange = (date: Date) => {
+    const startOfWeek = new Date(date);
+    const day = startOfWeek.getDay();
+    const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+    startOfWeek.setDate(diff);
+    
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    
+    return { startOfWeek, endOfWeek };
+  };
+
 
   useEffect(() => {
     const fetchRoutes = async () => {
@@ -112,6 +125,8 @@ function WeeklyShiftDashboard() {
     return (
       <div className="routes-list">
       {routes.map((route) => {
+        const week = getWeekRange(date);
+        // const shiftsForRoute = shiftsPerRoute.get(route._id.toString())?.filter((shift) => shift.shiftEndDate >= week.startOfWeek && shift.shiftDate <= week.endOfWeek) ?? [];
         const shiftsForRoute = shiftsPerRoute.get(route._id.toString()) ?? [];
 
         return (
@@ -129,15 +144,17 @@ function WeeklyShiftDashboard() {
     </div>
     );
   }
+  console.log(date)
 
   return (
     <div className="flex">
       <AdminSidebar />
       <div className='flex flex-col flex-1 relative'>
-        <WeeklyDashboardHeader date={date} AddDays={AddDays} />
+        <WeeklyDashboardHeader dates={getWeekRange(date)} AddDays={AddDays} />
         <div className="container">
         {selectedItem && 
               <WeeklyShiftSidebar
+                  filterByDate={getWeekRange(date)}
                   shiftSidebarInfo={selectedItem}
                   onOpenSidebar={() => {
                       setSelectedItem(null);

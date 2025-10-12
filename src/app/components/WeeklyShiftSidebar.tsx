@@ -22,6 +22,7 @@ function getShiftDateRange(shifts: Shift[]): string {
 }
 
 interface ShiftSidebarProps {
+  filterByDate: { startOfWeek: Date; endOfWeek: Date };
   shiftSidebarInfo: WeeklyShiftSidebarInfo;
   onOpenSidebar: () => void;
 }
@@ -34,7 +35,7 @@ export interface EditShiftProps {
   route: IRoute;
 }
 
-const WeeklyShiftSidebar: React.FC<ShiftSidebarProps> = ({ shiftSidebarInfo, onOpenSidebar }) => {
+const WeeklyShiftSidebar: React.FC<ShiftSidebarProps> = ({ filterByDate, shiftSidebarInfo, onOpenSidebar }) => {
   const { shifts, route, volunteersPerShift } = shiftSidebarInfo;
   const [locations, setLocations] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<string>("---");
@@ -64,6 +65,7 @@ const WeeklyShiftSidebar: React.FC<ShiftSidebarProps> = ({ shiftSidebarInfo, onO
     const newMap = new Map<Shift, string>();
   
     shifts.forEach(shift => {
+      if (shift.shiftDate > filterByDate.endOfWeek || shift.shiftEndDate < filterByDate.startOfWeek) return;
       const volunteerName = volunteersPerShift.get(shift._id.toString());
       if (volunteerName) {
         newMap.set(shift, volunteerName);

@@ -9,13 +9,15 @@ import {
 import { useRouter } from "next/navigation";
 
 interface WeeklyDashboardHeaderProps {
-  date: Date;
+  dates: { startOfWeek: Date; endOfWeek: Date };
   AddDays: (days: number) => void;
 }
 
-const WeeklyDashboardHeader: React.FC<WeeklyDashboardHeaderProps> = ({ date, AddDays }) => {
+const WeeklyDashboardHeader: React.FC<WeeklyDashboardHeaderProps> = ({ dates, AddDays }) => {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { startOfWeek, endOfWeek } = dates;
+
 
   const handleTimeFrameChange = (newTimeFrame: string) => {
     if (newTimeFrame === 'Day') {
@@ -24,21 +26,6 @@ const WeeklyDashboardHeader: React.FC<WeeklyDashboardHeaderProps> = ({ date, Add
       router.push('/AdminNavView/WeeklyShiftDashboard');
     }
   };
-
-  // Calculate the start and end of the week (Monday to Sunday)
-  const getWeekRange = (date: Date) => {
-    const startOfWeek = new Date(date);
-    const day = startOfWeek.getDay();
-    const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
-    startOfWeek.setDate(diff);
-    
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
-    
-    return { startOfWeek, endOfWeek };
-  };
-
-  const { startOfWeek, endOfWeek } = getWeekRange(date);
 
   // Format the week range display
   const formatWeekRange = (start: Date, end: Date) => {

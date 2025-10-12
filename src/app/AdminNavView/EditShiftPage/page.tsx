@@ -36,16 +36,28 @@ export default function EditShiftPage() {
     const [endDate, setEndDate] = useState<string>("");
     const [additionalInfo, setAdditionalInfo] = useState<string>("");
     const router = useRouter();
+    console.log(shiftSidebarInfo?.route)
 
 
 
   useEffect(() => {
     if (shiftSidebarInfo) {
-      setStartTime(shiftSidebarInfo.timeRange.split("-")[0]);
-      setEndTime(shiftSidebarInfo.timeRange.split("-")[1]);
-      setSelectedDays(shiftSidebarInfo.days.split(",").map(day => day.substring(0, 3)));
+      setStartTime(shiftSidebarInfo.timeRange.split("-")[0].substring(0, 5));
+      setEndTime(shiftSidebarInfo.timeRange.split("- ")[1].substring(0, 5));
+      setSelectedDays(shiftSidebarInfo.days.split(",").map(day => day.substring(0, 3).trim()));
+      const uniqueNames = Array.from(new Set(shiftSidebarInfo.volunteersPerShift.values()));
+      setVolunteers(
+        uniqueNames.map(v => {
+          const [firstName, lastName] = v.split(" ");
+          return { firstName, lastName };
+        })
+      );
+      setRoutes([shiftSidebarInfo.route]);
+      setHasAddedRoute(true);
     }
   }, [shiftSidebarInfo]);
+
+
   useEffect(() => {
     const fetchRoutes = async () => {
       const response = await getAllRoutes();
@@ -134,6 +146,8 @@ export default function EditShiftPage() {
 
   function selectedRoute() {
     if (routes.length === 0) return null;
+    console.log("HEREERERERE")
+    console.log(routes[0])
     
     return (
       <div className="selected-route">
@@ -518,6 +532,7 @@ export default function EditShiftPage() {
                                         {hasAddedRoute ? selectedRoute() : (
                                             <div className="route-input">
                                                 <input
+                                                  
                                                     className="field-input"
                                                     type="text"
                                                     placeholder="Start typing here"
