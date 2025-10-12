@@ -165,7 +165,7 @@ useEffect(() => {
     }));
     const route = {
       routeName: routeName,
-      locationDescription: Object.keys(routeArea).toSorted().join(", "),
+      locationDescription: Array.from(Object.keys(routeArea)).toSorted().join(", "),
       additionalInfo: additionalInfo,
       locations: locs,
     };
@@ -361,7 +361,7 @@ useEffect(() => {
                 <input
                   className="field-input"
                   type="text"
-                  value={Object.keys(routeArea).toSorted().join(", ")}
+                  value={Array.from(Object.keys(routeArea)).toSorted().join(", ")}
                   disabled
                 />
               </div>
