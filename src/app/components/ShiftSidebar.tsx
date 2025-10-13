@@ -53,7 +53,7 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({shiftSidebarInfo, onOpenSide
   const [hasLoaded, setHasLoaded] = useState(false);
 
   useEffect(() => {
-    // Only load once when component first mounts or shift changes
+    // used to load last comment
     if (!hasLoaded) {
       const comments = shiftSidebarInfo.shift.comments;
       if (comments && typeof comments === 'object' && Object.keys(comments).length > 0) {
@@ -66,7 +66,6 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({shiftSidebarInfo, onOpenSide
     }
   }, [shiftSidebarInfo.shift._id, hasLoaded]);
 
-  // Reset loaded flag when shift changes
   useEffect(() => {
     setHasLoaded(false);
   }, [shiftSidebarInfo.shift._id]);
@@ -118,9 +117,6 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({shiftSidebarInfo, onOpenSide
                       if (!shiftSidebarInfo.shift._id) return;
 
                       const dateKey = new Date().toISOString().split("T")[0];
-                      console.log(dateKey);
-                      console.log("shiftSidebarInfo.shift:", shiftSidebarInfo.shift);
-                      console.log("shiftSidebarInfo.shift._id:", shiftSidebarInfo.shift._id);
 
                       try {
                         await updateComment(JSON.stringify({
@@ -131,14 +127,20 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({shiftSidebarInfo, onOpenSide
 
                         setComment(draft);
                         setIsEditing(false);
+                        
+                      
+                        if (!shiftSidebarInfo.shift.comments) {
+                          shiftSidebarInfo.shift.comments = {};
+                        }
+                        shiftSidebarInfo.shift.comments[dateKey] = draft;
+                        
                       } catch (error) {
                         console.error(error);
                         alert("Could not save comment");
                       }
-                      
                     }}
                     className="w-10 h-10 flex items-center justify-center rounded hover:bg-gray-200 transition"
-                    >
+                  >
                     <FontAwesomeIcon icon={faCheck} className="h-7 w-8 text-[var(--Bagel-Rescue-Dark-Blue)]" />
                   </button>
                   <button
@@ -172,8 +174,8 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({shiftSidebarInfo, onOpenSide
           <div className="sidebar-content-header">
             <h3> Route Locations</h3>
             {shiftSidebarInfo.location_list.map((item: string, index: number) => (
-  <p key={index}>{item}</p>
-))}
+              <p key={index}>{item}</p>
+            ))}
           </div>
           <div className="sidebar-content-header">
             <h3> Date Range</h3>

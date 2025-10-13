@@ -40,24 +40,29 @@ export async function updateComment(data: string): Promise<any> {
 
     const parsed = JSON.parse(data);
     const { shiftId, date, comment } = parsed;
+
+    const allShifts = await ShiftModel.find();
     
-    // Use findOne instead of findById - there seems to be a Mongoose quirk
-    const shift = await ShiftModel.findOne({ _id: shiftId });
+    const foundShift = allShifts.find(s => s._id.toString() === shiftId);
     
-    if (!shift) {
-      throw new Error("Shift not found");
+    if (!foundShift) {
+      const sampleIds = allShifts.slice(0, 10).map(s => s._id.toString());
+      throw new Error(`Shift not found with ID: ${shiftId}`);
     }
-
-    shift.comments = shift.comments || {};
-    shift.comments[date] = comment;
-
-    await shift.save();
     
-    // Return null or a success message instead of the full document
-    // The client doesn't need the updated shift returned
+    const updateResult = await ShiftModel.updateOne(
+      { _id: foundShift._id },
+      { $set: { [`comments.${date}`]: comment } }
+    );
+    
+    if (updateResult.matchedCount === 0) {
+      throw new Error("Update failed - no document matched");
+    }
+    
     return null;
   } catch (error) {
     const err = error as Error;
+    console.error("Error in updateComment:", err.message);
     throw new Error(`Error updating shift comment: ${err.message}`);
   }
 }
