@@ -12,11 +12,11 @@ import { useRouter } from "next/navigation";
 
 import { Shift } from "@/server/db/models/shift";
 import { IRoute } from "@/server/db/models/Route";
-import { getAllShifts } from "@/server/db/actions/shift";
+import { getAllShifts, getShiftsByWeek } from "@/server/db/actions/shift";
 import { getAllRoutes } from "@/server/db/actions/Route";
 import WeeklyDashboardHeader from '../../components/WeeklyDashboard';
 import AdminSidebar from '../../../components/AdminSidebar';
-import RouteCard from '../../components/RouteCard';
+import ShiftCard from '../../components/ShiftCard';
 import WeeklyShiftSidebar from "@/app/components/WeeklyShiftSidebar";
 import { getShiftUsers } from "@/server/db/actions/userShifts";
 
@@ -26,6 +26,7 @@ export type WeeklyShiftSidebarInfo = {
   volunteersPerShift: Map<string, string>;
 }
 import { handleAuthError } from "@/lib/authErrorHandler";
+import { start } from "repl";
 
 function WeeklyShiftDashboard() {
   const router = useRouter();
@@ -36,9 +37,43 @@ function WeeklyShiftDashboard() {
   );
   const [selectedItem, setSelectedItem] = useState<WeeklyShiftSidebarInfo | null>(null);
   const [volunteersPerShift, setVolunteersPerShift] = useState<Map<string, string>>(new Map());
+  const [weeklyShiftData, setWeeklyShiftData] = useState([]);
+  const [date, setDate] = useState<Date>(new Date());
+
+  const AddDays = (e: number) => {
+    const newDate = new Date(date);
+    // For weekly view, we move by 7 days (1 week) at a time
+    newDate.setDate(newDate.getDate() + e);
+    setDate(newDate);
+  };
+
+
+
+  const getWeekRange = (date: Date) => {
+    const startOfWeek = new Date(date);
+    const day = startOfWeek.getDay();
+    const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
+    startOfWeek.setDate(diff);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    return { startOfWeek, endOfWeek };
+};
 
 
   useEffect(() => {
+    const fetchWeeklyShifts = async (startDate: Date, endDate: Date) => {
+   
+      try {
+        const weeklyShiftResponse = await getShiftsByWeek(startDate, endDate);
+        const weeklyShiftData = JSON.parse(weeklyShiftResponse || "[]");
+        console.log(typeof(weeklyShiftData))
+        setWeeklyShiftData(weeklyShiftData);
+      } catch (error) {
+        console.error("Error fetching shifts:", error);
+      }
+    }
+
+
     const fetchRoutes = async () => {
       try {
         const routes_response = await getAllRoutes();
@@ -72,10 +107,12 @@ function WeeklyShiftDashboard() {
         console.error("Error fetching shifts:", error);
       }
     };
-
+    const { startOfWeek, endOfWeek } = getWeekRange(new Date("2025-11-14"));
     fetchRoutes();
     fetchShifts();
-  }, []);
+    fetchWeeklyShifts(startOfWeek, endOfWeek);
+    console.log(startOfWeek, endOfWeek);
+  }, [date]);
 
   useEffect(() => {
     const fetchVolunteers = async () => {
@@ -96,38 +133,46 @@ function WeeklyShiftDashboard() {
     fetchVolunteers();
   }, [shiftsPerRoute]);
 
-  const [date, setDate] = useState<Date>(new Date());
-
-  const AddDays = (e: number) => {
-    const newDate = new Date(date);
-    // For weekly view, we move by 7 days (1 week) at a time
-    newDate.setDate(newDate.getDate() + e);
-    setDate(newDate);
-  };
-
-
   // TODO: Can definitely be made more efficient - probably not need 
   // to pass entire volunteersPerShift into every Route card
   function routesList() {
-    return (
-      <div className="routes-list">
-      {routes.map((route) => {
-        const shiftsForRoute = shiftsPerRoute.get(route._id.toString()) ?? [];
-
-        return (
-          <RouteCard
-            key={route._id.toString()}
-            route={route}
-            shifts={shiftsForRoute}   
-            volunteersPerShift={volunteersPerShift}
-            onOpenSidebar={(route: IRoute, shifts: Shift[], volunteersPerShift: Map<string, string>) => {
-              setSelectedItem({ route, shifts, volunteersPerShift });
-            }}
+      return (
+        weeklyShiftData.map((shift, index) => {
+          return (
+          <ShiftCard
+            key={shift["_id"] || index}
+            volunteers={shift["volunteers"] || []}
+            startDate={shift["shiftDate"] || ""}
+            endDate={shift["shiftEndDate"] || "--"}
+            startTime={shift["shiftStartTime"] || ""}
+            endTime={shift["shiftEndTime"] || ""}
+            routeName={shift["routeName"] || "--"}
+            locationDescription={shift["locationDescription"] || ""}
+            recurrenceDates={shift["recurrenceDates"] || []}
           />
-        );
-      })}
-    </div>
-    );
+          )
+        })
+      )
+
+    // return (
+    //   <div className="routes-list">
+    //   {routes.map((route) => {
+    //     const shiftsForRoute = shiftsPerRoute.get(route._id.toString()) ?? [];
+
+    //     return (
+    //       <ShiftCard
+    //         key={route._id.toString()}
+    //         route={route}
+    //         shifts={shiftsForRoute}   
+    //         volunteersPerShift={volunteersPerShift}
+    //         onOpenSidebar={(route: IRoute, shifts: Shift[], volunteersPerShift: Map<string, string>) => {
+    //           setSelectedItem({ route, shifts, volunteersPerShift });
+    //         }}
+    //       />
+    //     );
+    //   })}
+    // </div>
+    // );
   }
 
   return (
@@ -161,7 +206,9 @@ function WeeklyShiftDashboard() {
               className="shift-search-icon"
             />
           </div>
+          <div className="rounded-[.625rem] w-full bg-white border-x border-b border-[#7D7E82A8] border-opacity-65">
           {routesList()}
+          </div>
         </div>
       </div>
     </div>

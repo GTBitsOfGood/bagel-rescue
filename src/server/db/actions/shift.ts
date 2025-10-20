@@ -365,3 +365,104 @@ export async function getRecentShifts(
     throw new Error(`Error getting all shifts: ${err.message}`);
   }
 }
+
+export async function getShiftsByWeek(
+  startDate: Date,
+  endDate: Date
+): Promise<string | null> {
+  await requireAdmin();
+
+  try {
+    await dbConnect();
+    const shifts = await ShiftModel.aggregate([
+    // 1. Filter by week (example: get shifts for a specific week)
+    {
+      $match: {
+        shiftDate: {
+          $gte: startDate,
+          $lt: endDate
+        }
+      }
+    },
+    
+    // 2. Join with routes to get route information
+    {
+      $lookup: {
+        from: "routes",
+        localField: "routeId",
+        foreignField: "_id",
+        as: "route"
+      }
+    },
+    { $unwind: { path: "$route", preserveNullAndEmptyArrays: true } },
+    
+    // 3. Join with userShifts to get volunteers for this shift
+    {
+      $lookup: {
+        from: "userShifts",
+        localField: "_id",
+        foreignField: "shiftId",
+        as: "userShifts"
+      }
+    },
+    
+    // 4. Join with users to get volunteer details
+    {
+      $lookup: {
+        from: "users",
+        localField: "userShifts.userId",
+        foreignField: "_id",
+        as: "volunteers"
+      }
+    },
+    
+    // 5. Project only the fields you need for the dashboard
+    {
+      $project: {
+        shiftStartTime: 1,
+        shiftEndTime: 1,
+        recurrenceDates: 1,
+        shiftDate: 1,
+        shiftEndDate: 1,
+        capacity: 1,
+        currSignedUp: 1,
+        routeName: "$route.routeName",
+        routeId: "$route._id",
+        locationDescription: "$route.locationDescription",
+        volunteers: {
+          $map: {
+            input: "$volunteers",
+            as: "volunteer",
+            in: {
+              userId: "$$volunteer._id",
+              firstName: "$$volunteer.firstName",
+              lastName: "$$volunteer.lastName",
+              email: "$$volunteer.email",
+              status: {
+                $arrayElemAt: [
+                  "$userShifts.status",
+                  { $indexOfArray: ["$userShifts.userId", "$$volunteer._id"] }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    
+    // 6. Sort by shift date
+    { $sort: { shiftDate: 1 } }
+]);
+
+return JSON.stringify(shifts);
+
+} catch (error) {
+    const err = error as Error;
+    throw new Error(`Error getting shifts by week: ${err.message}`);
+  }
+  
+
+}
+
+
+  

@@ -1,0 +1,218 @@
+.shift-overview-entry,
+.shift-overview-entry * {
+  box-sizing: border-box;
+}
+.shift-overview-entry {
+  background: #ffffff;
+  border-style: solid;
+  border-color: var(--bagel-rescue-light-grey, #d3d8de);
+  border-width: 1px;
+  padding: 20px 24px 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  position: relative;
+}
+.frame-289676 {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
+  justify-content: flex-start;
+  align-self: stretch;
+  flex-shrink: 0;
+  position: relative;
+}
+.frame-2896762 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  position: relative;
+}
+.frame-289948 {
+  display: flex;
+  flex-direction: row;
+  gap: 34px;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  position: relative;
+}
+.frame-289947 {
+  display: flex;
+  flex-direction: row;
+  gap: 60px;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  position: relative;
+}
+.frame-289687 {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  width: 157px;
+  position: relative;
+}
+.route-name {
+  color: var(--bagel-rescue-dark-blue, #072b68);
+  text-align: left;
+  font-family: "Inter-Bold", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  position: relative;
+  white-space: nowrap;
+
+}
+.div {
+  color: var(--bagel-rescue-dark-blue, #072b68);
+  text-align: left;
+  font-family: "Inter-Bold", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  position: relative;
+}
+.areas {
+  color: var(--bagel-rescue-dark-blue, #072b68);
+  text-align: left;
+  font-family: "Inter-Bold", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  position: relative;
+  white-space: nowrap;
+
+}
+.frame-289688 {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  position: relative;
+}
+.days-of-repetion {
+  color: var(--bagel-rescue-dark-blue, #072b68);
+  text-align: left;
+  font-family: "Inter-Regular", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  position: relative;
+}
+.dots-three {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  position: relative;
+  overflow: visible;
+}
+.frame-289680 {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  align-self: stretch;
+  flex-shrink: 0;
+  position: relative;
+}
+.frame-289677 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  align-self: stretch;
+  flex-shrink: 0;
+  position: relative;
+}
+.volunteer-s {
+  color: #000000;
+  text-align: left;
+  font-family: "Inter-Bold", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  position: relative;
+  width: 200px;
+}
+.time {
+  color: #000000;
+  text-align: left;
+  font-family: "Inter-Bold", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  position: relative;
+  width: 151px;
+}
+.period {
+  color: #000000;
+  text-align: left;
+  font-family: "Inter-Bold", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  position: relative;
+  width: 202px;
+}
+.next-shift {
+  color: #000000;
+  text-align: left;
+  font-family: "Inter-Bold", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  position: relative;
+  width: 100px;
+}
+.frame-2896763 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  align-self: stretch;
+  flex-shrink: 0;
+  position: relative;
+}
+.volunteer-1-volunteer-2 {
+  color: #000000;
+  text-align: left;
+  font-family: "Inter-Regular", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  position: relative;
+  width: 200px;
+}
+.xx-xx-xx-xx {
+  color: #000000;
+  text-align: left;
+  font-family: "Inter-Regular", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  position: relative;
+  width: 160px;
+  height: 19px;
+}
+.div2 {
+  color: #000000;
+  text-align: left;
+  font-family: "Inter-Regular", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  position: relative;
+  margin-left: -5mm;
+  width: 200px;
+}
+._11-11-11 {
+  color: #000000;
+  text-align: left;
+  font-family: "Inter-Regular", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  position: relative;
+  width: 100px;
+}
