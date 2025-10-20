@@ -378,11 +378,13 @@ export async function getShiftsByWeek(
     // 1. Filter by week (example: get shifts for a specific week)
     {
       $match: {
-        shiftDate: {
-          $gte: startDate,
-          $lt: endDate
-        }
+        $expr: {
+          $and: [
+            { $lte: ["$shiftDate", endDate] },     // shift starts before the week ends
+            { $gte: ["$shiftEndDate", startDate] } // shift ends after the week starts
+          ]
       }
+    }
     },
     
     // 2. Join with routes to get route information
@@ -399,10 +401,10 @@ export async function getShiftsByWeek(
     // 3. Join with userShifts to get volunteers for this shift
     {
       $lookup: {
-        from: "userShifts",
+        from: "usershifts",
         localField: "_id",
         foreignField: "shiftId",
-        as: "userShifts"
+        as: "usershifts"
       }
     },
     
@@ -410,7 +412,7 @@ export async function getShiftsByWeek(
     {
       $lookup: {
         from: "users",
-        localField: "userShifts.userId",
+        localField: "usershifts.userId",
         foreignField: "_id",
         as: "volunteers"
       }
@@ -440,8 +442,8 @@ export async function getShiftsByWeek(
               email: "$$volunteer.email",
               status: {
                 $arrayElemAt: [
-                  "$userShifts.status",
-                  { $indexOfArray: ["$userShifts.userId", "$$volunteer._id"] }
+                  "$usershifts.status",
+                  { $indexOfArray: ["$usershifts.userId", "$$volunteer._id"] }
                 ]
               }
             }

@@ -34,10 +34,11 @@ interface ShiftCardProps2 {
 export default function ShiftCard({ volunteers, startDate, endDate, startTime, endTime, routeName, locationDescription, recurrenceDates }: ShiftCardProps2) {
   const [volunteerDisplay, setVolunteerDisplay] = useState("");
   const [timeRange, setTimeRange] = useState("");
+  const [recurrenceDateStr, setRecurrenceDateStr] = useState("");
 
   const startDateObj = new Date(startDate);
   const endDateObj = new Date(endDate);
-
+  console.log(startDateObj, endDateObj);
   useEffect(() => {
       if (!volunteers || volunteers.length === 0) {
         setVolunteerDisplay("No volunteers");
@@ -62,11 +63,19 @@ export default function ShiftCard({ volunteers, startDate, endDate, startTime, e
       } else {
         console.log(startTime, endTime);
         setTimeRange(
-          `${new Date(startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+          `${new Date(startTime).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })} - ${new Date(endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}`
         );
       }
-    }, [startTime, endTime]);
 
+      let tempStr = "";
+      recurrenceDates.map((dateStr, index) => {
+        tempStr += dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+        if (index !== recurrenceDates.length - 1) {
+          tempStr += ", ";
+        }
+      });
+      setRecurrenceDateStr(tempStr);
+    }, [startTime, endTime, recurrenceDates]);
   // const getTimesHeader = () => {
   //   const dates = getDatesHelper()
   //     .flat()
@@ -193,7 +202,7 @@ export default function ShiftCard({ volunteers, startDate, endDate, startTime, e
         </div>
       </div>
       <div className="frame-289688">
-        <div className="days-of-repetion">{recurrenceDates.join(", ")}</div>
+        <div className="days-of-repetion">{recurrenceDateStr}</div>
       </div>
     </div>
     <div>
