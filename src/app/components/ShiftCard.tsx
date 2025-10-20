@@ -2,10 +2,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsis } from "@fortawesome/free-solid-svg-icons";
 import { Shift } from "@/server/db/models/shift";
 import { IRoute } from "@/server/db/models/Route";
-import { WeeklyShiftSidebarInfo } from "../AdminNavView/WeeklyShiftDashboard/page";
 import "./shiftCardStyle.css"
 import { useEffect, useState } from "react";
-import { start } from "repl";
 
 interface ShiftCardProps {
   route: IRoute;
@@ -36,7 +34,6 @@ interface ShiftCardProps2 {
 export default function ShiftCard({ volunteers, startDate, endDate, startTime, endTime, routeName, locationDescription, recurrenceDates }: ShiftCardProps2) {
   const [volunteerDisplay, setVolunteerDisplay] = useState("");
   const [timeRange, setTimeRange] = useState("");
-
 
   const startDateObj = new Date(startDate);
   const endDateObj = new Date(endDate);

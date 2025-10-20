@@ -22,11 +22,9 @@ import { getShiftUsers } from "@/server/db/actions/userShifts";
 
 export type WeeklyShiftSidebarInfo = {
   route: IRoute;
-  shifts: Shift[];
-  volunteersPerShift: Map<string, string>;
+  volunteers: string[];
 }
 import { handleAuthError } from "@/lib/authErrorHandler";
-import { start } from "repl";
 
 function WeeklyShiftDashboard() {
   const router = useRouter();
@@ -66,7 +64,7 @@ function WeeklyShiftDashboard() {
       try {
         const weeklyShiftResponse = await getShiftsByWeek(startDate, endDate);
         const weeklyShiftData = JSON.parse(weeklyShiftResponse || "[]");
-        console.log(typeof(weeklyShiftData))
+        console.log(weeklyShiftData)
         setWeeklyShiftData(weeklyShiftData);
       } catch (error) {
         console.error("Error fetching shifts:", error);
@@ -111,7 +109,7 @@ function WeeklyShiftDashboard() {
     fetchRoutes();
     fetchShifts();
     fetchWeeklyShifts(startOfWeek, endOfWeek);
-    console.log(startOfWeek, endOfWeek);
+    console.log("Weekly Shift Data:", weeklyShiftData);
   }, [date]);
 
   useEffect(() => {
