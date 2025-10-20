@@ -14,7 +14,7 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import { useShiftStore } from '../../store/shiftStore';
 
-export default function EditShiftPage() {
+export default function EditShiftPage({mode}: {mode: string}) {
     const shiftSidebarInfo = useShiftStore((state) => state.shiftSidebarInfo);
     const timeStartInputRef = useRef<HTMLInputElement>(null);
     const timeEndInputRef = useRef<HTMLInputElement>(null);
@@ -35,9 +35,10 @@ export default function EditShiftPage() {
     const [startDate, setStartDate] = useState<string>("");
     const [endDate, setEndDate] = useState<string>("");
     const [additionalInfo, setAdditionalInfo] = useState<string>("");
-    const router = useRouter();
-    console.log(shiftSidebarInfo?.route)
+    const [changedTime, setChangedTime] = useState<boolean>(false);
+    const [changedRoute, setChangedRoute] = useState<boolean>(false);
 
+    const router = useRouter();
 
 
   useEffect(() => {
@@ -87,6 +88,7 @@ export default function EditShiftPage() {
   }, [routes]);
 
   function addRoute(index: number): void {
+    setChangedRoute(true);
     const newRoutes = [...routes];
     newRoutes.push(searchRoutes[index]);
     setRoutes(newRoutes);
@@ -99,6 +101,7 @@ export default function EditShiftPage() {
   }
 
   function removeRoute(index: number): void {
+    setChangedRoute(true);
     const newSearchRoutes = [...searchRoutes];
     newSearchRoutes.push(routes[index]);
     setSearchRoutes(newSearchRoutes);
@@ -146,8 +149,6 @@ export default function EditShiftPage() {
 
   function selectedRoute() {
     if (routes.length === 0) return null;
-    console.log("HEREERERERE")
-    console.log(routes[0])
     
     return (
       <div className="selected-route">
@@ -298,6 +299,16 @@ export default function EditShiftPage() {
   
   }
 
+  const changeStartTime = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setChangedTime(true);
+    setStartTime(e.target.value);
+  }
+
+  const changeEndTime = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setChangedTime(true);
+    setStartTime(e.target.value);
+  }
+
   async function saveEdits() {
 
     if (routes.length === 0) {
@@ -408,6 +419,29 @@ export default function EditShiftPage() {
     alert("Shift(s) created successfully.");
   }
 
+  async function saveEditChanges() {
+
+    if (routes.length === 0) {
+      alert("Please add a route.");
+      return;
+    }
+    
+    if (volunteers.length === 0) {
+      alert("Please add at least one volunteer.");
+      return;
+    }
+    
+    if (selectedDays.length === 0) {
+      alert("Please select at least one day.");
+      return;
+    }
+
+    if (changedRoute) {
+      await updateRoute(, selectedRoute);
+    }
+
+  }
+
 
     
     return (
@@ -421,7 +455,7 @@ export default function EditShiftPage() {
                         <span className="font-semibold text-base text-[#6C7D93]">Back</span>
                     </div>
                     <div className="flex justify-between text-center align-middle">
-                        <div className="text-[#072B68] font-bold text-4xl content-center">New Shift</div>
+                        <div className="text-[#072B68] font-bold text-4xl content-center">{mode === "edit" ? "Edit Shift" : "New Shift"}</div>
                         <div className="flex justify-end">
                             <button onClick={() => saveEdits()} className="font-bold text-white px-6 py-[.8rem] rounded-xl text-base" style={{backgroundColor: '#A3A3A3'}}>Complete Shift</button>
                         </div>
@@ -437,11 +471,11 @@ export default function EditShiftPage() {
                             <div className="flex space-x-12">
                               <div className="flex flex-col space-y-2 flex-1">
                                   <p className="text-[#072B68] font-bold text-lg">Start Time <span className="text-red-500">*</span></p>
-                                   <input value={startTime} onChange={(e) => setStartTime(e.target.value)} ref={timeStartInputRef} onClick={() => handleClick()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
+                                   <input value={startTime} onChange={(e) => changeStartTime(e)} ref={timeStartInputRef} onClick={() => handleClick()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
                               </div>
                               <div className="flex flex-col space-y-2 flex-1">
                                 <p className="text-[#072B68] font-bold text-lg">End Time <span className="text-red-500">*</span></p>
-                                <input value={endTime} onChange={(e) => setEndTime(e.target.value)} ref={timeEndInputRef} onClick={() => handleClickEnd()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
+                                <input value={endTime} onChange={(e) => changeEndTime(e)} ref={timeEndInputRef} onClick={() => handleClickEnd()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
                               </div>
                             </div>
                             {/* this is the time specific area */}
@@ -532,7 +566,6 @@ export default function EditShiftPage() {
                                         {hasAddedRoute ? selectedRoute() : (
                                             <div className="route-input">
                                                 <input
-                                                  
                                                     className="field-input"
                                                     type="text"
                                                     placeholder="Start typing here"
