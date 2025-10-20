@@ -150,6 +150,15 @@
   border-bottom: none;
 }
 
+.clickableRow {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.clickableRow:hover td {
+  background-color: #f8fafc !important;
+}
+
 .routeNameCell {
   color: #4b5563;
   font-weight: normal;

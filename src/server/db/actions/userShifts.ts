@@ -7,6 +7,8 @@ import Route from "../models/Route";
 import { ObjectId } from "mongodb";
 import User, { IUser } from "../models/User";
 import { requireUser } from "../auth/auth";
+import { ShiftModel } from "../models/shift";
+import { getAllLocationsById } from "./location";
 
 export type UserRoute = {
   name: string;
@@ -20,6 +22,24 @@ export type UserShiftData = {
   startTime: Date;
   endTime: Date;
   status: "Complete" | "Incomplete";
+};
+
+export type DetailedShiftData = {
+  id: string;
+  routeName: string;
+  area: string;
+  startTime: Date;
+  endTime: Date;
+  status: "Complete" | "Incomplete";
+  routeInfo: {
+    routeName: string;
+    locationDescription: string;
+    additionalInfo: string;
+    locations: string[];
+  };
+  recurrenceRule: string;
+  shiftId: string;
+  routeId: string;
 };
 
 export type PaginatedResult = {
@@ -251,6 +271,72 @@ export async function updateUserShiftStatus(
   } catch (error) {
     console.error("Error updating user shift status:", error);
     throw new Error("Failed to update user shift status");
+  }
+}
+
+/**
+ * Gets detailed information for a specific user shift
+ * 
+ * @param userShiftId The user shift's ID
+ * @returns Detailed shift information including route and location details
+ */
+export async function getDetailedShiftInfo(userShiftId: string): Promise<DetailedShiftData | null> {
+  await requireUser();
+  await dbConnect();
+
+  try {
+    // Get the UserShift document
+    const userShift = await UserShiftModel.findById(userShiftId).lean();
+    if (!userShift) {
+      throw new Error("User shift not found");
+    }
+
+    // Get the Route details
+    const route = await Route.findById(userShift.routeId).lean();
+    if (!route) {
+      throw new Error("Route not found");
+    }
+
+    // Get the original Shift details for recurrence rule
+    const shift = await ShiftModel.findById(userShift.shiftId).lean();
+    
+    // Get location names
+    let locationNames: string[] = [];
+    if (route.locations && route.locations.length > 0) {
+      try {
+        const locationIds = route.locations.map(loc => loc.location.toString());
+        const locationsData = await getAllLocationsById(locationIds);
+        if (locationsData) {
+          const parsedLocations = JSON.parse(locationsData);
+          locationNames = parsedLocations.map((loc: any) => loc.locationName || "Unknown Location");
+        }
+      } catch (error) {
+        console.error("Error fetching location names:", error);
+        locationNames = ["Location details unavailable"];
+      }
+    }
+
+    return {
+      id: userShift._id.toString(),
+      routeName: route.routeName || "Unknown Route",
+      area: route.locationDescription || "",
+      startTime: new Date(userShift.shiftDate),
+      endTime: new Date(userShift.shiftEndDate),
+      status: userShift.status || "Incomplete",
+      routeInfo: {
+        routeName: route.routeName || "Unknown Route",
+        locationDescription: route.locationDescription || "",
+        additionalInfo: route.additionalInfo || "",
+        locations: locationNames
+      },
+      recurrenceRule: shift?.recurrenceRule || "",
+      shiftId: userShift.shiftId.toString(),
+      routeId: userShift.routeId.toString()
+    };
+    
+  } catch (error) {
+    console.error("Error fetching detailed shift info:", error);
+    throw new Error("Failed to fetch detailed shift info");
   }
 }
 
