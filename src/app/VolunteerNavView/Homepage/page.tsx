@@ -15,6 +15,7 @@ import { getUserByEmail } from "@/server/db/actions/User";
 import DateNavigation from "./components/DateNavigation";
 import ShiftsTable from "./components/ShiftsTable";
 import Pagination from "./components/Pagination";
+import ShiftDetailsSidebar from "./components/ShiftDetailsSidebar";
 import { ViewMode } from "./components/types";
 import { handleAuthError } from "@/lib/authErrorHandler";
 import { auth } from "@/server/db/firebase";
@@ -56,6 +57,8 @@ const MyShiftsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"myShifts" | "openShifts">("myShifts");
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [firebaseReady, setFirebaseReady] = useState<boolean>(false);
+  const [selectedShift, setSelectedShift] = useState<UserShiftData | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
@@ -146,6 +149,18 @@ const MyShiftsPage: React.FC = () => {
   // Handle page change in pagination
   const handlePageChange = (page: number) => {
     setPagination(prev => ({ ...prev, page }));
+  };
+
+  // Handle shift click to open modal
+  const handleShiftClick = (shift: UserShiftData) => {
+    setSelectedShift(shift);
+    setIsModalOpen(true);
+  };
+
+  // Handle modal close
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedShift(null);
   };
 
   // Fetch shifts when dependencies change
@@ -267,6 +282,7 @@ const MyShiftsPage: React.FC = () => {
           shifts={shifts}
           loading={loading}
           error={error}
+          onShiftClick={handleShiftClick}
         />
         
         {!loading && !error && shifts.length > 0 && (
@@ -278,6 +294,13 @@ const MyShiftsPage: React.FC = () => {
             onPageChange={handlePageChange}
           />
         )}
+
+        {/* Shift Details Sidebar */}
+        <ShiftDetailsSidebar
+          shift={selectedShift}
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+        />
       </div>
     </div>
   );

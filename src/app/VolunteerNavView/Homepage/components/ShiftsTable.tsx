@@ -15,7 +15,7 @@ import { ShiftsTableProps } from "./types";
  * - `area`: the area of the shift
  * - `status`: the status of the shift (either "Complete" or "Incomplete")
  */
-const ShiftsTable: React.FC<ShiftsTableProps> = ({ shifts, loading, error }) => {
+const ShiftsTable: React.FC<ShiftsTableProps> = ({ shifts, loading, error, onShiftClick }) => {
   // Format time range for display (e.g. "10:00 AM - 12:00 PM")
   const formatTimeRange = (startTime: Date, endTime: Date) => {
     const formatTime = (date: Date) => {
@@ -67,7 +67,11 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({ shifts, loading, error }) => 
       {/* Table body section */}
       <div className={styles.tableBody}>
         {shifts.map((shift) => (
-          <div key={shift.id} className={styles.tableRow}>
+          <div 
+            key={shift.id} 
+            className={`${styles.tableRow} ${onShiftClick ? styles.clickableRow : ''}`}
+            onClick={() => onShiftClick?.(shift)}
+          >
             <div className={styles.routeNameCell}>{shift.routeName}</div>
             <div className={styles.timeCell}>
               {formatTimeRange(shift.startTime, shift.endTime)}

@@ -371,3 +371,12 @@
 .tableRow:last-child {
   border-bottom: none;
 }
+
+.clickableRow {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.clickableRow:hover {
+  background-color: #f8fafc;
+}
