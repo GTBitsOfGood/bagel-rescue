@@ -25,9 +25,9 @@ interface ShiftCardProps2 {
   endDate: Date;
   startTime: Date;
   endTime: Date;
-  routeName: String;
-  locationDescription: String;
-  recurrenceDates: String[]
+  routeName: string;
+  locationDescription: string;
+  recurrenceDates: string[]
 }
 
 
@@ -61,7 +61,6 @@ export default function ShiftCard({ volunteers, startDate, endDate, startTime, e
       if (!startTime || !endTime) {
         setTimeRange("--");
       } else {
-        console.log(startTime, endTime);
         setTimeRange(
           `${new Date(startTime).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })} - ${new Date(endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}`
         );
@@ -76,117 +75,39 @@ export default function ShiftCard({ volunteers, startDate, endDate, startTime, e
       });
       setRecurrenceDateStr(tempStr);
     }, [startTime, endTime, recurrenceDates]);
-  // const getTimesHeader = () => {
-  //   const dates = getDatesHelper()
-  //     .flat()
-  //     .sort((a: Date, b: Date) => {
-  //       return a.toTimeString().localeCompare(b.toTimeString());
-  //     });
-  //   if (dates.length == 0) return "";
-  //   const minTime = dates.at(0);
-  //   const maxTime = dates.at(dates.length - 1);
-  //   const options: Intl.DateTimeFormatOptions = {
-  //     hour: "numeric",
-  //     minute: "2-digit",
-  //     hour12: true,
-  //   };
-  //   return (
-  //     minTime?.toLocaleTimeString("en-US", options) +
-  //     " - " +
-  //     maxTime?.toLocaleTimeString("en-US", options)
-  //   );
-  // };
 
-  // const getShiftsForRoute = (
-  //   shiftsPerRoute: Map<string, Shift[]>,
-  //   r: IRoute
-  // ): Shift[] => {
-  //   const routeId = r["_id"].toString(); // make sure it's a string
-  //   return shiftsPerRoute.get(routeId) ?? [];
-  // };
+  function getNextShiftDate(recurrenceDates?: string[]): string {
+    if (!recurrenceDates || recurrenceDates.length === 0) {
+      return "--";
+    }
 
-  // const getDaysHeader = () => {
-  //   return getDatesHelper()
-  //     .flat()
-  //     .sort((a: Date, b: Date) => a.getDay() - b.getDay())
-  //     .map((d: Date) => {
-  //       return d.toLocaleDateString("en-US", {
-  //         weekday: "short",
-  //       });
-  //     })
-  //     .join(", ");
-  // };
+    const dayMap: Record<string, number> = {
+      "su": 0, "mo": 1, "tu": 2, "we": 3, "th": 4, "fr": 5, "sa": 6,
+    };
 
-  const getVolunteers = () => {
-    return (
-      volunteers
-        ?.map((s) => "Volunteer") || []
-    );
-  };
+    const recurrenceDays = recurrenceDates
+      .map(day => dayMap[day])
+      .filter(dayNum => dayNum !== undefined); // filter out bad values
 
-  // const getDays = () => {
-  //   return getDatesHelper().map((s: Date[]) => {
-  //     return (
-  //       s
-  //         .sort((a, b) => a.getDay() - b.getDay())
-  //         .map((d) => {
-  //           return d.toLocaleDateString("en-US", {
-  //             weekday: "short",
-  //           });
-  //         })
-  //         .join(", ") || "-"
-  //     );
-  //   });
-  // };
+    const today = new Date();
 
-  // const getDatesHelper = () => {
-  //   return (
-  //     shifts.map((s) => {
-  //       const today = new Date();
-  //       today.setHours(0, 0, 0, 0);
-  //       const nextWeek = new Date(today);
-  //       nextWeek.setDate(today.getDate() + 7);
-  //       return s["recurrences"]
-  //         .filter((r) => {
-  //           const recurrenceDate = new Date(r["date"]);
-  //           return recurrenceDate >= today && recurrenceDate < nextWeek;
-  //         })
-  //         .map((r) => {
-  //           return new Date(r["date"]);
-  //         });
-  //     }) || []
-  //   );
-  // };
+    // Loop up to 7 days ahead to find the next valid day
+    for (let i = 0; i < 7; i++) {
+      const testDate = new Date(today);
+      testDate.setDate(today.getDate() + i);
+      if (recurrenceDays.includes(testDate.getDay())) {
+        // Return a human-readable string (e.g. "Mon, Oct 21, 2025")
+        return testDate.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
+      }
+    }
 
-  // const getAreas = () => {
-  //   return (
-  //     shifts?.map((s) => "Area") || []
-  //   );
-  // };
-
-  // const getNextShifts = () => {
-  //   return (
-  //     shifts?.map((s) => {
-  //       const firstShift = s["recurrences"]
-  //         .sort(
-  //           (a, b) =>
-  //             new Date(a["date"]).getTime() -
-  //             new Date(b["date"]).getTime()
-  //         )
-  //         .at(0);
-  //       const options: Intl.DateTimeFormatOptions = {
-  //         year: "numeric",
-  //         month: "2-digit",
-  //         day: "2-digit",
-  //       };
-  //       return firstShift
-  //         ? new Intl.DateTimeFormat("en-US", options).format(
-  //             new Date(firstShift["date"])
-  //           )
-  //         : "-";
-  //     }) || []
-  //   );
-  // };
+    return "--";
+}
+  
 
   return (
   <div className="shift-overview-entry">
@@ -225,7 +146,7 @@ export default function ShiftCard({ volunteers, startDate, endDate, startTime, e
       <div className="volunteer-1-volunteer-2">{volunteerDisplay}</div>
       <div className="xx-xx-xx-xx">{timeRange}</div>
       <div className="div2">{startDateObj.toLocaleDateString("en-US")} - {endDateObj.toLocaleDateString("en-US")}</div>
-      <div className="_11-11-11">--</div>
+      <div className="_11-11-11">{getNextShiftDate(recurrenceDates)}</div>
     </div>
   </div>
 </div>
