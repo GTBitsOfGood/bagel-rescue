@@ -44,16 +44,58 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({ shift, isOpen
 
         {/* Content */}
         <div className="p-6 space-y-6 overflow-y-auto h-full">
+
+          {/* Route Locations */}
+          <div>
+            <h3 className="font-semibold text-[#072B68] mb-2">Route Location</h3>
+            <p className="text-gray-600">{shift.area}</p>
+          </div>
+
           {/* Route Information */}
           <div>
             <h3 className="font-semibold text-[#072B68] mb-2">Route Information</h3>
             <p className="text-gray-600">{shift.area}</p>
           </div>
 
+           {/* Date Range */}
+           <div>
+             <h3 className="font-semibold text-[#072B68] mb-2">Date Range</h3>
+             <p className="text-gray-600">
+               {(shift as any).shiftStartDate && (shift as any).shiftEndDate 
+                 ? `${new Date((shift as any).shiftStartDate).toLocaleDateString("en-US", {
+                     year: "numeric",
+                     month: "long", 
+                     day: "numeric"
+                   })} - ${new Date((shift as any).shiftEndDate).toLocaleDateString("en-US", {
+                     year: "numeric",
+                     month: "long", 
+                     day: "numeric"
+                   })}`
+                 : "--"
+               }
+             </p>
+           </div>
+
+           {/* Days */}
+           <div>
+             <h3 className="font-semibold text-[#072B68] mb-2">Days</h3>
+             <p className="text-gray-600">
+               {shift.startTime ? new Date(shift.startTime).toLocaleDateString("en-US", { weekday: "long" }) : "--"}
+             </p>
+           </div>
+
           {/* Time */}
           <div>
             <h3 className="font-semibold text-[#072B68] mb-2">Time</h3>
             <p className="text-gray-600">{formatTimeRange(shift.startTime, shift.endTime)}</p>
+          </div>
+
+          {/* Additional Information */}
+          <div>
+            <h3 className="font-semibold text-[#072B68] mb-2">Additional Information</h3>
+            <p className="text-gray-600">
+              Please arrive 10 minutes early for your shift. Contact the location manager if you have any questions.
+            </p>
           </div>
 
           {/* Status */}
@@ -68,22 +110,14 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({ shift, isOpen
             >
               {shift.status}
             </span>
-          </div>
-
-          {/* Additional Information */}
-          <div>
-            <h3 className="font-semibold text-[#072B68] mb-2">Additional Information</h3>
-            <p className="text-gray-600">
-              Please arrive 10 minutes early for your shift. Contact the location manager if you have any questions.
-            </p>
-          </div>
+          </div>          
         </div>
 
         {/* Action Buttons */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-200 bg-white">
-          <div className="flex flex-col gap-3">
+        <div className="absolute bottom-0 left-0 right-0 p-6 bg-white">
+          <div className="flex flex-row gap-3">
             <button
-              className="w-full bg-[#0F7AFF] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#005bb5] transition-colors"
+              className=" bg-[#0F7AFF] text-white py-3 px-4 rounded-lg font-small hover:bg-[#005bb5] transition-colors"
               onClick={() => {
                 // TODO: Implement shift completion form
                 console.log("Submit confirmation form for shift:", shift.id);
@@ -92,7 +126,7 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({ shift, isOpen
               Submit Confirmation Form
             </button>
             <button
-              className="w-full border-2 border-[#0F7AFF] text-[#0F7AFF] py-3 px-4 rounded-lg font-medium hover:bg-[#0F7AFF] hover:text-white transition-colors"
+              className="border-2 border-[#D3D8DE] text-[#00377A] py-3 px-4 rounded-lg font-medium hover:bg-[#0F7AFF] hover:text-white transition-colors"
               onClick={() => {
                 // TODO: Implement sub request
                 console.log("Request sub for shift:", shift.id);
