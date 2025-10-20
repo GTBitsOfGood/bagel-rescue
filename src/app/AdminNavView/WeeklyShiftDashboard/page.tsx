@@ -105,7 +105,7 @@ function WeeklyShiftDashboard() {
         console.error("Error fetching shifts:", error);
       }
     };
-    const { startOfWeek, endOfWeek } = getWeekRange(new Date("2025-11-14"));
+    const { startOfWeek, endOfWeek } = getWeekRange(date);
     fetchRoutes();
     fetchShifts();
     fetchWeeklyShifts(startOfWeek, endOfWeek);
