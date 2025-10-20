@@ -25,15 +25,9 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({ shift, isOpen
   };
 
   return (
-    <div className="fixed inset-0 z-50">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black bg-opacity-50"
-        onClick={onClose}
-      />
-      
+    <div className="fixed inset-0 z-50 pointer-events-none">
       {/* Sidebar */}
-      <div className="absolute right-0 top-0 h-full w-96 bg-white shadow-xl transform transition-transform duration-300 ease-in-out">
+      <div className="absolute right-0 top-24 h-[calc(100vh-6rem)] w-[600px] bg-white shadow-xl transform transition-transform duration-300 ease-in-out pointer-events-auto">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
