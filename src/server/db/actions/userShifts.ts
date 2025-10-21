@@ -181,16 +181,27 @@ export async function getUserShiftsByDateRange(
 
   try {
     const skip = (page - 1) * limit;
+
+    const startAbsDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+    const endAbsDate = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate() + 1);
     
     // Get UserShift documents within date range
     const userShifts = await UserShiftModel.find({
       userId: new mongoose.Types.ObjectId(userId),
       $or: [
-        {
-          shiftStartDate: { $lte: endDate }
+        { 
+          shiftDate: { $gte: startAbsDate, $lte: endAbsDate }
+        },
+        { 
+          shiftEndDate: { $gte: startAbsDate, $lte: endAbsDate }
+        },
+        { 
+          shiftDate: { $lte: startAbsDate },
+          shiftEndDate: { $gte: endAbsDate }
         },
         {
-          shiftEndDate: { $gte: startDate }
+          shiftDate: { $gte: startAbsDate },
+          shiftEndDate: { $lte: endAbsDate }
         }
       ],
       recurrenceDates: { $in: getDaysInRange(startDate, endDate) }
@@ -200,6 +211,8 @@ export async function getUserShiftsByDateRange(
       .lean();
 
     userShifts.sort((a, b) => new Date(a.shiftDate).getTime() - new Date(b.shiftDate).getTime());
+
+    console.log(userShifts);
     
     // Get total count for pagination
     const total = await UserShiftModel.countDocuments({
