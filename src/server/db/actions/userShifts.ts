@@ -9,6 +9,7 @@ import User, { IUser } from "../models/User";
 import { requireUser } from "../auth/auth";
 import { cookies } from "next/headers";
 import { adminAuth } from "../firebase/admin/firebaseAdmin";
+import { getDaysInRange } from '@/lib/dayHandler';
 
 export type UserRoute = {
   name: string;
@@ -184,7 +185,15 @@ export async function getUserShiftsByDateRange(
     // Get UserShift documents within date range
     const userShifts = await UserShiftModel.find({
       userId: new mongoose.Types.ObjectId(userId),
-      shiftDate: { $gte: startDate, $lte: endDate }
+      $or: [
+        {
+          shiftStartDate: { $lte: endDate }
+        },
+        {
+          shiftEndDate: { $gte: startDate }
+        }
+      ],
+      recurrenceDates: { $in: getDaysInRange(startDate, endDate) }
     })
       .skip(skip)
       .limit(limit)
@@ -494,6 +503,7 @@ export async function createUserShift(userShiftData: {
   userId: string;
   shiftId: string;
   routeId: string;
+  recurrenceDates: string[];
   shiftDate: Date;
   shiftEndDate: Date;
 }): Promise<string> {
@@ -504,6 +514,7 @@ export async function createUserShift(userShiftData: {
       userId: userShiftData.userId,
       shiftId: userShiftData.shiftId,
       routeId: userShiftData.routeId,
+      recurrenceDates: userShiftData.recurrenceDates,
       shiftDate: userShiftData.shiftDate,
       shiftEndDate: userShiftData.shiftEndDate,
       status: "Incomplete"
