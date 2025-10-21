@@ -7,6 +7,9 @@ import Route from "../models/Route";
 import { ObjectId } from "mongodb";
 import User, { IUser } from "../models/User";
 import { requireUser } from "../auth/auth";
+import { cookies } from "next/headers";
+import { adminAuth } from "../firebase/admin/firebaseAdmin";
+import { getDaysInRange } from '@/lib/dayHandler';
 
 export type UserRoute = {
   name: string;
@@ -34,21 +37,44 @@ export type PaginatedResult = {
 
 /**
  * Gets the current user ID from Firebase session
- * NOTE: This is a placeholder for the actual Firebase implementation
  *
- * @returns The current user's ID or null if not authenticated
+ * @returns The current user's MongoDB ID or null if not authenticated
  */
 async function getCurrentUserId(): Promise<string | null> {
-  // This will be implemented once Firebase is set up
-  // Example implementation:
-  // const auth = getAuth(getFirebaseApp());
-  // const user = auth.currentUser;
-  // return user?.uid || null;
+  try {
+    // Get the auth token from cookies
+    const cookieStore = cookies();
+    const authToken = cookieStore.get("authToken");
+    
+    if (!authToken) {
+      console.warn("No auth token found in cookies");
+      return null;
+    }
 
-  // For now, return a placeholder value
-  console.warn("getCurrentUserId is not implemented yet. Using placeholder.");
-  return "66de3986953f6364945c3c5e"; // Test user ID from sample data
-  // return "placeholder-user-id";
+    // Verify the token using Firebase Admin
+    const decodedToken = await adminAuth.verifyIdToken(authToken.value);
+    const userEmail = decodedToken.email;
+
+    if (!userEmail) {
+      console.warn("No email found in decoded token");
+      return null;
+    }
+
+    // Connect to database and find the user by email
+    await dbConnect();
+    const mongoUser = await User.findOne({ email: userEmail }).lean();
+
+    if (!mongoUser || !('_id' in mongoUser)) {
+      console.warn(`No MongoDB user found for email: ${userEmail}`);
+      return null;
+    }
+
+    // Return the MongoDB user ID as a string
+    return (mongoUser._id as mongoose.Types.ObjectId).toString();
+  } catch (error) {
+    console.error("Error getting current user ID:", error);
+    return null;
+  }
 }
 
 /**
@@ -155,17 +181,38 @@ export async function getUserShiftsByDateRange(
 
   try {
     const skip = (page - 1) * limit;
+
+    const startAbsDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+    const endAbsDate = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate() + 1);
     
     // Get UserShift documents within date range
     const userShifts = await UserShiftModel.find({
       userId: new mongoose.Types.ObjectId(userId),
-      shiftDate: { $gte: startDate, $lte: endDate }
+      $or: [
+        { 
+          shiftDate: { $gte: startAbsDate, $lte: endAbsDate }
+        },
+        { 
+          shiftEndDate: { $gte: startAbsDate, $lte: endAbsDate }
+        },
+        { 
+          shiftDate: { $lte: startAbsDate },
+          shiftEndDate: { $gte: endAbsDate }
+        },
+        {
+          shiftDate: { $gte: startAbsDate },
+          shiftEndDate: { $lte: endAbsDate }
+        }
+      ],
+      recurrenceDates: { $in: getDaysInRange(startDate, endDate) }
     })
       .skip(skip)
       .limit(limit)
       .lean();
 
     userShifts.sort((a, b) => new Date(a.shiftDate).getTime() - new Date(b.shiftDate).getTime());
+
+    console.log(userShifts);
     
     // Get total count for pagination
     const total = await UserShiftModel.countDocuments({
@@ -469,6 +516,7 @@ export async function createUserShift(userShiftData: {
   userId: string;
   shiftId: string;
   routeId: string;
+  recurrenceDates: string[];
   shiftDate: Date;
   shiftEndDate: Date;
 }): Promise<string> {
@@ -479,6 +527,7 @@ export async function createUserShift(userShiftData: {
       userId: userShiftData.userId,
       shiftId: userShiftData.shiftId,
       routeId: userShiftData.routeId,
+      recurrenceDates: userShiftData.recurrenceDates,
       shiftDate: userShiftData.shiftDate,
       shiftEndDate: userShiftData.shiftEndDate,
       status: "Incomplete"

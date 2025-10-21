@@ -13,7 +13,7 @@ import { faArrowLeft, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-
+import dayToNumber from "@/lib/dayHandler";
 
 export default function NewShiftPage() {
     const timeStartInputRef = useRef<HTMLInputElement>(null);
@@ -279,10 +279,6 @@ export default function NewShiftPage() {
   const findFirstDateAfterToday = (days: string[]): Date | null => {
     if (days.length === 0) return null;
 
-    const dayToNumber: Record<string, number> = {
-      'su': 0, 'mo': 1, 'tu': 2, 'we': 3, 'th': 4, 'fr': 5, 'sa': 6
-    };
-
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Normalize to start of day
     const currentDay = today.getDay();
@@ -439,6 +435,7 @@ export default function NewShiftPage() {
           userId: volunteer._id,
           shiftId: shiftId,
           routeId: routeId,
+          recurrenceDates: targetDay,
           shiftDate: finalStartDay,
           shiftEndDate: finalEndDay
         });
