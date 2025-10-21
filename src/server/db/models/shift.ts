@@ -12,8 +12,8 @@ interface Recurrence {
 interface Shift extends Document {
   _id: mongoose.Types.ObjectId;
   routeId: mongoose.Types.ObjectId;
-  shiftStartTime: number;
-  shiftEndTime: number;
+  shiftStartTime: Date;
+  shiftEndTime: Date;
   shiftStartDate: Date;
   shiftEndDate: Date;
   recurrenceDates: string[];
@@ -40,7 +40,7 @@ const recurrenceSchema: Schema = new Schema({
   },
   capacity: {
     type: Number,
-    default: 0,
+    required: true,
   },
   currSignedUp: {
     type: Number,
@@ -54,10 +54,10 @@ const shiftSchema: Schema = new Schema({
     ref: "Route",
   },
   shiftStartTime: {
-    type: Number,
+    type: Date,
   },
   shiftEndTime: {
-    type: Number,
+    type: Date,
   },
   shiftStartDate: {
     type: Date,
@@ -100,7 +100,7 @@ const shiftSchema: Schema = new Schema({
   // },
   capacity: {
     type: Number,
-    default: 0,
+    required: true,
   },
   currSignedUp: {
     type: Number,
@@ -126,11 +126,28 @@ const shiftSchema: Schema = new Schema({
   },
 });
 
-const ShiftModel: Model<Shift> =
-  mongoose.models?.Shift || mongoose.model<Shift>("Shift", shiftSchema);
-const RecurrenceModel: Model<Recurrence> =
-  mongoose.models?.Recurrence ||
-  mongoose.model<Recurrence>("Recurrence", recurrenceSchema);
+// Force mongoose to rebuild the model if it already exists
+if (mongoose.models.Shift) {
+  delete mongoose.models.Shift;
+}
+if (mongoose.models.Recurrence) {
+  delete mongoose.models.Recurrence;
+}
+
+const ShiftModel: Model<Shift> = mongoose.model<Shift>("Shift", shiftSchema);
+const RecurrenceModel: Model<Recurrence> = mongoose.model<Recurrence>(
+  "Recurrence",
+  recurrenceSchema
+);
 
 export { ShiftModel, RecurrenceModel };
 export type { Shift, Recurrence };
+
+// const ShiftModel: Model<Shift> =
+//   mongoose.models?.Shift || mongoose.model<Shift>("Shift", shiftSchema);
+// const RecurrenceModel: Model<Recurrence> =
+//   mongoose.models?.Recurrence ||
+//   mongoose.model<Recurrence>("Recurrence", recurrenceSchema);
+
+// export { ShiftModel, RecurrenceModel };
+// export type { Shift, Recurrence };

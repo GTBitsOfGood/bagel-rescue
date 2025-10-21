@@ -20,7 +20,7 @@ import AdminSidebar from "../../../components/AdminSidebar";
 
 function RouteCreationPage() {
   const [routeName, setRouteName] = useState<string>("");
-  const [routeArea, setRouteArea] = useState<string>("");
+  const [routeArea, setRouteArea] = useState<{[key: string]: number}>({});
   const [additionalInfo, setAdditionalInfo] = useState<string>("");
   const [searchText, setSearchText] = useState<string>("");
   const [isAddingLocation, setIsAddingLocation] = useState<boolean>(false);
@@ -61,7 +61,6 @@ useEffect(() => {
 
       // prefill fields
       setRouteName((route.routeName ?? "") + " Copy");
-      setRouteArea(route.locationDescription ?? "");
       setAdditionalInfo(route.additionalInfo ?? "");
 
       const idToLocation = new Map<string, Location>();
@@ -80,10 +79,12 @@ useEffect(() => {
               notes: "",
               contact: "",
               address: { street: "", city: "", state: "", zipCode: 0 },
+              area: "",
               type: "Pick-Up",
               bags: 0,
             };
         locationObj.bags = rloc.bags ?? 0;
+        routeArea[locationObj.area] = (routeArea[locationObj.area] ?? 0) + 1;
         return locationObj;
       });
 
@@ -125,6 +126,8 @@ useEffect(() => {
     const newLocations = [...locations, locToAdd];
     setLocations(newLocations);
 
+    routeArea[locToAdd.area] = (routeArea[locToAdd.area] ?? 0) + 1;
+
     const newIsPickUp = new Map(locationsIsPickUp);
     newIsPickUp.set(
       String(locToAdd._id),
@@ -144,6 +147,11 @@ useEffect(() => {
     const [removed] = newLocations.splice(index, 1);
     setLocations(newLocations);
 
+    routeArea[removed.area] = (routeArea[removed.area] ?? 0) - 1;
+    if (routeArea[removed.area] === 0) {
+      delete routeArea[removed.area];
+    }
+
     const newIsPickUp = new Map(locationsIsPickUp);
     newIsPickUp.delete(String(removed._id));
     setLocationsIsPickUp(newIsPickUp);
@@ -155,9 +163,13 @@ useEffect(() => {
       location: new mongoose.Types.ObjectId(item["_id"]!),
       type: locationsIsPickUp.get(String(item["_id"])) ? "pickup" : "dropoff",
     }));
+
+    const areas = Object.keys(routeArea);
+    areas.sort();
+
     const route = {
       routeName: routeName,
-      locationDescription: routeArea,
+      locationDescription: areas.join(", "),
       additionalInfo: additionalInfo,
       locations: locs,
     };
@@ -323,11 +335,11 @@ useEffect(() => {
               onClick={completeRoute}
               style={{
                 backgroundColor:
-                  routeName != "" && routeArea != "" && locations.length > 0
+                  routeName != "" && locations.length > 0
                     ? "#3d97ff"
                     : "#a3a3a3",
                 cursor:
-                  routeName != "" && routeArea != "" && locations.length > 0
+                  routeName != "" && locations.length > 0
                     ? "pointer"
                     : "default",
               }}
@@ -353,9 +365,12 @@ useEffect(() => {
                 <input
                   className="field-input"
                   type="text"
-                  placeholder="ie. Atlanta, Norcross, Marietta"
-                  value={routeArea}
-                  onChange={(e) => setRouteArea(e.target.value)}
+                  value={(() => {
+                    const areas = Object.keys(routeArea);
+                    areas.sort();
+                    return areas.join(", ");
+                  })()}
+                  disabled
                 />
               </div>
               <div className="field-container">
