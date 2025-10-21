@@ -14,7 +14,8 @@ export async function requireUser() {
 }
 
 export async function requireAdmin() {
-  const token = cookies().get("authToken")?.value;
+  const cookieStore = cookies()
+  const token = cookieStore.get("authToken")?.value;
   if (!token) throw new Error("Unauthorized");
 
   try {
@@ -26,6 +27,8 @@ export async function requireAdmin() {
     
     return decodedToken;
   } catch (error) {
+    cookieStore.delete("authToken");
+
     if (error instanceof Error && error.message.includes("Admin access required")) {
       throw error;
     }
