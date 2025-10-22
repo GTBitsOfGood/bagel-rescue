@@ -118,6 +118,52 @@
   background-color: var(--Bagel-Rescue-Blue);
 }
 
+.shiftsTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-top: 1rem;
+}
+
+.shiftsTable th {
+  background-color: #f1f5f9;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+  color: #4b5563;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.shiftsTable td {
+  padding: 0.75rem 1rem;
+  background-color: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.shiftsTable tr:nth-child(odd) td {
+  background-color: white;
+}
+
+.shiftsTable tr:nth-child(even) td {
+  background-color: white;
+}
+
+.shiftsTable tr:last-child td {
+  border-bottom: none;
+}
+
+.clickableRow {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.clickableRow:hover td {
+  background-color: #f8fafc !important;
+}
+
 /* Table Cells */
 .routeNameCell {
   padding: 0.75rem 1rem;

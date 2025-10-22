@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import styles from "../page.module.css";
 import { ShiftsTableProps } from "./types";
+import ShiftDetailsSidebar from "./ShiftDetailsSidebar";
+import { UserShiftData } from "@/server/db/actions/userShifts";
 
 /**
  * ShiftsTable is a React component that displays a table of shifts.
@@ -16,6 +18,21 @@ import { ShiftsTableProps } from "./types";
  * - `status`: the status of the shift (either "Complete" or "Incomplete")
  */
 const ShiftsTable: React.FC<ShiftsTableProps> = ({ shifts, loading, error }) => {
+  const [selectedShift, setSelectedShift] = useState<UserShiftData | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+
+  // Handle row click to open sidebar
+  const handleRowClick = (shift: UserShiftData) => {
+    setSelectedShift(shift);
+    setIsSidebarOpen(true);
+  };
+
+  // Handle closing sidebar
+  const handleCloseSidebar = () => {
+    setIsSidebarOpen(false);
+    setSelectedShift(null);
+  };
+
   // Format time range for display (e.g. "10:00 AM - 12:00 PM")
   const formatTimeRange = (startTime: Date, endTime: Date) => {
     const formatTime = (date: Date) => {
@@ -55,6 +72,14 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({ shifts, loading, error }) => 
 
   return (
     <div>
+      {/* Sidebar */}
+      {isSidebarOpen && (
+        <ShiftDetailsSidebar 
+          selectedShift={selectedShift}
+          onCloseSidebar={handleCloseSidebar}
+        />
+      )}
+
       {/* Separate header section */}
       <div className={styles.tableHeader}>
         <div className={styles.headerCell}>Shift Name</div>
@@ -67,7 +92,7 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({ shifts, loading, error }) => 
       {/* Table body section */}
       <div className={styles.tableBody}>
         {shifts.map((shift) => (
-          <div key={shift.id} className={styles.tableRow}>
+          <div key={shift.id} className={styles.tableRow} onClick={() => handleRowClick(shift)}>
             <div className={styles.routeNameCell}>{shift.routeName}</div>
             <div className={styles.timeCell}>
               {formatTimeRange(shift.startTime, shift.endTime)}
@@ -86,7 +111,10 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({ shifts, loading, error }) => 
             </div>
             <div>
               {/* Ellipsis button - this will be implemented in the future */}
-              <button className={styles.ellipsisButton}>...</button>
+              <button className={styles.ellipsisButton} onClick={(e) => {
+                  e.stopPropagation();
+                  handleRowClick(shift);
+                }}>...</button>
             </div>
           </div>
         ))}
@@ -94,5 +122,6 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({ shifts, loading, error }) => 
     </div>
   );
 };
+
 
 export default ShiftsTable;

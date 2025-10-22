@@ -206,6 +206,8 @@ const MyShiftsPage: React.FC = () => {
             );
           }
         }
+
+        console.log("Shifts Data: ", shiftsData.shifts);
         
         setShifts(shiftsData.shifts);
         setPagination(shiftsData.pagination);

@@ -3,10 +3,12 @@
 import mongoose from "mongoose";
 import dbConnect from "../dbConnect";
 import { UserShiftModel, UserShift } from "../models/userShift";
-import Route from "../models/Route";
+import RouteModel, { IRoute } from "../models/Route";
 import { ObjectId } from "mongodb";
-import User, { IUser } from "../models/User";
+import User from "../models/User";
 import { requireUser } from "../auth/auth";
+import { ShiftModel } from "../models/shift";
+import { getAllLocationsById } from "./location";
 import { cookies } from "next/headers";
 import { adminAuth } from "../firebase/admin/firebaseAdmin";
 import { getDaysInRange } from '@/lib/dayHandler';
@@ -23,6 +25,29 @@ export type UserShiftData = {
   startTime: Date;
   endTime: Date;
   status: "Complete" | "Incomplete";
+};
+
+export type DetailedShiftData = {
+  id: string;
+  routeName: string;
+  area: string;
+  shiftStartTime: Date;
+  shiftEndTime: Date;
+  shiftStartDate: Date;
+  shiftEndDate: Date;
+  startTime: Date;
+  endTime: Date;
+  status: "Complete" | "Incomplete";
+  routeInfo: {
+    routeName: string;
+    locationDescription: string;
+    additionalInfo: string;
+    locations: string[];
+  };
+  recurrenceDates: string[];
+  shiftId: string;
+  routeId: string;
+  additionalInfo: string;
 };
 
 export type PaginatedResult = {
@@ -110,7 +135,7 @@ export async function getUserShifts(
     const routeIds = Array.from(new Set(userShifts.map(shift => shift.routeId)));
     
     // Get route details
-    const routes = await Route.find({
+    const routes = await RouteModel.find({
       _id: { $in: routeIds }
     }).lean();
     
@@ -224,7 +249,7 @@ export async function getUserShiftsByDateRange(
     const routeIds = Array.from(new Set(userShifts.map(shift => shift.routeId)));
 
     // Get route details
-    const routes = await Route.find({
+    const routes = await RouteModel.find({
       _id: { $in: routeIds }
     }).lean();
 
@@ -298,6 +323,80 @@ export async function updateUserShiftStatus(
   } catch (error) {
     console.error("Error updating user shift status:", error);
     throw new Error("Failed to update user shift status");
+  }
+}
+
+/**
+ * Gets detailed information for a specific user shift
+ * 
+ * @param userShiftId The user shift's ID
+ * @returns Detailed shift information including route and location details
+ */
+export async function getDetailedShiftInfo(userShiftId: string): Promise<DetailedShiftData | null> {
+  await requireUser();
+  await dbConnect();
+
+  try {
+    // Get the UserShift document
+    const userShift = await UserShiftModel.findById(userShiftId).lean();
+    if (!userShift) {
+      throw new Error("User shift not found");
+    }
+
+    // Get the Route details
+    const route = await RouteModel.findById(userShift.routeId).lean();
+    if (!route) {
+      throw new Error("Route not found");
+    }
+
+    // Get the original Shift details for recurrence rule
+    const shift = await ShiftModel.findById(userShift.shiftId).lean();
+    console.log("Shift: ", shift);
+    
+    // Get location names
+    let locationNames: string[] = [];
+    if (route.locations && route.locations.length > 0) {
+      console.log("Locations: ", route.locations);
+      try {
+        const locationIds = route.locations.map(loc => loc.location.toString());
+        const locationsData = await getAllLocationsById(locationIds);
+        console.log("Location Data: ", locationsData);
+        if (locationsData) {
+          const parsedLocations = JSON.parse(locationsData);
+          locationNames = parsedLocations.map((loc: any) => (loc.locationName + " - " + loc.area) || "Unknown Location");
+        }
+      } catch (error) {
+        console.error("Error fetching location names:", error);
+        locationNames = ["Location details unavailable"];
+      }
+    }
+
+    return {
+      id: userShift._id.toString(),
+      routeName: route.routeName || "Unknown Route",
+      area: route.locationDescription || "",
+      shiftStartTime: new Date(shift?.shiftStartDate || new Date()),
+      shiftEndTime: new Date(shift?.shiftEndTime || new Date()),
+      shiftStartDate: new Date(shift?.shiftStartDate || new Date()),
+      shiftEndDate: new Date(shift?.shiftEndDate || new Date()),
+      startTime: new Date(userShift.shiftDate),
+      endTime: new Date(userShift.shiftEndDate),
+      status: userShift.status || "Incomplete",
+      routeInfo: {
+        routeName: route.routeName || "Unknown Route",
+        locationDescription: route.locationDescription || "",
+        additionalInfo: route.additionalInfo || "",
+        locations: locationNames
+      },
+      recurrenceDates: shift?.recurrenceDates || [],
+      shiftId: userShift.shiftId.toString(),
+      routeId: userShift.routeId.toString(),
+      additionalInfo: shift?.additionalInfo || ""
+    };
+    
+  } catch (error) {
+    console.error("Error fetching detailed shift info:", error);
+    throw new Error("Failed to fetch detailed shift info");
   }
 }
 
@@ -409,7 +508,7 @@ export async function getUserUniqueRoutes(
       routeName?: string;
     }
     
-    const routes = await Route.find({
+    const routes = await RouteModel.find({
       _id: { $in: routeIds.map(id => new mongoose.Types.ObjectId(id.toString())) }
     }).lean() as RouteDocument[];
     
