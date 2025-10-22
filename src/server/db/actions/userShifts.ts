@@ -3,12 +3,15 @@
 import mongoose from "mongoose";
 import dbConnect from "../dbConnect";
 import { UserShiftModel, UserShift } from "../models/userShift";
-import Route from "../models/Route";
+import { IRoute, RouteModel } from "../models/Route";
 import { ObjectId } from "mongodb";
-import User, { IUser } from "../models/User";
+import User from "../models/User";
 import { requireUser } from "../auth/auth";
 import { ShiftModel } from "../models/shift";
 import { getAllLocationsById } from "./location";
+import { cookies } from "next/headers";
+import { adminAuth } from "../firebase/admin/firebaseAdmin";
+import { getDaysInRange } from '@/lib/dayHandler';
 
 export type UserRoute = {
   name: string;
@@ -28,6 +31,10 @@ export type DetailedShiftData = {
   id: string;
   routeName: string;
   area: string;
+  shiftStartTime: Date;
+  shiftEndTime: Date;
+  shiftStartDate: Date;
+  shiftEndDate: Date;
   startTime: Date;
   endTime: Date;
   status: "Complete" | "Incomplete";
@@ -37,9 +44,10 @@ export type DetailedShiftData = {
     additionalInfo: string;
     locations: string[];
   };
-  recurrenceRule: string;
+  recurrenceDates: string[];
   shiftId: string;
   routeId: string;
+  additionalInfo: string;
 };
 
 export type PaginatedResult = {
@@ -54,21 +62,44 @@ export type PaginatedResult = {
 
 /**
  * Gets the current user ID from Firebase session
- * NOTE: This is a placeholder for the actual Firebase implementation
  *
- * @returns The current user's ID or null if not authenticated
+ * @returns The current user's MongoDB ID or null if not authenticated
  */
 async function getCurrentUserId(): Promise<string | null> {
-  // This will be implemented once Firebase is set up
-  // Example implementation:
-  // const auth = getAuth(getFirebaseApp());
-  // const user = auth.currentUser;
-  // return user?.uid || null;
+  try {
+    // Get the auth token from cookies
+    const cookieStore = cookies();
+    const authToken = cookieStore.get("authToken");
+    
+    if (!authToken) {
+      console.warn("No auth token found in cookies");
+      return null;
+    }
 
-  // For now, return a placeholder value
-  console.warn("getCurrentUserId is not implemented yet. Using placeholder.");
-  return "66de3986953f6364945c3c5e"; // Test user ID from sample data
-  // return "placeholder-user-id";
+    // Verify the token using Firebase Admin
+    const decodedToken = await adminAuth.verifyIdToken(authToken.value);
+    const userEmail = decodedToken.email;
+
+    if (!userEmail) {
+      console.warn("No email found in decoded token");
+      return null;
+    }
+
+    // Connect to database and find the user by email
+    await dbConnect();
+    const mongoUser = await User.findOne({ email: userEmail }).lean();
+
+    if (!mongoUser || !('_id' in mongoUser)) {
+      console.warn(`No MongoDB user found for email: ${userEmail}`);
+      return null;
+    }
+
+    // Return the MongoDB user ID as a string
+    return (mongoUser._id as mongoose.Types.ObjectId).toString();
+  } catch (error) {
+    console.error("Error getting current user ID:", error);
+    return null;
+  }
 }
 
 /**
@@ -104,7 +135,7 @@ export async function getUserShifts(
     const routeIds = Array.from(new Set(userShifts.map(shift => shift.routeId)));
     
     // Get route details
-    const routes = await Route.find({
+    const routes = await RouteModel.find({
       _id: { $in: routeIds }
     }).lean();
     
@@ -175,17 +206,38 @@ export async function getUserShiftsByDateRange(
 
   try {
     const skip = (page - 1) * limit;
+
+    const startAbsDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+    const endAbsDate = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate() + 1);
     
     // Get UserShift documents within date range
     const userShifts = await UserShiftModel.find({
       userId: new mongoose.Types.ObjectId(userId),
-      shiftDate: { $gte: startDate, $lte: endDate }
+      $or: [
+        { 
+          shiftDate: { $gte: startAbsDate, $lte: endAbsDate }
+        },
+        { 
+          shiftEndDate: { $gte: startAbsDate, $lte: endAbsDate }
+        },
+        { 
+          shiftDate: { $lte: startAbsDate },
+          shiftEndDate: { $gte: endAbsDate }
+        },
+        {
+          shiftDate: { $gte: startAbsDate },
+          shiftEndDate: { $lte: endAbsDate }
+        }
+      ],
+      recurrenceDates: { $in: getDaysInRange(startDate, endDate) }
     })
       .skip(skip)
       .limit(limit)
       .lean();
 
     userShifts.sort((a, b) => new Date(a.shiftDate).getTime() - new Date(b.shiftDate).getTime());
+
+    console.log(userShifts);
     
     // Get total count for pagination
     const total = await UserShiftModel.countDocuments({
@@ -197,7 +249,7 @@ export async function getUserShiftsByDateRange(
     const routeIds = Array.from(new Set(userShifts.map(shift => shift.routeId)));
 
     // Get route details
-    const routes = await Route.find({
+    const routes = await RouteModel.find({
       _id: { $in: routeIds }
     }).lean();
 
@@ -292,23 +344,26 @@ export async function getDetailedShiftInfo(userShiftId: string): Promise<Detaile
     }
 
     // Get the Route details
-    const route = await Route.findById(userShift.routeId).lean();
+    const route = await RouteModel.findById(userShift.routeId).lean();
     if (!route) {
       throw new Error("Route not found");
     }
 
     // Get the original Shift details for recurrence rule
     const shift = await ShiftModel.findById(userShift.shiftId).lean();
+    console.log("Shift: ", shift);
     
     // Get location names
     let locationNames: string[] = [];
     if (route.locations && route.locations.length > 0) {
+      console.log("Locations: ", route.locations);
       try {
         const locationIds = route.locations.map(loc => loc.location.toString());
         const locationsData = await getAllLocationsById(locationIds);
+        console.log("Location Data: ", locationsData);
         if (locationsData) {
           const parsedLocations = JSON.parse(locationsData);
-          locationNames = parsedLocations.map((loc: any) => loc.locationName || "Unknown Location");
+          locationNames = parsedLocations.map((loc: any) => (loc.locationName + " - " + loc.area) || "Unknown Location");
         }
       } catch (error) {
         console.error("Error fetching location names:", error);
@@ -320,6 +375,10 @@ export async function getDetailedShiftInfo(userShiftId: string): Promise<Detaile
       id: userShift._id.toString(),
       routeName: route.routeName || "Unknown Route",
       area: route.locationDescription || "",
+      shiftStartTime: new Date(shift?.shiftStartDate || new Date()),
+      shiftEndTime: new Date(shift?.shiftEndTime || new Date()),
+      shiftStartDate: new Date(shift?.shiftStartDate || new Date()),
+      shiftEndDate: new Date(shift?.shiftEndDate || new Date()),
       startTime: new Date(userShift.shiftDate),
       endTime: new Date(userShift.shiftEndDate),
       status: userShift.status || "Incomplete",
@@ -329,9 +388,10 @@ export async function getDetailedShiftInfo(userShiftId: string): Promise<Detaile
         additionalInfo: route.additionalInfo || "",
         locations: locationNames
       },
-      recurrenceRule: shift?.recurrenceRule || "",
+      recurrenceDates: shift?.recurrenceDates || [],
       shiftId: userShift.shiftId.toString(),
-      routeId: userShift.routeId.toString()
+      routeId: userShift.routeId.toString(),
+      additionalInfo: shift?.additionalInfo || ""
     };
     
   } catch (error) {
@@ -448,7 +508,7 @@ export async function getUserUniqueRoutes(
       routeName?: string;
     }
     
-    const routes = await Route.find({
+    const routes = await RouteModel.find({
       _id: { $in: routeIds.map(id => new mongoose.Types.ObjectId(id.toString())) }
     }).lean() as RouteDocument[];
     
@@ -555,6 +615,7 @@ export async function createUserShift(userShiftData: {
   userId: string;
   shiftId: string;
   routeId: string;
+  recurrenceDates: string[];
   shiftDate: Date;
   shiftEndDate: Date;
 }): Promise<string> {
@@ -565,6 +626,7 @@ export async function createUserShift(userShiftData: {
       userId: userShiftData.userId,
       shiftId: userShiftData.shiftId,
       routeId: userShiftData.routeId,
+      recurrenceDates: userShiftData.recurrenceDates,
       shiftDate: userShiftData.shiftDate,
       shiftEndDate: userShiftData.shiftEndDate,
       status: "Incomplete"

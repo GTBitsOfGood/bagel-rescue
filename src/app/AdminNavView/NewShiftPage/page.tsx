@@ -13,7 +13,7 @@ import { faArrowLeft, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-
+import dayToNumber from "@/lib/dayHandler";
 
 export default function NewShiftPage() {
     const timeStartInputRef = useRef<HTMLInputElement>(null);
@@ -274,8 +274,46 @@ export default function NewShiftPage() {
     const minutes = parseInt(minuteStr, 10);
 
     return [hours, minutes];
-  
   }
+
+  const findFirstDateAfterToday = (days: string[]): Date | null => {
+    if (days.length === 0) return null;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize to start of day
+    const currentDay = today.getDay();
+    
+    // Remove duplicates and convert to numbers
+    const uniqueDays: {[key: number]: boolean} = {};
+    for (const day of days) {
+      uniqueDays[dayToNumber[day]] = true;
+    }
+    
+    const dayNumbers: number[] = [];
+    for (const dayNumStr in uniqueDays) {
+      dayNumbers.push(parseInt(dayNumStr, 10));
+    }
+    
+    dayNumbers.sort((a, b) => a - b);
+    
+    // Find the first day after today
+    for (let i = 0; i < dayNumbers.length; i++) {
+      if (dayNumbers[i] > currentDay) {
+        const result = new Date(today);
+        result.setDate(today.getDate() + (dayNumbers[i] - currentDay));
+        return result;
+      }
+    }
+    
+    // If no day found after today, return the first day of next week
+    if (dayNumbers.length > 0) {
+      const result = new Date(today);
+      result.setDate(today.getDate() + (7 - currentDay + dayNumbers[0]));
+      return result;
+    }
+    
+    return null;
+  };
 
   async function saveEdits() {
 
@@ -318,93 +356,99 @@ export default function NewShiftPage() {
     }
     
     const selectedRoute = routes[0]._id;
+
+    const [startHour, startMinute] = timeIntoHoursandMinutes(startTime);
+    const [endHour, endMinute] = timeIntoHoursandMinutes(endTime);
+    const startTimeAsDate = new Date("1970-01-01T09:00:00.000Z");
+    startTimeAsDate.setHours(startHour);
+    startTimeAsDate.setMinutes(startMinute);
+    startTimeAsDate.setSeconds(0);
+
+    const endTimeAsDate = new Date("1970-01-01T09:00:00.000Z");
+    endTimeAsDate.setHours(endHour);
+    endTimeAsDate.setMinutes(endMinute);
+    endTimeAsDate.setSeconds(0);
     
-    for (const day of selectedDays) {
-      const targetDay = day.toLowerCase();
-      let finalStartDay = new Date(); 
-      let finalEndDay = new Date();
+    const targetDay = selectedDays.map((day) => day.toLowerCase());
+    let finalStartDay = new Date(); 
+    let finalEndDay = new Date();
 
-      const today = new Date();
-      const todayName = today.toLocaleString("en-us", { weekday: "long" }).toLowerCase();
-
-      if (targetDay === todayName) {
-        finalStartDay = today;
-        finalEndDay = today;
-      }
-
-      for (let i = 1; i < 7; i++) {
-        const temp = new Date(today);
-        temp.setDate(today.getDate() + i);
-        if (temp.toLocaleString("en-us", { weekday: "long" }).toLowerCase() === targetDay) {
-          finalStartDay = temp;
-          finalEndDay = temp;
-          break;
-        }
-      }
-
-      const [startHour, startMinute] = timeIntoHoursandMinutes(startTime);
-      const [endHour, endMinute] = timeIntoHoursandMinutes(endTime);
-
-      if (startHour === 0 && startMinute === 0 || 
+    if (startHour === 0 && startMinute === 0 || 
         endHour === 0 && endMinute === 0 || 
         endHour < startHour || 
         (endHour === startHour && endMinute <= startMinute)) {
-        alert("Please enter a valid start time.");
-        return;
+      alert("Please enter a valid start time.");
+      return;
+    }
+
+    if (!dateRange) {
+      finalStartDay = findFirstDateAfterToday(targetDay)!;
+      finalEndDay = new Date(finalStartDay); 
+      finalEndDay.setFullYear(finalEndDay.getFullYear() + 5);
+    } else {
+      finalStartDay = new Date(startDate);
+      finalEndDay = new Date(endDate);
+    }
+
+    // TODO: remove
+    finalStartDay.setHours(startHour);
+    finalStartDay.setMinutes(startMinute);
+    finalStartDay.setSeconds(0);
+
+    // TODO: remove
+    finalEndDay.setHours(endHour);
+    finalEndDay.setMinutes(endMinute);
+    finalEndDay.setSeconds(0);
+
+    const newShift = {
+      routeId: selectedRoute,
+      shiftStartTime: startTimeAsDate,
+      shiftEndTime: endTimeAsDate,
+      shiftStartDate: finalStartDay,
+      shiftEndDate: finalEndDay,
+      recurrenceDates: targetDay,
+      timeSpecific: timeSpecific ?? false,
+      confirmationForm: {},
+      canceledShifts: [],
+      comments: {},
+      capacity: 0,
+      creationDate: new Date(),
+      additionalInfo: additionalInfo ?? "",
+      currSignedUp: volunteers.length,
+    };
+
+    var shiftCreationComplete = false;
+    
+    try {
+      // Create the shift first
+      const shiftResult = await createShift(JSON.stringify(newShift));
+      if (!shiftResult) {
+        throw new Error("Failed to create shift");
+      }
+      const shiftData = JSON.parse(shiftResult!);
+      const shiftId = shiftData._id;
+      const routeId = shiftData.routeId;
+
+      // Create UserShift records for each volunteer
+      for (const volunteer of volunteers) {
+        await createUserShift({
+          userId: volunteer._id,
+          shiftId: shiftId,
+          routeId: routeId,
+          recurrenceDates: targetDay,
+          shiftDate: finalStartDay,
+          shiftEndDate: finalEndDay
+        });
       }
 
-      finalStartDay = new Date(finalStartDay);
-      finalStartDay.setHours(startHour);
-      finalStartDay.setMinutes(startMinute);
-      finalStartDay.setSeconds(0);
-
-      finalEndDay = new Date(finalEndDay);
-      finalEndDay.setHours(endHour);
-      finalEndDay.setMinutes(endMinute);
-      finalEndDay.setSeconds(0);
-
-      const newShift = {
-        routeId: selectedRoute,
-        shiftDate: finalStartDay,
-        shiftEndDate: finalEndDay,
-        timeSpecific: timeSpecific ?? false,
-        additionalInfo: additionalInfo ?? "",
-        currSignedUp: volunteers.length,
-        recurrenceRule: "FREQ=WEEKLY;BYDAY=" + targetDay.toUpperCase().substring(0, 2),
-      };
-
-      var shiftCreationComplete = false;
-      
-      try {
-        // Create the shift first
-        const shiftResult = await createShift(JSON.stringify(newShift));
-        if (!shiftResult) {
-          throw new Error("Failed to create shift");
-        }
-        const shiftData = JSON.parse(shiftResult);
-        const shiftId = shiftData._id;
-        const routeId = shiftData.routeId;
-
-        // Create UserShift records for each volunteer
-        for (const volunteer of volunteers) {
-          await createUserShift({
-            userId: volunteer._id,
-            shiftId: shiftId,
-            routeId: routeId,
-            shiftDate: finalStartDay,
-            shiftEndDate: finalEndDay
-          });
-        }
-
-        shiftCreationComplete = true;
-      } catch (error) {
-        console.error("Error creating shift or user shifts:", error);
-        alert("Error creating shift. Please try again.");
-        return;
-      } finally {
-        if (shiftCreationComplete) {
-          router.push("/AdminNavView/DailyShiftDashboard");
-        }
+      shiftCreationComplete = true;
+    } catch (error) {
+      console.error("Error creating shift or user shifts:", error);
+      alert("Error creating shift. Please try again.");
+      return;
+    } finally {
+      if (shiftCreationComplete) {
+        router.push("/AdminNavView/DailyShiftDashboard");
       }
     }
 
@@ -440,7 +484,7 @@ export default function NewShiftPage() {
                             <div className="flex space-x-12">
                               <div className="flex flex-col space-y-2 flex-1">
                                   <p className="text-[#072B68] font-bold text-lg">Start Time <span className="text-red-500">*</span></p>
-                                   <input onChange={(e) => setStartTime(e.target.value)} ref={timeStartInputRef} onClick={() => handleClick()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
+                                  <input onChange={(e) => setStartTime(e.target.value)} ref={timeStartInputRef} onClick={() => handleClick()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
                               </div>
                               <div className="flex flex-col space-y-2 flex-1">
                                 <p className="text-[#072B68] font-bold text-lg">End Time <span className="text-red-500">*</span></p>

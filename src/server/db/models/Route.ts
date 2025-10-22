@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface ILocation {
   location: mongoose.Types.ObjectId;
@@ -28,5 +28,10 @@ const RouteSchema: Schema = new Schema({
   additionalInfo: { type: String, default: "-" },
 });
 
-export default mongoose.models?.Route ||
-  mongoose.model<IRoute>("Route", RouteSchema);
+if (mongoose.models.Route) {
+  delete mongoose.models.Route;
+}
+
+const RouteModel: Model<IRoute> = mongoose.models.Route || mongoose.model<IRoute>("Route", RouteSchema);
+
+export { RouteModel };

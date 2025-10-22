@@ -79,47 +79,49 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({ shifts, loading, error }) => 
           onCloseSidebar={handleCloseSidebar}
         />
       )}
-      <table className={styles.shiftsTable}>
-        <thead>
-          <tr>
-            <th>Route Name</th>
-            <th>Time</th>
-            <th>Area</th>
-            <th>Status</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {shifts.map((shift) => (
-            <tr key={shift.id} onClick={() => handleRowClick(shift)} className={styles.clickableRow}>
-              <td className={styles.routeNameCell}>{shift.routeName}</td>
-              <td className={styles.timeCell}>
-                {formatTimeRange(shift.startTime, shift.endTime)}
-              </td>
-              <td className={styles.areaCell}>{shift.area}</td>
-              <td className={styles.statusCell}>
-                <span
-                  className={`${styles.statusBadge} ${
-                    shift.status === "Complete"
-                      ? styles.completeStatus
-                      : styles.incompleteStatus
-                  }`}
-                >
-                  {shift.status}
-                </span>
-              </td>
-              <td>
-                <button className={styles.ellipsisButton} onClick={(e) => {
+
+      {/* Separate header section */}
+      <div className={styles.tableHeader}>
+        <div className={styles.headerCell}>Shift Name</div>
+        <div className={styles.headerCell}>Time</div>
+        <div className={styles.headerCell}>Area</div>
+        <div className={styles.headerCell}>Status</div>
+        <div className={styles.headerCell}></div>
+      </div>
+      
+      {/* Table body section */}
+      <div className={styles.tableBody}>
+        {shifts.map((shift) => (
+          <div key={shift.id} className={styles.tableRow} onClick={() => handleRowClick(shift)}>
+            <div className={styles.routeNameCell}>{shift.routeName}</div>
+            <div className={styles.timeCell}>
+              {formatTimeRange(shift.startTime, shift.endTime)}
+            </div>
+            <div className={styles.areaCell}>{shift.area}</div>
+            <div className={styles.statusCell}>
+              <span
+                className={`${styles.statusBadge} ${
+                  shift.status === "Complete"
+                    ? styles.completeStatus
+                    : styles.incompleteStatus
+                }`}
+              >
+                {shift.status}
+              </span>
+            </div>
+            <div>
+              {/* Ellipsis button - this will be implemented in the future */}
+              <button className={styles.ellipsisButton} onClick={(e) => {
                   e.stopPropagation();
                   handleRowClick(shift);
                 }}>...</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
+
 
 export default ShiftsTable;

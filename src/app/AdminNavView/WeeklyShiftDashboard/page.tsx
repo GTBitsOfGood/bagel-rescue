@@ -37,7 +37,6 @@ function WeeklyShiftDashboard() {
   const [selectedItem, setSelectedItem] = useState<WeeklyShiftSidebarInfo | null>(null);
   const [volunteersPerShift, setVolunteersPerShift] = useState<Map<string, string>>(new Map());
 
-
   useEffect(() => {
     const fetchRoutes = async () => {
       try {

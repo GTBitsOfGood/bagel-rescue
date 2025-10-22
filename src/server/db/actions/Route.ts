@@ -1,14 +1,14 @@
 "use server";
 
 import { ObjectId } from "mongodb";
-import Route, { ILocation, IRoute } from "../models/Route";
+import { ILocation, IRoute, RouteModel } from "../models/Route";
 import dbConnect from "../dbConnect";
 import { requireUser, requireAdmin } from "../auth/auth";
 
 export async function getRoute(id: string): Promise<IRoute | null> {
   await requireAdmin();
   try {
-    return await Route.findById(id).lean<IRoute>();
+    return await RouteModel.findById(id).lean<IRoute>();
   } catch (error) {
     console.error("Error fetching route:", error);
     throw new Error("Failed to fetch route");
@@ -19,7 +19,7 @@ export async function createRoute(route: string): Promise<string | null> {
   try {
     await requireAdmin();
     await dbConnect();
-    const newRoute = new Route(JSON.parse(route || "{}"));
+    const newRoute = new RouteModel(JSON.parse(route || "{}"));
     return JSON.stringify(await newRoute.save());
   } catch (error) {
     console.error("Error creating route:", error);
@@ -33,7 +33,7 @@ export async function updateRouteName(
 ): Promise<IRoute | null> {
   try {
     await requireAdmin();
-    return await Route.findByIdAndUpdate(
+    return await RouteModel.findByIdAndUpdate(
       id,
       { routeName: newRouteName },
       { new: true }
@@ -47,7 +47,7 @@ export async function updateRouteName(
 export async function getLocations(id: string): Promise<ILocation[] | null> {
   try {
     await requireAdmin();
-    const route = await Route.findById(id);
+    const route = await RouteModel.findById(id);
     return route ? route.locations : null;
   } catch (error) {
     console.error("Error fetching locations:", error);
@@ -61,7 +61,7 @@ export async function addLocation(
   index: number
 ): Promise<IRoute | null> {
   try {
-    const route = await Route.findById(id);
+    const route = await RouteModel.findById(id);
     if (!route) return null;
 
     const newLocation: ILocation = {
@@ -82,7 +82,7 @@ export async function removeLocation(
   index: number
 ): Promise<IRoute | null> {
   try {
-    const route = await Route.findById(id);
+    const route = await RouteModel.findById(id);
     if (!route) return null;
 
     route.locations.splice(index, 1);
@@ -97,7 +97,7 @@ export async function getAllRoutes(): Promise<string | null> {
   try {
     await requireAdmin();
     await dbConnect();
-    const routes = await Route.find();
+    const routes = await RouteModel.find();
     return JSON.stringify(routes);
   } catch (error) {
     const err = error as Error;
@@ -109,7 +109,7 @@ export async function getAllRoutesbyIds(routeIds: ObjectId[]): Promise<string | 
   try {
     await requireAdmin();
     await dbConnect();
-    const data = await Route.find({_id: {$in: routeIds}});
+    const data = await RouteModel.find({_id: {$in: routeIds}});
     return JSON.stringify(data);
   } catch (error) {
       const err = error as Error;

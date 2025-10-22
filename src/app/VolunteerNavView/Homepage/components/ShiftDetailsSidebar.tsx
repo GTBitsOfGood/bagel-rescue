@@ -10,17 +10,17 @@ interface ShiftDetailsSidebarProps {
   onCloseSidebar: () => void;
 }
 
-const getDays = (recurrenceRule: string): string => {
-  const dayMap: { [key: string]: string } = {
-    'MO': 'Monday',
-    'TU': 'Tuesday',
-    'WE': 'Wednesday',
-    'TH': 'Thursday',
-    'FR': 'Friday',
-    'SA': 'Saturday',
-    'SU': 'Sunday'
-  };
+const dayMap: { [key: string]: string } = {
+  'mo': 'Monday',
+  'tu': 'Tuesday',
+  'we': 'Wednesday',
+  'th': 'Thursday',
+  'fr': 'Friday',
+  'sa': 'Saturday',
+  'su': 'Sunday'
+};
 
+const getDays = (recurrenceRule: string): string => {
   try {
     // Parse the recurrence rule string
     const parts = recurrenceRule.split(';');
@@ -76,11 +76,13 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({
 
   useEffect(() => {
     const fetchDetailedShift = async () => {
+      console.log("Selected shift: ", selectedShift);
       if (!selectedShift) return;
       
       setLoading(true);
       try {
         const detailed = await getDetailedShiftInfo(selectedShift.id);
+        console.log("detailed: ", detailed);
         setDetailedShift(detailed);
       } catch (error) {
         console.error("Error fetching detailed shift info:", error);
@@ -110,54 +112,124 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({
       </div>
       
       <div className="sidebar-content">
-        <div className="sidebar-route-name">
-          {shiftData.routeName}
-        </div>
+        <h2 className="text-[24px] font-bold text-[#072B68]">{shiftData.routeName}</h2>
         
         {loading && (
           <div className="sidebar-content-header">
             <p>Loading shift details...</p>
           </div>
         )}
-        
-        <div className="sidebar-content-header">
-          <h3>Route Locations</h3>
-          {detailedShift?.routeInfo?.locations && detailedShift.routeInfo.locations.length > 0 ? (
-            detailedShift.routeInfo.locations.map((location, index) => (
-              <p key={index}>{location}</p>
-            ))
-          ) : (
-            <p>{shiftData.area || "Location information not available"}</p>
-          )}
-        </div>
-        
-        <div className="sidebar-content-header">
-          <h3>Information</h3>
-          <p>Shift Status: {shiftData.status}</p>
-          <p>Route: {shiftData.routeName}</p>
-          {detailedShift?.routeInfo?.additionalInfo && detailedShift.routeInfo.additionalInfo !== "-" && (
-            <p>Additional Info: {detailedShift.routeInfo.additionalInfo}</p>
-          )}
-        </div>
-        
-        <div className="sidebar-content-header">
-          <h3>Date Range</h3>
-          <p>{formatDateRange(shiftData.startTime, shiftData.endTime)}</p>
-        </div>
-        
-        <div className="sidebar-content-header">
-          <h3>Days</h3>
-          <p>{detailedShift?.recurrenceRule ? getDays(detailedShift.recurrenceRule) : "Daily"}</p>
-        </div>
-        
-        <div className="sidebar-content-header">
-          <h3>Time</h3>
-          <p>{formatTimeRange(shiftData.startTime, shiftData.endTime)}</p>
-        </div>
-        <div className="sidebar-footer">
-          <button className="sidebar-btn confirm-btn">Submit Confirmation Form</button>
-          <button className="sidebar-btn sub-btn">Request Sub</button>
-        </div>
+
+        {!loading && detailedShift && (
+          <div className="h-[80%]">
+            {/* Content */}
+            <div className="space-y-6 overflow-y-auto h-full [&::-webkit-scrollbar]:hidden">
+
+              {/* Route Locations */}
+              <div>
+                <h3 className="font-semibold text-[#072B68] mb-2">Route Locations</h3>
+                {detailedShift?.routeInfo?.locations && detailedShift.routeInfo.locations.length > 0 ? (
+                  detailedShift.routeInfo.locations.map((location, index) => (
+                    <p key={index}>{location}</p>
+                  ))
+                ) : (
+                  <p>{shiftData.area || "Location information not available"}</p>
+                )}
+              </div>
+
+              {/* Route Information */}
+              {detailedShift.routeInfo.additionalInfo && (
+                <div>
+                  <h3 className="font-semibold text-[#072B68] mb-2">Route Information</h3>
+                  <p className="text-gray-600">{detailedShift.routeInfo.additionalInfo}</p>
+                </div>
+              )}
+
+              {/* Date Range */}
+              <div>
+                <h3 className="font-semibold text-[#072B68] mb-2">Date Range</h3>
+                <p className="text-gray-600">
+                  {(detailedShift as any).shiftStartDate && (detailedShift as any).shiftEndDate 
+                    ? `${new Date((detailedShift as any).shiftStartDate).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long", 
+                        day: "numeric"
+                      })} - ${new Date((detailedShift as any).shiftEndDate).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long", 
+                        day: "numeric"
+                      })}`
+                    : "--"
+                  }
+                </p>
+              </div>
+
+              {/* Days */}
+              <div>
+                <h3 className="font-semibold text-[#072B68] mb-2">Days</h3>
+                <p className="text-gray-600">
+                  {detailedShift!.recurrenceDates.map((date, index) => (
+                    <span key={index}>
+                      {(index != 0 ? ", " : "") + dayMap[date]}
+                    </span>
+                  ))}
+                </p>
+              </div>
+
+              {/* Time */}
+              <div>
+                <h3 className="font-semibold text-[#072B68] mb-2">Time</h3>
+                <p className="text-gray-600">{formatTimeRange(detailedShift.shiftStartDate, detailedShift.shiftEndDate)}</p>
+              </div>
+
+              {/* Additional Information */}
+              {detailedShift.additionalInfo && (
+                <div>
+                  <h3 className="font-semibold text-[#072B68] mb-2">Additional Information</h3>
+                  <p className="text-gray-600">{detailedShift.additionalInfo}</p>
+                </div>
+              )}
+
+              {/* Status */}
+              <div>
+                <h3 className="font-semibold text-[#072B68] mb-2">Status</h3>
+                <span
+                  className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                    shiftData.status === "Complete"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-orange-100 text-orange-800"
+                  }`}
+                >
+                  {detailedShift!.status}
+                </span>
+              </div>          
+            </div>
+
+            {/* Action Buttons */}
+            <div className="absolute bottom-0 left-0 right-0 p-6 bg-white">
+              <div className="flex flex-row gap-3">
+                <button
+                  className=" bg-[#0F7AFF] text-white py-3 px-4 rounded-lg font-small hover:bg-[#005bb5] transition-colors"
+                  onClick={() => {
+                    // TODO: Implement shift completion form
+                    console.log("Submit confirmation form for shift:", detailedShift!.id);
+                  }}
+                >
+                  Submit Confirmation Form
+                </button>
+                <button
+                  className="border-2 border-[#D3D8DE] text-[#00377A] py-3 px-4 rounded-lg font-medium hover:bg-[#0F7AFF] hover:text-white transition-colors"
+                  onClick={() => {
+                    // TODO: Implement sub request
+                    console.log("Request sub for shift:", detailedShift!.id);
+                  }}
+                >
+                  Request Sub
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
     </div>
     </div>
   );
