@@ -34,4 +34,4 @@ if (mongoose.models.Route) {
 
 const RouteModel: Model<IRoute> = mongoose.models.Route || mongoose.model<IRoute>("Route", RouteSchema);
 
-export { RouteModel };
+export default RouteModel;

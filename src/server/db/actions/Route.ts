@@ -1,7 +1,7 @@
 "use server";
 
 import { ObjectId } from "mongodb";
-import { ILocation, IRoute, RouteModel } from "../models/Route";
+import RouteModel, { ILocation, IRoute } from "../models/Route";
 import dbConnect from "../dbConnect";
 import { requireUser, requireAdmin } from "../auth/auth";
 

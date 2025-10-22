@@ -3,7 +3,7 @@
 import mongoose from "mongoose";
 import dbConnect from "../dbConnect";
 import { UserShiftModel, UserShift } from "../models/userShift";
-import { IRoute, RouteModel } from "../models/Route";
+import RouteModel, { IRoute } from "../models/Route";
 import { ObjectId } from "mongodb";
 import User from "../models/User";
 import { requireUser } from "../auth/auth";
