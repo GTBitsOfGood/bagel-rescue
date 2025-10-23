@@ -11,16 +11,10 @@ import WeeklyShiftBar from '../../components/DailyShiftBar';
 import DashboardHeader from '../../components/DailyDashboard';
 import DailyShiftBar from '../../components/DailyShiftBar';
 import AdminSidebar from '../../../components/AdminSidebar';
-import ShiftSidebar from '@/app/components/ShiftSidebar';
+import ShiftSidebar, { ShiftSidebarInfo } from '@/app/components/ShiftSidebar';
 import { Location } from '@/server/db/models/location';
 import { ILocation } from '@/server/db/models/Route';
 import { getAllLocationsById } from '@/server/db/actions/location';
-
-export type DailyShiftSidebarInfo = {
-  shift: Shift;
-  route: IRoute;
-  location_list: string[]
-}
 
 function DailyShiftDashboardPage() {
 
@@ -29,7 +23,7 @@ function DailyShiftDashboardPage() {
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [routes, setRoutes] = useState<{ [key: string]: IRoute }>({});
   const [locations, setLocations] = useState<{ [key: string]: string[] }>({});
-  const [selectedItem, setSelectedItem] = useState<DailyShiftSidebarInfo | null>(null);
+  const [selectedItem, setSelectedItem] = useState<ShiftSidebarInfo | null>(null);
 
   const handleDeleteShift = (shift: Shift) => {
     // TODO: Implement delete shift functionality

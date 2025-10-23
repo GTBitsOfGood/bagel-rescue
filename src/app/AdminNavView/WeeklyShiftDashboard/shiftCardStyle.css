@@ -1,0 +1,179 @@
+/* Base Card Styles */
+.shift-card {
+  box-sizing: border-box;
+  background: #ffffff;
+  /* border: 1px solid var(--bagel-rescue-light-grey, #d3d8de); */
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+}
+
+.shift-card * {
+  box-sizing: border-box;
+}
+
+/* Header Section */
+.shift-card-header {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.shift-card-header-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+}
+
+.shift-card-title-section {
+  display: flex;
+  flex-direction: row;
+  gap: 34px;
+  align-items: center;
+}
+
+.shift-card-route-info {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  align-items: center;
+  min-width: 157px;
+}
+
+.shift-card-route-name,
+.shift-card-separator,
+.shift-card-location {
+  color: var(--bagel-rescue-dark-blue, #072b68);
+  font-family: "Inter-Bold", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.shift-card-recurrence {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+}
+
+.shift-card-recurrence-text {
+  color: var(--bagel-rescue-dark-blue, #072b68);
+  font-family: "Inter-Regular", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.shift-card-menu-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--bagel-rescue-dark-blue, #072b68);
+  transition: opacity 0.2s ease;
+}
+
+.shift-card-menu-button:hover {
+  opacity: 0.7;
+}
+
+.shift-card-menu-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Details Section */
+.shift-card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.shift-card-details-header,
+.shift-card-details-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Labels (Header Row) */
+.shift-card-label {
+  color: #000000;
+  font-family: "Inter-Bold", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.shift-card-label:nth-child(1) {
+  width: 200px;
+}
+
+.shift-card-label:nth-child(2) {
+  width: 151px;
+}
+
+.shift-card-label:nth-child(3) {
+  width: 202px;
+}
+
+.shift-card-label:nth-child(4) {
+  width: 100px;
+}
+
+/* Content Values (Data Row) */
+.shift-card-volunteers,
+.shift-card-time,
+.shift-card-period,
+.shift-card-next-shift {
+  color: #000000;
+  font-family: "Inter-Regular", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.shift-card-volunteers {
+  width: 200px;
+}
+
+.shift-card-time {
+  width: 160px;
+}
+
+.shift-card-period {
+  width: 200px;
+}
+
+.shift-card-next-shift {
+  width: 100px;
+}
+
+/* Responsive Design (Optional Enhancement) */
+@media (max-width: 768px) {
+  .shift-card-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .shift-card-details-header,
+  .shift-card-details-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .shift-card-label,
+  .shift-card-volunteers,
+  .shift-card-time,
+  .shift-card-period,
+  .shift-card-next-shift {
+    width: 100%;
+  }
+}

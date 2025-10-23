@@ -16,6 +16,7 @@ interface Shift extends Document {
   shiftEndTime: Date;
   shiftStartDate: Date;
   shiftEndDate: Date;
+  additionalInfo: string;
   recurrenceDates: string[];
   timeSpecific: boolean;
   confirmationForm: { [date: string]: mongoose.Types.ObjectId };
@@ -64,6 +65,9 @@ const shiftSchema: Schema = new Schema({
   },
   shiftEndDate: {
     type: Date,
+  },
+  additionalInfo: {
+    type: String,
   },
   recurrenceDates: {
     type: [String],
