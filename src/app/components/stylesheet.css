@@ -55,14 +55,19 @@
   display: none;
 }
 
-.sidebar-route-name {
-    font-family: Inter;
-    font-weight: bold;
-    font-size: 24px;
-    font-style: normal;
-    font-weight: 700;
-    line-height: 32px;
+.comment-content {
+  font-family: Inter, sans-serif;
+  color: var(--Bagel-Rescue-Dark-Blue, #072B68);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 20px;
+  width: 100%;
+  gap: 8px;
+  display: flex;
+  padding: 16px 0px 16px 0px;
+  border-radius: 8px;
 }
+
 
 .sidebar-content-header h3 {
     color: var(--Bagel-Rescue-Dark-Blue, #072b68);
@@ -76,9 +81,9 @@
     gap: 16px;
 }
 
-.sidebar-route-name {
-    color: var(--Bagel-Rescue-Dark-Blue, #072b68);
-    font-family: Inter;
+  .sidebar-route-name {
+    color: var(--Bagel-Rescue-Dark-Blue, #072B68);
+    font-family: Inter, sans-serif;
     font-size: 24px;
     font-style: normal;
     font-weight: 700;
@@ -114,7 +119,8 @@
     line-height: 20px;
 }
 
-.arrow-box {
-    width: 32px;
+  .arrow-box {
+    width: 36px;
     height: 44px;
-}
+    cursor: pointer;
+  }

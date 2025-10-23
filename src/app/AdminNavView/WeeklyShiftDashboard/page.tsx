@@ -56,7 +56,6 @@ function WeeklyShiftDashboard() {
     return { startOfWeek, endOfWeek };
 };
 
-
   useEffect(() => {
     const fetchWeeklyShifts = async (startDate: Date, endDate: Date) => {
    

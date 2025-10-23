@@ -4,6 +4,7 @@ interface UserShift extends Document {
   userId: mongoose.Types.ObjectId;
   shiftId: mongoose.Types.ObjectId;
   routeId: mongoose.Types.ObjectId;
+  recurrenceDates: string[];
   shiftDate: Date;
   shiftEndDate: Date;
   status: "Complete" | "Incomplete";
@@ -24,6 +25,10 @@ const UserShiftSchema: Schema<UserShift> = new Schema(
     routeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Route",
+      required: true,
+    },
+    recurrenceDates: {
+      type: [String],
       required: true,
     },
     shiftDate: {

@@ -1,6 +1,7 @@
 "use server";
 
 import { ObjectId } from "mongoose";
+import mongoose from "mongoose";
 import { RRule } from "rrule";
 import dbConnect from "../dbConnect";
 import { RecurrenceModel, Shift, ShiftModel } from "../models/shift";
@@ -31,6 +32,41 @@ export async function getShift(shiftId: ObjectId): Promise<Shift | null> {
     throw new Error(`Error has occurred when getting shift: ${err.message}`);
   }
 }
+
+export async function updateComment(data: string): Promise<any> {
+  await requireAdmin(); 
+  try {
+    await dbConnect();
+
+    const parsed = JSON.parse(data);
+    const { shiftId, date, comment } = parsed;
+
+    const allShifts = await ShiftModel.find();
+    
+    const foundShift = allShifts.find(s => s._id.toString() === shiftId);
+    
+    if (!foundShift) {
+      const sampleIds = allShifts.slice(0, 10).map(s => s._id.toString());
+      throw new Error(`Shift not found with ID: ${shiftId}`);
+    }
+    
+    const updateResult = await ShiftModel.updateOne(
+      { _id: foundShift._id },
+      { $set: { [`comments.${date}`]: comment } }
+    );
+    
+    if (updateResult.matchedCount === 0) {
+      throw new Error("Update failed - no document matched");
+    }
+    
+    return null;
+  } catch (error) {
+    const err = error as Error;
+    console.error("Error in updateComment:", err.message);
+    throw new Error(`Error updating shift comment: ${err.message}`);
+  }
+}
+
 
 export async function updateRoute(
   shiftId: ObjectId,
@@ -432,6 +468,7 @@ export async function getShiftsByWeek(
         routeName: "$route.routeName",
         routeId: "$route._id",
         locationDescription: "$route.locationDescription",
+        comments: 1,
         volunteers: {
           $map: {
             input: "$volunteers",
