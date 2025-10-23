@@ -27,6 +27,14 @@
 body {
   color: rgb(var(--foreground-rgb));
   background-color: rgb(var(--background-rgb));
+  height: 100%;
+  overflow: hidden;
+}
+
+.body-container {
+  overflow: auto;
+  height: 100vh;
+  width: 100vw;
 }
 
 @layer utilities {

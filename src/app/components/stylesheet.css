@@ -1,6 +1,7 @@
 .main-sidebar {
     position: fixed; 
-    right: 0;               
+    right: 0;
+    top: 99px;     
     width: 30rem;     
     z-index: 50;
     background: #fff;
@@ -9,7 +10,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    height: 100%;
+    height: calc(100% - 99px);
   
     transition: transform 0.3s ease-in-out;
     transform: translateX(0); /* visible */
@@ -43,25 +44,20 @@
     display: flex;
     flex: 1;
     width: 100%;
-    overflow-y: auto;
+    overflow-y: scroll;
     flex-direction: column;
     align-items: flex-start;
     gap: 24px;
 }
 
-.comment-content {
-  font-family: Inter, sans-serif;
-  color: var(--Bagel-Rescue-Dark-Blue, #072B68);
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 20px;
-  width: 100%;
-  gap: 8px;
-  display: flex;
-  padding: 16px 0px 16px 0px;
-  border-radius: 8px;
+.sidebar-route-name {
+    font-family: Inter, sans-serif;
+    font-weight: bold;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 32px; 
 }
-
 
 .sidebar-content-header h3 {
     color: var(--Bagel-Rescue-Dark-Blue, #072B68);
@@ -77,7 +73,7 @@
 
   .sidebar-route-name {
     color: var(--Bagel-Rescue-Dark-Blue, #072B68);
-    font-family: Inter, sans-serif;
+    font-family: Inter;
     font-size: 24px;
     font-style: normal;
     font-weight: 700;
@@ -114,7 +110,40 @@
   }
 
   .arrow-box {
-    width: 36px;
+    width: 32px;
     height: 44px;
-    cursor: pointer;
   }
+
+
+.sidebar-footer {
+  padding: 16px;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  }
+
+.sidebar-btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.confirm-btn {
+  background-color: #072B68;
+  color: white;
+}
+
+.confirm-btn:hover {
+  background-color: #0c3a8d;
+}
+
+.sub-btn {
+  background-color: #f1f1f1;
+  color: #072B68;
+}
+
+.sub-btn:hover {
+  background-color: #e2e2e2;
+}
