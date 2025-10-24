@@ -108,21 +108,28 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({
                         />
                     </svg>
                 </div>
-                <div
-                    className="bg-white text-[#00377A] font-[500] p-[.8rem] px-5 gap-2 rounded-xl 
-        hover:bg-[#005bb5] border-2 border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] 
-        hover:text-white cursor-pointer"
-                >
-                    <FontAwesomeIcon icon={faPenClip} className="mr-3" />
-                    <span>Edit Shift</span>
+                <div className="group flex items-center gap-2.5 bg-white text-[#00377A] font-[500] p-[.8rem] px-4 rounded-xl border-2 border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] hover:bg-[#005bb5] hover:text-white cursor-pointer">
+                  <svg 
+                    className="fill-[var(--Bagel-Rescue-Dark-Blue)] group-hover:fill-white"
+                    width="20" 
+                    height="20" 
+                    viewBox="0 0 20 20" 
+                    fill="none" 
+                    xmlns="http://www.w3.org/2000/svg"
+
+                  >
+                    <path 
+                      d="M17.7586 5.73203L14.268 2.24062C14.1519 2.12452 14.0141 2.03242 13.8624 1.96958C13.7107 1.90675 13.5482 1.8744 13.384 1.8744C13.2198 1.8744 13.0572 1.90675 12.9056 1.96958C12.7539 2.03242 12.6161 2.12452 12.5 2.24062L2.86641 11.875C2.74983 11.9907 2.65741 12.1283 2.59451 12.28C2.5316 12.4317 2.49948 12.5944 2.50001 12.7586V16.25C2.50001 16.5815 2.6317 16.8995 2.86612 17.1339C3.10054 17.3683 3.41849 17.5 3.75001 17.5H7.24141C7.40563 17.5005 7.5683 17.4684 7.71999 17.4055C7.87168 17.3426 8.00935 17.2502 8.12501 17.1336L17.7586 7.5C17.8747 7.38392 17.9668 7.24611 18.0296 7.09443C18.0925 6.94276 18.1248 6.78019 18.1248 6.61601C18.1248 6.45184 18.0925 6.28927 18.0296 6.13759C17.9668 5.98592 17.8747 5.84811 17.7586 5.73203ZM4.0086 12.5L10.625 5.88359L11.9289 7.1875L5.31251 13.8031L4.0086 12.5ZM3.75001 14.0086L5.99141 16.25H3.75001V14.0086ZM7.50001 15.9914L6.1961 14.6875L12.8125 8.07109L14.1164 9.375L7.50001 15.9914ZM15 8.4914L11.5086 5L13.3836 3.125L16.875 6.61562L15 8.4914Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  <span>Edit Shift</span>
                 </div>
             </div>
-            <div className="sidebar-route-name">
-                {shiftSidebarInfo.route.routeName
-                    ? shiftSidebarInfo.route.routeName
-                    : "Route"}
-            </div>
             <div className="sidebar-content">
+                <div className="sidebar-route-name">
+                  {shiftSidebarInfo.route.routeName ? shiftSidebarInfo.route.routeName : "Route"}
+                </div>
                 {/* Comment Section */}
                 <div className="comment-content flex flex-col w-full">
                     {!isEditing && !comment && (
