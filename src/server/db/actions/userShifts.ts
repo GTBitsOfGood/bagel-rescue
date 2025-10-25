@@ -48,6 +48,7 @@ export type DetailedShiftData = {
   shiftId: string;
   routeId: string;
   additionalInfo: string;
+  comments?: { [date: string] : string};
 };
 
 export type PaginatedResult = {
@@ -391,7 +392,8 @@ export async function getDetailedShiftInfo(userShiftId: string): Promise<Detaile
       recurrenceDates: shift?.recurrenceDates || [],
       shiftId: userShift.shiftId.toString(),
       routeId: userShift.routeId.toString(),
-      additionalInfo: shift?.additionalInfo || ""
+      additionalInfo: shift?.additionalInfo || "",
+      comments: shift?.comments || {}
     };
     
   } catch (error) {
