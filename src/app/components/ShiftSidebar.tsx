@@ -128,7 +128,7 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({
             </div>
             <div className="sidebar-content">
                 <div className="sidebar-route-name">
-                  {shiftSidebarInfo.route.routeName ? shiftSidebarInfo.route.routeName : "Route"}
+                  {shiftSidebarInfo?.route?.routeName ?? "Route"}
                 </div>
                 {/* Comment Section */}
                 <div className="comment-content flex flex-col w-full">
@@ -250,7 +250,7 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({
                         )
                     )}
                 </div>
-                {shiftSidebarInfo.route.additionalInfo && (
+                {shiftSidebarInfo?.route?.additionalInfo && (
                     <div className="sidebar-content-header">
                         <h3> Route Information</h3>
                         {shiftSidebarInfo.route.additionalInfo}
