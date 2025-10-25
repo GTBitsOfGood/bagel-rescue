@@ -25,6 +25,7 @@ export type UserShiftData = {
   startTime: Date;
   endTime: Date;
   status: "Complete" | "Incomplete";
+  hasComment?: boolean;
 };
 
 export type DetailedShiftData = {
@@ -132,12 +133,17 @@ export async function getUserShifts(
     // Get total count for pagination
     const total = await UserShiftModel.countDocuments({ userId: new mongoose.Types.ObjectId(userId) });
     
-    // Get unique route IDs
+    // Get unique route and shift IDs
     const routeIds = Array.from(new Set(userShifts.map(shift => shift.routeId)));
-    
+    const shiftIds = Array.from(new Set(userShifts.map(shift => shift.shiftId)));
     // Get route details
     const routes = await RouteModel.find({
       _id: { $in: routeIds }
+    }).lean();
+
+    // get shift details for comments
+    const shifts = await ShiftModel.find({
+      _id: { $in: shiftIds }
     }).lean();
     
     // Create a map of route IDs to route details
@@ -151,6 +157,14 @@ export async function getUserShifts(
         });
       }
     });
+
+    const shiftCommentsMap = new Map();
+    shifts.forEach(shift => {
+      if (shift._id) {
+        const shiftId = shift._id.toString();
+        shiftCommentsMap.set(shiftId, shift.comments || {});
+      }
+    });
     
     // Transform the data for the frontend
     const transformedShifts = userShifts.map(shift => {
@@ -158,6 +172,9 @@ export async function getUserShifts(
         routeName: "Unknown Route",
         locationDescription: ""
       };
+
+    
+    const comments = shiftCommentsMap.get(shift.shiftId.toString()) || {};
       
       return {
         id: shift._id.toString(),
@@ -165,7 +182,8 @@ export async function getUserShifts(
         area: route.locationDescription,
         startTime: new Date(shift.shiftDate),
         endTime: new Date(shift.shiftEndDate),
-        status: shift.status || "Incomplete"
+        status: shift.status || "Incomplete",
+        hasComment: Object.keys(comments).length > 0
       };
     });
     
@@ -246,12 +264,18 @@ export async function getUserShiftsByDateRange(
       shiftDate: { $gte: startDate, $lte: endDate }
     });
     
-    // Get unique route IDs
+    // Get unique route and shift IDs
     const routeIds = Array.from(new Set(userShifts.map(shift => shift.routeId)));
+    const shiftIds = Array.from(new Set(userShifts.map(shift => shift.shiftId)));
 
     // Get route details
     const routes = await RouteModel.find({
       _id: { $in: routeIds }
+    }).lean();
+
+    // Get shift details for comments
+    const shifts = await ShiftModel.find({
+      _id: { $in: shiftIds }
     }).lean();
 
     // Create a map of route IDs to route details
@@ -266,12 +290,22 @@ export async function getUserShiftsByDateRange(
       }
     });
     
+    const shiftCommentsMap = new Map();
+    shifts.forEach(shift => {
+      if (shift._id) {
+        const shiftId = shift._id.toString();
+        shiftCommentsMap.set(shiftId, shift.comments || {});
+      }
+    });
+
     // Transform the data for the frontend
     const transformedShifts = userShifts.map(shift => {
       const route = routeMap.get(shift.routeId.toString()) || {
         routeName: "Unknown Route",
         locationDescription: ""
       };
+
+      const comments = shiftCommentsMap.get(shift.shiftId.toString()) || {};
       
       return {
         id: shift._id.toString(),
@@ -279,7 +313,8 @@ export async function getUserShiftsByDateRange(
         area: route.locationDescription,
         startTime: new Date(shift.shiftDate),
         endTime: new Date(shift.shiftEndDate),
-        status: shift.status || "Incomplete"
+        status: shift.status || "Incomplete",
+        hasComment: Object.keys(comments).length > 0
       };
     });
     
