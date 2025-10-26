@@ -118,8 +118,8 @@ export default function AddNewVolunteer() {
                         </div>
                         <div className='flex gap-2 align-center'>
                         <div className='flex gap-2 align-center'>
-                            <input type="checkbox" name="preferSubOnly" id="preferSubOnly" className="size-6" />
-                            <label htmlFor="preferSubOnly">Sub Only</label>
+                            <input type="checkbox" name="prefersSubOnly" id="prefersSubOnly" className="size-6" />
+                            <label htmlFor="prefersSubOnly">Sub Only</label>
                         </div>
                         <div className='flex gap-2 align-center'>
                             <input type="checkbox" name="openToAny" id="openToAny" className="size-6" />
