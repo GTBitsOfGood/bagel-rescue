@@ -66,65 +66,6 @@ function ManagementBar() {
           </div>
         </div>
       </div>
-
-      {/* Popup Modal */}
-      {false && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-[500px] max-w-[90%]">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-[#072B68]">Add New Volunteer</h2>
-              <button 
-                onClick={() => setShowPopup(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <FontAwesomeIcon icon={faTimes} />
-              </button>
-            </div>
-            
-            <div className="mb-4">
-              <input 
-                type="text"
-                required
-                className="w-full bg-white placeholder:text-slate-400 text-slate-700 text-sm border border-slate-200 rounded-md p-3 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-300 shadow-sm focus:shadow" 
-                placeholder="Emails, comma separated" 
-                value={currentEmail}
-                onChange={(e) => setCurrentEmail(e.target.value)}
-              />
-            </div>
-            
-            <div className="flex justify-end">
-              <button
-                className="bg-[#0F7AFF] text-white font-semibold py-2 px-4 rounded hover:bg-[#005bb5]"
-                onClick={inviteVolunteer}
-                disabled={loading}
-              >
-                {loading ? "Sending..." : "Invite"}
-              </button>
-            </div>
-            
-            <div className="mt-6">
-              <h3 className="font-semibold mb-2">Sent invitation</h3>
-              {emails.length === 0 ? (
-                <p className="text-gray-700">No invitations sent yet</p>
-              ) : (
-                <div className="space-y-2">
-                  {emails.map((email) => (
-                    <div key={email} className="flex items-center justify-between bg-gray-100 p-2 rounded">
-                      <span>{email}</span>
-                      <button 
-                        onClick={() => setEmails(emails.filter(e => e !== email))}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <FontAwesomeIcon icon={faTrash} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
