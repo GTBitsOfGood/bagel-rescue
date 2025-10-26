@@ -7,6 +7,7 @@ import {
   faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
+import { getWeekRange } from "@/lib/dateRangeHandler";
 
 interface WeeklyDashboardHeaderProps {
   date: Date;
@@ -23,19 +24,6 @@ const WeeklyDashboardHeader: React.FC<WeeklyDashboardHeaderProps> = ({ date, Add
     } else {
       router.push('/AdminNavView/WeeklyShiftDashboard');
     }
-  };
-
-  // Calculate the start and end of the week (Monday to Sunday)
-  const getWeekRange = (date: Date) => {
-    const startOfWeek = new Date(date);
-    const day = startOfWeek.getDay();
-    const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
-    startOfWeek.setDate(diff);
-    
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
-    
-    return { startOfWeek, endOfWeek };
   };
 
   const { startOfWeek, endOfWeek } = getWeekRange(date);

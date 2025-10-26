@@ -17,6 +17,7 @@ import { IRoute } from "@/server/db/models/Route";
 export type ShiftSidebarInfo = {
     shift: Shift;
     route: IRoute;
+    shiftDate: Date;
     location_list: string[];
 };
 
@@ -64,10 +65,10 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({
                 typeof comments === "object" &&
                 Object.keys(comments).length > 0
             ) {
-                const dates = Object.keys(comments).sort().reverse();
-                const mostRecentComment = comments[dates[0]];
-                setComment(mostRecentComment);
-                setDraft(mostRecentComment);
+                const currentDateComment =
+                    comments[shiftSidebarInfo.shiftDate.toISOString().split("T")[0]];
+                setComment(currentDateComment || "");
+                setDraft(currentDateComment || "");
             }
             setHasLoaded(true);
         }
@@ -159,9 +160,10 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({
                                     onClick={async () => {
                                         if (!shift._id) return;
 
-                                        const dateKey = new Date()
-                                            .toISOString()
-                                            .split("T")[0];
+                                        const dateKey =
+                                            shiftSidebarInfo.shiftDate
+                                                .toISOString()
+                                                .split("T")[0];
 
                                         try {
                                             await updateComment(

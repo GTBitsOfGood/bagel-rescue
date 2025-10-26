@@ -11,17 +11,33 @@ const dayToNumber: Record<string, number> = {
 export default dayToNumber;
 
 export const numberToDay: Record<number, string> = {
-        0: 'su', 1: 'mo', 2: 'tu', 3: 'we', 4: 'th', 5: 'fr', 6: 'sa'
+    0: "su",
+    1: "mo",
+    2: "tu",
+    3: "we",
+    4: "th",
+    5: "fr",
+    6: "sa",
+};
+
+export const dayToFull: { [key: string]: string } = {
+    mo: "monday",
+    tu: "tuesday",
+    we: "wednesday",
+    th: "thursday",
+    fr: "friday",
+    sa: "saturday",
+    su: "sunday",
 };
 
 export function getDaysInRange(startDate: Date, endDate: Date): string[] {
     const daysSet = new Set<number>();
     const current = new Date(startDate);
-    
+
     while (current <= endDate) {
         daysSet.add(current.getDay());
         current.setDate(current.getDate() + 1);
     }
-    
-    return Array.from(daysSet).map(num => numberToDay[num]);
+
+    return Array.from(daysSet).map((num) => numberToDay[num]);
 }

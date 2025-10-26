@@ -22,6 +22,7 @@ import ShiftSidebar, { ShiftSidebarInfo } from "@/app/components/ShiftSidebar";
 import { getAllLocationsById } from "@/server/db/actions/location";
 import { Location } from "@/server/db/models/location";
 import { IRoute } from "@/server/db/models/Route";
+import { findDayInRange, getWeekRange } from "@/lib/dateRangeHandler";
 
 function WeeklyShiftDashboard() {
     const router = useRouter();
@@ -45,21 +46,13 @@ function WeeklyShiftDashboard() {
         Map<string, Location[]>
     >(new Map());
 
+    const { startOfWeek, endOfWeek } = getWeekRange(date);
+
     const AddDays = (e: number) => {
         const newDate = new Date(date);
         // For weekly view, we move by 7 days (1 week) at a time
         newDate.setDate(newDate.getDate() + e);
         setDate(newDate);
-    };
-
-    const getWeekRange = (date: Date) => {
-        const startOfWeek = new Date(date);
-        const day = startOfWeek.getDay();
-        const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
-        startOfWeek.setDate(diff);
-        const endOfWeek = new Date(startOfWeek);
-        endOfWeek.setDate(startOfWeek.getDate() + 6);
-        return { startOfWeek, endOfWeek };
     };
 
     useEffect(() => {
@@ -70,7 +63,7 @@ function WeeklyShiftDashboard() {
                     endDate
                 );
                 const weeklyShiftData = JSON.parse(weeklyShiftResponse || "[]");
-                console.log(weeklyShiftData);
+                console.log("Weekly Shift Data: ", weeklyShiftData);
                 setWeeklyShiftData(weeklyShiftData);
             } catch (error) {
                 console.error("Error fetching shifts:", error);
@@ -98,7 +91,6 @@ function WeeklyShiftDashboard() {
             }
         };
 
-        const { startOfWeek, endOfWeek } = getWeekRange(date);
         fetchShifts();
         fetchWeeklyShifts(startOfWeek, endOfWeek);
     }, [date]);
@@ -122,73 +114,100 @@ function WeeklyShiftDashboard() {
         fetchVolunteers();
     }, [shiftsPerRoute]);
 
+    // Function to handle shift card click
+    const handleShiftCardClick = async (shift: any, shiftDate: Date) => {
+        let route;
+        const routeId = String(shift["routeId"]);
+
+        // Get or fetch route
+        if (shiftToRouteMap.has(routeId)) {
+            route = shiftToRouteMap.get(routeId);
+        } else {
+            route = await getRoute(shift["routeId"]);
+            if (route) {
+                shiftToRouteMap.set(routeId, route);
+            }
+        }
+
+        if (!route) {
+            console.error("Route not found for shift:", shift);
+            return;
+        }
+
+        // Get or fetch locations
+        let locationList;
+        if (routeToLocationsMap.has(routeId)) {
+            locationList = routeToLocationsMap.get(routeId);
+        } else {
+            const locationIds = route.locations.map((loc: any) =>
+                String(loc.location)
+            );
+            const locationsData = await getAllLocationsById(locationIds);
+            locationList = JSON.parse(locationsData || "[]");
+            routeToLocationsMap.set(routeId, locationList);
+        }
+
+        const formattedLocations = locationList.map(
+            (loc: Location) => `${loc.locationName} - ${loc.area}`
+        );
+
+        setSelectedItem({
+            shift: shift,
+            route: route,
+            shiftDate: new Date(shiftDate),
+            location_list: formattedLocations,
+        });
+    };
+
     // TODO: Can definitely be made more efficient - probably not need
     // to pass entire volunteersPerShift into every Route card
-    function routesList() {
-        return weeklyShiftData.map((shift, index) => {
-            return (
-                <ShiftCard
-                    key={shift["_id"] || index}
-                    volunteers={shift["volunteers"] || []}
-                    startDate={shift["shiftStartDate"] || ""}
-                    endDate={shift["shiftEndDate"] || "--"}
-                    startTime={shift["shiftStartTime"] || ""}
-                    endTime={shift["shiftEndTime"] || ""}
-                    routeName={shift["routeName"] || "--"}
-                    locationDescription={shift["locationDescription"] || ""}
-                    recurrenceDates={shift["recurrenceDates"] || []}
-                    onOpenSidebar={async () => {
-                        let route;
-                        if (shiftToRouteMap.has(String(shift["routeId"]))) {
-                            route = shiftToRouteMap.get(
-                                String(shift["routeId"])
-                            );
-                        } else {
-                            console.log("Searching!!!");
-                            route = await getRoute(shift["routeId"]);
-                            shiftToRouteMap.set(
-                                String(shift["routeId"]),
-                                route!
-                            );
-                        }
+    const routesList = () => {
+        return weeklyShiftData.map((shift: any, shiftIndex) => {
+            // Early return if no recurrence dates
+            if (!shift["recurrenceDates"]?.length) {
+                return null;
+            }
 
-                        let location_list_raw;
-                        if (routeToLocationsMap.has(String(shift["routeId"])))
-                            location_list_raw = JSON.stringify(
-                                routeToLocationsMap.get(
-                                    String(shift["routeId"])
-                                )
-                            );
-                        else {
-                            console.log("Searching!!!");
-                            location_list_raw = await getAllLocationsById(
-                                route!.locations.map((loc) =>
-                                    String(loc.location)
-                                )
-                            );
-                            routeToLocationsMap.set(
-                                String(shift["routeId"]),
-                                JSON.parse(location_list_raw || "[]")
-                            );
-                        }
+            // Process only recurrence dates within the week range
+            const validShiftCards = shift["recurrenceDates"]
+                .map((day: string, dateIndex: number) => {
+                    const shiftDate = findDayInRange(
+                        day,
+                        startOfWeek,
+                        endOfWeek
+                    );
+                    if (!shiftDate) return null;
 
-                        const location_list = JSON.parse(
-                            location_list_raw || "[]"
-                        ).map(
-                            (loc: Location) =>
-                                loc.locationName + " - " + loc.area
-                        );
+                    return (
+                        <ShiftCard
+                            key={`${shift["_id"]}-${dateIndex}-${shiftIndex}`}
+                            volunteers={shift["volunteers"] || []}
+                            startDate={shift["shiftStartDate"] || ""}
+                            endDate={shift["shiftEndDate"] || "--"}
+                            startTime={shift["shiftStartTime"] || ""}
+                            endTime={shift["shiftEndTime"] || ""}
+                            routeName={shift["routeName"] || "--"}
+                            locationDescription={
+                                shift["locationDescription"] || ""
+                            }
+                            recurrenceDates={shift["recurrenceDates"] || []}
+                            shiftDate={shiftDate.toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                            })}
+                            onOpenSidebar={() =>
+                                handleShiftCardClick(shift, shiftDate)
+                            }
+                        />
+                    );
+                })
+                .filter(Boolean); // Remove null entries
 
-                        setSelectedItem({
-                            shift: shift,
-                            route: route!,
-                            location_list: location_list,
-                        });
-                    }}
-                />
-            );
+            // Return array of valid shift cards or null if none
+            return validShiftCards.length > 0 ? validShiftCards : null;
         });
-    }
+    };
 
     return (
         <div className="flex">
