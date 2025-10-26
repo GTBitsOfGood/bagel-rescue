@@ -20,6 +20,7 @@ interface ShiftCardProps {
   routeName: string;
   locationDescription: string;
   recurrenceDates: string[];
+  shiftDate: string;
   onOpenSidebar: () => void;
 }
 
@@ -36,6 +37,7 @@ export default function ShiftCard({
   routeName, 
   locationDescription, 
   recurrenceDates,
+  shiftDate,
   onOpenSidebar
 }: ShiftCardProps) {
   const [volunteerDisplay, setVolunteerDisplay] = useState("");
@@ -85,35 +87,6 @@ export default function ShiftCard({
     setRecurrenceDateStr(formattedDates);
   }, [startTime, endTime, recurrenceDates]);
 
-  // Calculate next shift date based on recurrence
-  const getNextShiftDate = (recurrenceDates?: string[]): string => {
-    if (!recurrenceDates || recurrenceDates.length === 0) {
-      return "--";
-    }
-
-    const recurrenceDays = recurrenceDates
-      .map(day => DAY_MAP[day])
-      .filter(dayNum => dayNum !== undefined);
-
-    const today = new Date();
-
-    // Loop up to 7 days ahead to find the next valid day
-    for (let i = 0; i < 7; i++) {
-      const testDate = new Date(today);
-      testDate.setDate(today.getDate() + i);
-      
-      if (recurrenceDays.includes(testDate.getDay())) {
-        return testDate.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        });
-      }
-    }
-
-    return "--";
-  };
-
   return (
     <div className="shift-card" onClick={() => onOpenSidebar()}>
       {/* Header Section */}
@@ -147,7 +120,7 @@ export default function ShiftCard({
           <span className="shift-card-label">Volunteer(s)</span>
           <span className="shift-card-label">Time</span>
           <span className="shift-card-label">Period</span>
-          <span className="shift-card-label">Next Shift</span>
+          <span className="shift-card-label">Shift Date</span>
         </div>
         
         <div className="shift-card-details-content">
@@ -156,7 +129,7 @@ export default function ShiftCard({
           <span className="shift-card-period">
             {startDateObj.toLocaleDateString("en-US")} - {endDateObj.toLocaleDateString("en-US")}
           </span>
-          <span className="shift-card-next-shift">{getNextShiftDate(recurrenceDates)}</span>
+          <span className="shift-card-next-shift">{shiftDate}</span>
         </div>
       </div>
     </div>

@@ -116,7 +116,7 @@ function DailyShiftDashboardPage() {
       divs.push(
         <div key={i} className='min-h-[5rem]'>
           <DailyShiftBar onOpenSidebar={(shift: Shift, route: IRoute, location_list: string[]) => {
-              setSelectedItem({shift, route, location_list});
+              setSelectedItem({shift, route, shiftDate: new Date(date), location_list});
             }}
             onDeleteShift={handleDeleteShift}
             shift={currShifts}
