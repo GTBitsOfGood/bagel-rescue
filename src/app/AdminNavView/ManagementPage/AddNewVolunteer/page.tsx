@@ -31,7 +31,6 @@ export default function AddNewVolunteer() {
             e.preventDefault();
 
             const formData = new FormData(e.currentTarget);
-            console.log(formData.get("locations"));
 
             const nameParts = (formData.get("name") as string).split(" ");
             const locations = (formData.get("locations") as String).split(",")

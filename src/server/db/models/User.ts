@@ -20,6 +20,7 @@ export interface IUser {
   totalShifts?: number;
   phoneNumber?: string;
   locations?: string[];
+  status?: "SEND_INVITE" | "INVITE_SENT" | "ACTIVE";
   prefersNormalRoutes?: boolean;
   prefersSubOnly?: boolean;
   openToAny?: boolean;
@@ -115,6 +116,10 @@ const userSchema = new Schema({
   locations: {
     type: [String],
     default: [],
+  },
+  status: {
+    type: String,
+    default: "SEND_INVITE",
   },
   prefersNormalRoutes: {
     type: Boolean,
