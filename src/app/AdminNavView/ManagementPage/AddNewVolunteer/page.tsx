@@ -36,9 +36,13 @@ export default function AddNewVolunteer() {
             if (nameParts.length < 2) {
                 throw new Error("Please enter both first and last name");
             }
-            const firstName = nameParts[0];
-            const lastName = nameParts.slice(1).join(" ");
-                lastName: nameParts[1],
+
+            const locations = (formData.get("locations") as String).split(",")
+
+            const newUser: IUser = {
+                username: nameParts[0] + nameParts[1],
+                firstName: nameParts[0],
+                lastName: nameParts.slice(1).join(" "),
                 email: formData.get("email") as string,
                 phoneNumber: formData.get("phoneNumber") as string,
                 locations: locations,
