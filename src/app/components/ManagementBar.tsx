@@ -8,7 +8,6 @@ import { handleAuthError } from "@/lib/authErrorHandler";
 
 function ManagementBar() {
   const router = useRouter();
-  const [showPopup, setShowPopup] = useState(false);
   const [emails, setEmails] = useState<string[]>([]);
   const [currentEmail, setCurrentEmail] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -60,7 +59,7 @@ function ManagementBar() {
         <div className="flex gap-6">
           <div 
             className="bg-[#0F7AFF] text-[#FFFFFF] font-[700] p-[.8rem] px-5 gap-2 rounded-xl hover:bg-[#005bb5] cursor-pointer"
-            onClick={() => setShowPopup(true)}
+            onClick={() => router.push('/AdminNavView/ManagementPage/AddNewVolunteer')}
           >
             <FontAwesomeIcon icon={faPlus} className="mr-3" />
             <span>Add New Volunteer</span>
@@ -69,7 +68,7 @@ function ManagementBar() {
       </div>
 
       {/* Popup Modal */}
-      {showPopup && (
+      {false && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-[500px] max-w-[90%]">
             <div className="flex justify-between items-center mb-4">

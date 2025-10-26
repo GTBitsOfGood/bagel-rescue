@@ -19,7 +19,10 @@ export interface IUser {
   bagelsReceived?: number;
   totalShifts?: number;
   phoneNumber?: string;
-  locations?: [String];
+  locations?: string[];
+  prefersNormalRoutes?: boolean;
+  prefersSubOnly?: boolean;
+  openToAny?: boolean;
 
   monthlyShifts?: {
     [date: string]: {
@@ -112,6 +115,18 @@ const userSchema = new Schema({
   locations: {
     type: [String],
     default: [],
+  },
+  prefersNormalRoutes: {
+    type: Boolean,
+    default: false,
+  },
+  prefersSubOnly: {
+    type: Boolean,
+    default: false,
+  },
+  openToAny: {
+    type: Boolean,
+    default: false,
   },
   monthlyShifts: {
     type: Map,
