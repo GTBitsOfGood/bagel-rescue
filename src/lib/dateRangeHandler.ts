@@ -24,7 +24,7 @@ const findDayInRange = (day: string, startDate: Date, endDate: Date) => {
     const current = dayToFull[day.toLowerCase()];
 
     // Iterate through each day in the range
-    const currentDate = new Date(startDate);
+    const currentDate = new Date(startDate.getTime());
     const lastDate = new Date(endDate);
 
     while (currentDate <= lastDate) {

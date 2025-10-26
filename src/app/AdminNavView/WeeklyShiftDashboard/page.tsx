@@ -197,7 +197,7 @@ function WeeklyShiftDashboard() {
                                 year: "numeric",
                             })}
                             onOpenSidebar={() =>
-                                handleShiftCardClick(shift, shiftDate)
+                                handleShiftCardClick(shift, new Date(shiftDate))
                             }
                         />
                     );
