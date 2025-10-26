@@ -32,12 +32,12 @@ export default function AddNewVolunteer() {
 
             const formData = new FormData(e.currentTarget);
 
-            const nameParts = (formData.get("name") as string).split(" ");
-            const locations = (formData.get("locations") as String).split(",")
-
-            const newUser: IUser = {
-                username: nameParts[0] + nameParts[1],
-                firstName: nameParts[0],
+            const nameParts = (formData.get("name") as string).trim().split(" ");
+            if (nameParts.length < 2) {
+                throw new Error("Please enter both first and last name");
+            }
+            const firstName = nameParts[0];
+            const lastName = nameParts.slice(1).join(" ");
                 lastName: nameParts[1],
                 email: formData.get("email") as string,
                 phoneNumber: formData.get("phoneNumber") as string,
@@ -113,16 +113,18 @@ export default function AddNewVolunteer() {
                     <label htmlFor="name" className="text-lg font-bold text-[#072B68]">Volunteering Preferences</label>
                     <div className='flex gap-4 align-center mx-2'>
                         <div className='flex gap-2 align-center'>
-                            <input type="checkbox" name="preferNormalRoutes" id="preferNormalRoutes" className="size-6" />
+                            <input type="checkbox" name="prefersNormalRoutes" id="preferNormalRoutes" className="size-6" />
                             <label htmlFor="preferNormalRoutes">Normal Routes</label>
                         </div>
                         <div className='flex gap-2 align-center'>
+                        <div className='flex gap-2 align-center'>
                             <input type="checkbox" name="preferSubOnly" id="preferSubOnly" className="size-6" />
-                            <label htmlFor="preferNormalRoutes">Sub Only</label>
+                            <label htmlFor="preferSubOnly">Sub Only</label>
                         </div>
                         <div className='flex gap-2 align-center'>
                             <input type="checkbox" name="openToAny" id="openToAny" className="size-6" />
-                            <label htmlFor="preferNormalRoutes">Open to Any</label>
+                            <label htmlFor="openToAny">Open to Any</label>
+                        </div>
                         </div>
                     </div>
                 </div>
