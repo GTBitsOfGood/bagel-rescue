@@ -9,7 +9,8 @@ import {
   getCurrentUserShiftsByDateRange,
   getUserShifts,
   getUserShiftsByDateRange,
-  UserShiftData
+  UserShiftData,
+  getOpenShifts,
 } from "@/server/db/actions/userShifts";
 import { getUserByEmail } from "@/server/db/actions/User";
 import DateNavigation from "./components/DateNavigation";
@@ -49,6 +50,7 @@ const FilterIcon = () => (
 const MyShiftsPage: React.FC = () => {
   const router = useRouter();
   const [shifts, setShifts] = useState<UserShiftData[]>([]);
+  const [openShifts, setOpenShifts] = useState<UserShiftData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
@@ -56,7 +58,14 @@ const MyShiftsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"myShifts" | "openShifts">("myShifts");
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [firebaseReady, setFirebaseReady] = useState<boolean>(false);
+  // rename later for readability
   const [pagination, setPagination] = useState({
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 0
+  });
+  const [openShiftsPagination, setOpenShiftsPagination] = useState({
     total: 0,
     page: 1,
     limit: 10,
@@ -86,6 +95,47 @@ const MyShiftsPage: React.FC = () => {
       }
     });
   }, [router]);
+
+  //fetches open shifts during on tab change
+  useEffect(() => {
+    if (!firebaseReady || activeTab !== "openShifts") return;
+
+    const fetchOpenShifts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        let shiftsData;
+
+        if (viewMode === "Day") {
+          const {startDate, endDate } = getDayRange(currentDate);
+          shiftsData = await getOpenShifts(
+            startDate,
+            endDate,
+            openShiftsPagination.page,
+            openShiftsPagination.limit
+          );
+        } else {
+          const { startDate, endDate } = getWeekRange(currentDate);
+          shiftsData = await getOpenShifts(
+            startDate, endDate, openShiftsPagination.page,
+            openShiftsPagination.limit
+          );
+        }
+
+        setOpenShifts(shiftsData.shifts);
+        setOpenShiftsPagination(shiftsData.pagination);
+
+      } catch (error) {
+        console.error("Error fetching open shifts:", error);
+        setError("Error loading open shifts. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOpenShifts();
+  }, [firebaseReady, activeTab, currentDate, viewMode, openShiftsPagination.page]);
 
   // Function to get start and end dates for day view
   const getDayRange = (date: Date) => {
@@ -254,7 +304,7 @@ const MyShiftsPage: React.FC = () => {
             className={`${styles.tabButton} ${activeTab === "openShifts" ? styles.activeTab : ""}`}
             onClick={() => setActiveTab("openShifts")}
           >
-            Open Shifts (0)
+            Open Shifts ({openShifts.length})
           </button>
         </div>
 
@@ -266,18 +316,25 @@ const MyShiftsPage: React.FC = () => {
         </div>
 
         <ShiftsTable 
-          shifts={shifts}
+          shifts={activeTab === "myShifts" ? shifts : openShifts}
           loading={loading}
           error={error}
+          isOpenShifts={activeTab === "openShifts"}
         />
         
-        {!loading && !error && shifts.length > 0 && (
+        {!loading && !error && (activeTab === "myShifts" ? shifts : openShifts).length > 0 && (
           <Pagination
-            total={pagination.total}
-            page={pagination.page}
-            limit={pagination.limit}
-            totalPages={pagination.totalPages}
-            onPageChange={handlePageChange}
+            total={activeTab === "myShifts" ? pagination.total : openShiftsPagination.total}
+            page={activeTab === "myShifts" ? pagination.page : openShiftsPagination.page}
+            limit={activeTab === "myShifts" ? pagination.limit : openShiftsPagination.limit}
+            totalPages={activeTab === "myShifts" ? pagination.totalPages : openShiftsPagination.totalPages}
+            onPageChange={(page) => {
+              if (activeTab === "myShifts") {
+                handlePageChange(page);
+              } else {
+                setOpenShiftsPagination(prev => ({ ...prev, page }));
+              }
+            }}
           />
         )}
       </div>

@@ -8,6 +8,7 @@ import "./stylesheet.css";
 interface ShiftDetailsSidebarProps {
   selectedShift: UserShiftData | null;
   onCloseSidebar: () => void;
+  isOpenShift?: boolean;
 }
 
 const dayMap: { [key: string]: string } = {
@@ -69,7 +70,8 @@ const formatDateRange = (startTime: Date, endTime: Date): string => {
 
 const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({ 
   selectedShift, 
-  onCloseSidebar 
+  onCloseSidebar,
+  isOpenShift = false 
 }) => {
   const [detailedShift, setDetailedShift] = useState<DetailedShiftData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -208,24 +210,36 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({
             {/* Action Buttons */}
             <div className="absolute bottom-0 left-0 right-0 p-6 bg-white">
               <div className="flex flex-row gap-3">
-                <button
-                  className=" bg-[#0F7AFF] text-white py-3 px-4 rounded-lg font-small hover:bg-[#005bb5] transition-colors"
-                  onClick={() => {
+                {!isOpenShift ? (
+                  <>
+                    <button
+                      className=" bg-[var(--Bagel-Rescue-Blue)] text-white py-3 px-4 rounded-lg font-small hover:bg-[#005bb5] transition-colors"
+                      onClick={() => {
                     // TODO: Implement shift completion form
                     console.log("Submit confirmation form for shift:", detailedShift!.id);
-                  }}
-                >
-                  Submit Confirmation Form
-                </button>
-                <button
-                  className="border-2 border-[#D3D8DE] text-[#00377A] py-3 px-4 rounded-lg font-medium hover:bg-[#0F7AFF] hover:text-white transition-colors"
-                  onClick={() => {
-                    // TODO: Implement sub request
-                    console.log("Request sub for shift:", detailedShift!.id);
-                  }}
-                >
-                  Request Sub
-                </button>
+                      }}
+                    >
+                      Submit Confirmation Form
+                    </button>
+                    <button
+                      className="border-2 border-[var(--Bagel-Rescue-Light-Grey)] text-[#00377A] py-3 px-4 rounded-lg font-medium hover:bg-[var(--Bagel-Rescue-Blue)] hover:text-white transition-colors"
+                      onClick={() => {
+                        // TODO: Implement sub request
+                        console.log("Request sub for shift:", detailedShift!.id);
+                      }}
+                    >
+                      Request Sub
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    className=" bg-[var(--Bagel-Rescue-Blue)] text-white py-3 px-4 rounded-lg font-small hover:bg-[#005bb5] transition-colors"
+                    onClick={() => {
+                      console.log("Pick up shift:", detailedShift!.id);
+                    }}
+                  >
+                  </button>
+                )}
               </div>
             </div>
           </div>
