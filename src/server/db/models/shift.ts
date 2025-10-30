@@ -54,6 +54,11 @@ const shiftSchema: Schema = new Schema({
     type: ObjectId,
     ref: "Route",
   },
+  status: {
+    type: String,
+    enum: ["assigned", "open"],
+    default: "assigned",
+  },
   shiftStartTime: {
     type: Date,
   },

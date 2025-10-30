@@ -556,6 +556,81 @@ export async function getUserUniqueRoutes(
     return [];
   }
 }
+/**
+ * Gets all open shifts (ones with status "open")
+ */
+export async function getOpenShifts(
+  startDate: Date,
+  endDate: Date,
+  page: number = 1,
+  limit: number = 10
+): Promise<PaginatedResult> {
+  await requireUser();
+  await dbConnect();
+
+  try {
+    const skip = (page - 1) * limit;
+
+    // Find open shifts in date range
+    const openShifts = await ShiftModel.find({
+      status: "open",
+      shiftStartDate: { $gte: startDate, $lte: endDate }
+    })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const total = await ShiftModel.countDocuments({
+      status: "open",
+      shiftStartDate: { $gte: startDate, $lte: endDate }
+    });
+
+    const routeIds = openShifts.map(shift => shift.routeId);
+    const routes = await RouteModel.find({
+      _id: { $in: routeIds }
+    }).lean();
+
+    const routeMap = new Map();
+    routes.forEach(route => {
+      if (route._id) {
+        routeMap.set(route._id.toString(), {
+          routeName: route.routeName || "Unknown Route",
+          locationDescription: route.locationDescription || ""
+        });
+      }
+    });
+
+    // transform to UserShiftData
+    const transformedShifts = openShifts.map(shift => {
+      const route = routeMap.get(shift.routeId.toString()) || {
+        routeName: "Unknown Route",
+        locationDescription: ""
+      };
+
+      return {
+        id: shift._id.toString(),
+        routeName: route.routeName,
+        area: route.locationDescription,
+        startTime: new Date(shift.shiftStartDate),
+        endTime: new Date(shift.shiftEndDate),
+        status: "Incomplete" as const // open shifts are not yet completed
+      };
+    });
+
+    return {
+      shifts: transformedShifts,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
+    };
+  } catch (error) {
+    console.error("Error fetching open shifts:", error);
+    throw new Error("Failed to fetch open shifts");
+  }
+}
 
 /**
  * Gets unique routes for the currently logged-in user
