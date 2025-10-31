@@ -26,6 +26,7 @@ export type UserShiftData = {
   startTime: Date;
   endTime: Date;
   status: "Complete" | "Incomplete";
+  occurrenceDate?: Date;
 };
 
 export type DetailedShiftData = {
@@ -165,7 +166,8 @@ export async function getUserShifts(
         area: route.locationDescription,
         startTime: new Date(shift.shiftDate),
         endTime: new Date(shift.shiftEndDate),
-        status: shift.status || "Incomplete"
+        status: shift.status || "Incomplete",
+        occurrenceDate: new Date(shift.shiftDate)
       };
     });
     
@@ -211,6 +213,13 @@ export async function getUserShiftsByDateRange(
     const startAbsDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
     const endAbsDate = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate() + 1);
     
+
+    console.log("🔍 getUserShiftsByDateRange Query:");
+    console.log("  userId:", userId);
+    console.log("  startAbsDate:", startAbsDate);
+    console.log("  endAbsDate:", endAbsDate);
+
+
     // Get UserShift documents within date range
     const userShifts = await UserShiftModel.find({
       userId: new mongoose.Types.ObjectId(userId),
@@ -235,6 +244,16 @@ export async function getUserShiftsByDateRange(
       .skip(skip)
       .limit(limit)
       .lean();
+
+
+      console.log("✅ Found UserShifts:", userShifts.length);
+      userShifts.forEach((shift, i) => {
+        console.log(`  UserShift ${i + 1}:`, {
+          _id: shift._id,
+          shiftDate: shift.shiftDate,
+          recurrenceDates: shift.recurrenceDates
+        });
+      });
 
     userShifts.sort((a, b) => new Date(a.shiftDate).getTime() - new Date(b.shiftDate).getTime());
 
@@ -830,6 +849,12 @@ export async function requestSubForShift(
       throw new Error("Route not found");
     }
 
+    console.log("Creating new open shift with date:", specificDate);
+    console.log("specificDate type:", typeof specificDate, specificDate);
+
+    const dayOfWeek = specificDate.toLocaleString('en-US', { weekday: 'short' }).toLowerCase().substring(0, 2);
+
+
     // new shift with "open" status
     const newOpenShift = new ShiftModel({
       routeId: userShift.routeId,
@@ -839,7 +864,7 @@ export async function requestSubForShift(
       shiftStartDate: specificDate,
       shiftEndDate: specificDate,
       additionalInfo: originalShift.additionalInfo || "",
-      recurrenceDates: userShift.recurrenceDates,
+      recurrenceDates: [dayOfWeek], // just the day the request is made on, not the whole pattern
       timeSpecific: originalShift.timeSpecific || false,
       confirmationForm: {},
       canceledShifts: [],
@@ -899,7 +924,7 @@ export async function pickUpShift(shiftId: string): Promise<string> {
     const existingUserShift = await UserShiftModel.findOne({
       userId: new mongoose.Types.ObjectId(userId),
       shiftId: shift._id,
-      shfitDate: shift.shiftStartDate
+      shiftDate: shift.shiftStartDate
     });
 
     if (existingUserShift) {
@@ -912,7 +937,7 @@ export async function pickUpShift(shiftId: string): Promise<string> {
       shiftId: shift._id,
       routeId: shift.routeId,
       recurrenceDates: shift.recurrenceDates || [],
-      shfitDate: shift.shiftStartDate,
+      shiftDate: shift.shiftStartDate,
       shiftEndDate: shift.shiftEndDate,
       status: "Incomplete"
     });

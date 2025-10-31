@@ -231,6 +231,13 @@ const MyShiftsPage: React.FC = () => {
           
           if (viewMode === "Day") {
             const { startDate, endDate } = getDayRange(currentDate);
+
+            console.log("Fetching My Shifts for Day View:");
+            console.log("  Current Date:", currentDate);
+            console.log("  Start Date:", startDate);
+            console.log("  End Date:", endDate);
+            console.log("  User ID:", userData._id.toString());
+
             shiftsData = await getUserShiftsByDateRange(
               userData._id.toString(),
               startDate,
@@ -269,7 +276,16 @@ const MyShiftsPage: React.FC = () => {
           }
         }
 
-        console.log("Shifts Data: ", shiftsData.shifts);
+        console.log("✅ Shifts Data returned:", shiftsData.shifts);
+        console.log("  Number of shifts:", shiftsData.shifts.length);
+        shiftsData.shifts.forEach((shift, i) => {
+          console.log(`  Shift ${i + 1}:`, {
+            id: shift.id,
+            routeName: shift.routeName,
+            startTime: shift.startTime,
+            endTime: shift.endTime
+          });
+        });
         
         setShifts(shiftsData.shifts);
         setPagination(shiftsData.pagination);
