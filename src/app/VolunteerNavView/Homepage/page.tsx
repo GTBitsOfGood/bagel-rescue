@@ -115,12 +115,14 @@ const MyShiftsPage: React.FC = () => {
             openShiftsPagination.page,
             openShiftsPagination.limit
           );
+          console.log("day view. get open shifts");
         } else {
           const { startDate, endDate } = getWeekRange(currentDate);
           shiftsData = await getOpenShifts(
             startDate, endDate, openShiftsPagination.page,
             openShiftsPagination.limit
           );
+          console.log("week view. get open shifts");
         }
 
         setOpenShifts(shiftsData.shifts);

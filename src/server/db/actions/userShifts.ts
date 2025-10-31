@@ -12,6 +12,7 @@ import { getAllLocationsById } from "./location";
 import { cookies } from "next/headers";
 import { adminAuth } from "../firebase/admin/firebaseAdmin";
 import { getDaysInRange } from '@/lib/dayHandler';
+import { ShaCertificate } from "firebase-admin/project-management";
 
 export type UserRoute = {
   name: string;
@@ -397,6 +398,64 @@ export async function getDetailedShiftInfo(userShiftId: string): Promise<Detaile
   } catch (error) {
     console.error("Error fetching detailed shift info:", error);
     throw new Error("Failed to fetch detailed shift info");
+  }
+}
+
+export async function getDetailedOpenShiftInfo(shiftId: string): Promise<DetailedShiftData | null> {
+  await requireUser();
+  await dbConnect();
+
+  try {
+    const shift = await ShiftModel.findById(shiftId).lean();
+    if (!shift) {
+      throw new Error("Shift not found");
+    }
+
+    const route = await RouteModel.findById(shift.routeId).lean();
+    if (!route) {
+      throw new Error("Route not found");
+    }
+
+    let locationNames: string[] = [];
+    if (route.locations && route.locations.length > 0) {
+      try {
+        const locationIds = route.locations.map(loc => loc.location.toString());
+        const locationsData = await getAllLocationsById(locationIds);
+        if (locationsData) {
+          const parsedLocations = JSON.parse(locationsData);
+          locationNames = parsedLocations.map((loc: any) => (loc.locationName + " - " + loc.area) || "Unknown Location");
+        }
+      } catch (error) {
+        console.error("Error fetching location names:", error);
+        locationNames = ["Location details unavaiable"];
+      }
+    }
+
+    return {
+      id: shift._id.toString(),
+      routeName: route.routeName || "Unknown Route",
+      area: route.locationDescription || "",
+      shiftStartTime: new Date(shift.shiftStartDate || new Date()),
+      shiftEndTime: new Date(shift.shiftEndDate || new Date()),
+      shiftStartDate: new Date(shift.shiftStartDate || new Date()),
+      shiftEndDate: new Date(shift.shiftEndDate || new Date()),
+      startTime: new Date(shift.shiftStartDate || new Date()),
+      endTime: new Date(shift.shiftEndDate || new Date()),
+      status: "Incomplete",
+      routeInfo: {
+        routeName: route.routeName || "Unknown Route",
+        locationDescription: route.locationDescription || "",
+        additionalInfo: route.additionalInfo || "",
+        locations: locationNames
+      },
+      recurrenceDates: shift.recurrenceDates || [],
+      shiftId: shift._id.toString(),
+      routeId: shift.routeId.toString(),
+      additionalInfo: shift.additionalInfo || ""
+    };
+  } catch (error) {
+    console.error("Error fetching detailed open shift info:", error);
+    throw new Error("failed to fetch detailed open shift info");
   }
 }
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenClip } from "@fortawesome/free-solid-svg-icons";
-import { UserShiftData, DetailedShiftData, getDetailedShiftInfo } from "@/server/db/actions/userShifts";
+import { UserShiftData, DetailedShiftData, getDetailedShiftInfo, getDetailedOpenShiftInfo } from "@/server/db/actions/userShifts";
 import "./stylesheet.css";
 
 
@@ -83,12 +83,18 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({
       
       setLoading(true);
       try {
-        const detailed = await getDetailedShiftInfo(selectedShift.id);
+        let detailed;
+        if (isOpenShift) {
+          // for open shifts, use the shift ID
+          detailed = await getDetailedOpenShiftInfo(selectedShift.id);
+        } else {
+          // for my shifts, use the userShift ID
+          detailed = await getDetailedShiftInfo(selectedShift.id);
+        }
         console.log("detailed: ", detailed);
         setDetailedShift(detailed);
       } catch (error) {
         console.error("Error fetching detailed shift info:", error);
-        // Fallback to basic shift data
         setDetailedShift(null);
       } finally {
         setLoading(false);
@@ -96,7 +102,7 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({
     };
 
     fetchDetailedShift();
-  }, [selectedShift]);
+  }, [selectedShift, isOpenShift]);
 
   if (!selectedShift) return null;
 
@@ -238,6 +244,7 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({
                       console.log("Pick up shift:", detailedShift!.id);
                     }}
                   >
+                    Pick Up Shift
                   </button>
                 )}
               </div>
