@@ -7,6 +7,7 @@ import dbConnect from "../dbConnect";
 import { RecurrenceModel, Shift, ShiftModel } from "../models/shift";
 import { UserShiftModel } from "../models/userShift";
 import { requireAdmin } from "../auth/auth";
+import { Types } from "mongoose";
 
 export async function createShift(shiftObject: string): Promise<string | null> {
   await requireAdmin();
@@ -20,17 +21,21 @@ export async function createShift(shiftObject: string): Promise<string | null> {
   }
 }
 
-export async function getShift(shiftId: ObjectId): Promise<Shift | null> {
+export async function getShift(shiftId: Types.ObjectId): Promise<Shift | null> {
   await requireAdmin();
   try {
     await dbConnect();
-
     const data = await ShiftModel.findById(shiftId);
     return data;
   } catch (error) {
     const err = error as Error;
     throw new Error(`Error has occurred when getting shift: ${err.message}`);
   }
+}
+
+
+export async function getShiftFromString(id: string) {
+  return JSON.parse(JSON.stringify(await getShift(new mongoose.Types.ObjectId(id))));
 }
 
 export async function updateComment(data: string): Promise<any> {

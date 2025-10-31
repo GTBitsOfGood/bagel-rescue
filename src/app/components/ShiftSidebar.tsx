@@ -13,6 +13,7 @@ import {
 import "./stylesheet.css";
 import { getShiftUsers } from "@/server/db/actions/userShifts";
 import { IRoute } from "@/server/db/models/Route";
+import { useRouter } from "next/navigation";
 
 export type ShiftSidebarInfo = {
     shift: Shift;
@@ -49,14 +50,13 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({
     onOpenSidebar,
 }) => {
     const shift = shiftSidebarInfo.shift;
-
+    const router = useRouter();
     const [isEditing, setIsEditing] = useState(false);
     const [comment, setComment] = useState("");
     const [draft, setDraft] = useState("");
     const [hasLoaded, setHasLoaded] = useState(false);
 
     const [volunteers, setVolunteers] = useState<string[]>([]);
-
     useEffect(() => {
         if (!hasLoaded) {
             const comments = shift.comments;
@@ -92,6 +92,12 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({
         fetchshiftUsers();
     }, [shift]);
 
+
+    const handleEditClick = () => {
+        router.push(`/AdminNavView/EditShift/${shift._id}`);
+        // Note: In App Router, navigation is immediate and doesn't return a promise
+    }
+
     return (
         <div className="main-sidebar">
             <div className="sidebar-header">
@@ -109,7 +115,7 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({
                         />
                     </svg>
                 </div>
-                <div
+                <div onClick={handleEditClick}
                     className="bg-white text-[#00377A] font-[500] p-[.8rem] px-5 gap-2 rounded-xl 
         hover:bg-[#005bb5] border-2 border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] 
         hover:text-white cursor-pointer"

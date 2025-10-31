@@ -4,18 +4,20 @@ import "./stylesheet.css";
 import AdminSidebar from "@/components/AdminSidebar";
 import { getAllLocationsById } from "@/server/db/actions/location";
 import { getAllRoutes } from "@/server/db/actions/Route";
-import { createShift } from "@/server/db/actions/shift";
+import { createShift, getShift, getShiftFromString } from "@/server/db/actions/shift";
 import { getAllUsers } from "@/server/db/actions/User";
 import { createUserShift } from "@/server/db/actions/userShifts";
 import { Location } from "@/server/db/models/location";
 import { IRoute } from "@/server/db/models/Route";
 import { faArrowLeft, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
+import { ObjectId } from 'bson'; 
 import dayToNumber from "@/lib/dayHandler";
+import { startAfter } from "firebase/firestore";
 
-export default function NewShiftPage() {
+export default function EditShift() {
     const timeStartInputRef = useRef<HTMLInputElement>(null);
     const timeEndInputRef = useRef<HTMLInputElement>(null);
     const [searchRoutes, setSearchRoutes] = useState<IRoute[]>([]);
@@ -35,9 +37,50 @@ export default function NewShiftPage() {
     const [startDate, setStartDate] = useState<string>("");
     const [endDate, setEndDate] = useState<string>("");
     const [additionalInfo, setAdditionalInfo] = useState<string>("");
-
+    const { shiftId } = useParams<{ shiftId: string }>();
     const router = useRouter();
-    
+
+  
+  useEffect(() => {
+    const getShiftInformation = async () => {
+      const shift = await getShiftFromString(shiftId);
+      console.log("SHIFT DATA: ", shift);
+      if (shift) {
+        // Format times in HH:mm format for time input
+        const startTimeDate = new Date(shift.shiftStartTime);
+        const endTimeDate = new Date(shift.shiftEndTime);
+        
+        const formatTimeForInput = (date: Date) => {
+          const hours = date.getHours().toString().padStart(2, '0');
+          const minutes = date.getMinutes().toString().padStart(2, '0');
+          return `${hours}:${minutes}`;
+        };
+
+        setStartTime(formatTimeForInput(startTimeDate));
+        setEndTime(formatTimeForInput(endTimeDate));
+        setTimeSpecific(shift.timeSpecific);
+        setAdditionalInfo(shift.additionalInfo || "");
+        setSelectedDays(shift.recurrenceDates);
+        if (shift.shiftStartDate && shift.shiftEndDate) {
+          const formatDateForInput = (dateString: string) => {
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            return `${year}-${month}-${day}`;
+          };
+
+          setDateRange(true);
+          setStartDate(formatDateForInput(shift.shiftStartDate));
+          setEndDate(formatDateForInput(shift.shiftEndDate));
+        }
+    };
+  }
+    getShiftInformation();
+  }, [shiftId]);
+
+  console.log("Start Time", startTime);
+  console.log("End Time", endTime);
 
   useEffect(() => {
     const fetchRoutes = async () => {
@@ -468,7 +511,7 @@ export default function NewShiftPage() {
                         <span className="font-semibold text-base text-[#6C7D93]">Back</span>
                     </div>
                     <div className="flex justify-between text-center align-middle">
-                        <div className="text-[#072B68] font-bold text-4xl content-center">New Shift</div>
+                        <div className="text-[#072B68] font-bold text-4xl content-center">Edit Shift</div>
                         <div className="flex justify-end">
                             <button onClick={() => saveEdits()} className="font-bold text-white px-6 py-[.8rem] rounded-xl text-base" style={{backgroundColor: '#A3A3A3'}}>Complete Shift</button>
                         </div>
@@ -484,11 +527,11 @@ export default function NewShiftPage() {
                             <div className="flex space-x-12">
                               <div className="flex flex-col space-y-2 flex-1">
                                   <p className="text-[#072B68] font-bold text-lg">Start Time <span className="text-red-500">*</span></p>
-                                  <input onChange={(e) => setStartTime(e.target.value)} ref={timeStartInputRef} onClick={() => handleClick()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
+                                  <input value={startTime} onChange={(e) => setStartTime(e.target.value)} ref={timeStartInputRef} onClick={() => handleClick()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
                               </div>
                               <div className="flex flex-col space-y-2 flex-1">
                                 <p className="text-[#072B68] font-bold text-lg">End Time <span className="text-red-500">*</span></p>
-                                <input onChange={(e) => setEndTime(e.target.value)} ref={timeEndInputRef} onClick={() => handleClickEnd()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
+                                <input value={endTime} onChange={(e) => setEndTime(e.target.value)} ref={timeEndInputRef} onClick={() => handleClickEnd()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
                               </div>
                             </div>
                             {/* this is the time specific area */}
