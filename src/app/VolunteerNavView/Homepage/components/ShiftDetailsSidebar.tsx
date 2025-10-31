@@ -1,7 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenClip } from "@fortawesome/free-solid-svg-icons";
-import { UserShiftData, DetailedShiftData, getDetailedShiftInfo, getDetailedOpenShiftInfo } from "@/server/db/actions/userShifts";
+import { 
+  UserShiftData, 
+  DetailedShiftData, 
+  getDetailedShiftInfo, 
+  getDetailedOpenShiftInfo ,
+  requestSubForCurrentUserShift,
+  pickUpShift
+} from "@/server/db/actions/userShifts";
 import "./stylesheet.css";
 
 
@@ -9,6 +16,7 @@ interface ShiftDetailsSidebarProps {
   selectedShift: UserShiftData | null;
   onCloseSidebar: () => void;
   isOpenShift?: boolean;
+  onShiftUpdated?: () => void; // refresh shift lists
 }
 
 const dayMap: { [key: string]: string } = {
@@ -71,10 +79,13 @@ const formatDateRange = (startTime: Date, endTime: Date): string => {
 const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({ 
   selectedShift, 
   onCloseSidebar,
-  isOpenShift = false 
+  isOpenShift = false,
+  onShiftUpdated 
 }) => {
   const [detailedShift, setDetailedShift] = useState<DetailedShiftData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [actionLoading, setActionLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null); //REMOVE LATER
 
   useEffect(() => {
     const fetchDetailedShift = async () => {
@@ -109,6 +120,59 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({
   // Use detailed shift data if available, otherwise fall back to basic data
   const shiftData = detailedShift || selectedShift;
 
+
+  const handleRequestSub = async () => {
+    if (!detailedShift) return;
+
+    try {
+      setActionLoading(true);
+      setError(null);
+
+      const shiftDate = new Date(detailedShift.startTime); //minutes and hours? go back to this
+
+      await requestSubForCurrentUserShift(detailedShift.id, shiftDate);
+
+      alert("Sub requested successfully. available for others"); //replace with something nice
+
+      onCloseSidebar();
+
+      if (onShiftUpdated) {
+        onShiftUpdated();
+      }
+    } catch (error) {
+      console.error("Error picking up shift:", error);
+      setError(error instanceof Error ? error.message : "failed to pick up shift");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handlePickUpShift = async () => {
+    if (!detailedShift) return;
+
+    try {
+      setActionLoading(true);
+      setError(null);
+
+      // Use the shiftId ( original Shift document ID)
+      await pickUpShift(detailedShift.shiftId);
+
+      alert("Shift picked up successfully! This shift now appears in your My Shifts tab."); // replace with something nice
+      
+      onCloseSidebar();
+      
+      // Refresh the shifts list if callback provided
+      if (onShiftUpdated) {
+        onShiftUpdated();
+      }
+    } catch (error) {
+      console.error("Error picking up shift:", error);
+      setError(error instanceof Error ? error.message : "Failed to pick up shift");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   return (
     <div className="main-sidebar">
       <div className="sidebar-header">
@@ -125,6 +189,13 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({
         {loading && (
           <div className="sidebar-content-header">
             <p>Loading shift details...</p>
+          </div>
+        )}
+
+        {/* REMOVE LATER. ONLY FOR DEBUGGING*/} 
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
           </div>
         )}
 
@@ -224,27 +295,25 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({
                     // TODO: Implement shift completion form
                     console.log("Submit confirmation form for shift:", detailedShift!.id);
                       }}
+                      disabled={actionLoading}
                     >
                       Submit Confirmation Form
                     </button>
                     <button
                       className="border-2 border-[var(--Bagel-Rescue-Light-Grey)] text-[#00377A] py-3 px-4 rounded-lg font-medium hover:bg-[var(--Bagel-Rescue-Blue)] hover:text-white transition-colors"
-                      onClick={() => {
-                        // TODO: Implement sub request
-                        console.log("Request sub for shift:", detailedShift!.id);
-                      }}
+                      onClick={handleRequestSub}
+                      disabled={actionLoading}
                     >
-                      Request Sub
+                      {actionLoading ? "Requesting..." : "Request Sub"}
                     </button>
                   </>
                 ) : (
                   <button
                     className=" bg-[var(--Bagel-Rescue-Blue)] text-white py-3 px-4 rounded-lg font-small hover:bg-[#005bb5] transition-colors"
-                    onClick={() => {
-                      console.log("Pick up shift:", detailedShift!.id);
-                    }}
+                    onClick={handlePickUpShift}
+                    disabled={actionLoading}
                   >
-                    Pick Up Shift
+                    {actionLoading ? "Picking Up..." : "Pick Up Shift"}
                   </button>
                 )}
               </div>

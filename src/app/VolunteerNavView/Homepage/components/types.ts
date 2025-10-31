@@ -23,4 +23,5 @@ export type ShiftsTableProps = {
   loading: boolean;
   error: string | null;
   isOpenShifts?: boolean;
+  onShiftUpdated?: () => void;
 };

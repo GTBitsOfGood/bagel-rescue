@@ -17,7 +17,13 @@ import { UserShiftData } from "@/server/db/actions/userShifts";
  * - `area`: the area of the shift
  * - `status`: the status of the shift (either "Complete" or "Incomplete")
  */
-const ShiftsTable: React.FC<ShiftsTableProps> = ({ shifts, loading, error, isOpenShifts = false }) => {
+const ShiftsTable: React.FC<ShiftsTableProps> = ({ 
+  shifts, 
+  loading, 
+  error, 
+  isOpenShifts = false,
+  onShiftUpdated
+ }) => {
   const [selectedShift, setSelectedShift] = useState<UserShiftData | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
 
@@ -78,6 +84,7 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({ shifts, loading, error, isOpe
           selectedShift={selectedShift}
           onCloseSidebar={handleCloseSidebar}
           isOpenShift={isOpenShifts}
+          onShiftUpdated={onShiftUpdated}
         />
       )}
 

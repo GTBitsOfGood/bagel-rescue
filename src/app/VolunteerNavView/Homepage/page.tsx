@@ -58,6 +58,9 @@ const MyShiftsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"myShifts" | "openShifts">("myShifts");
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [firebaseReady, setFirebaseReady] = useState<boolean>(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  
+  
   // rename later for readability
   const [pagination, setPagination] = useState({
     total: 0,
@@ -71,6 +74,13 @@ const MyShiftsPage: React.FC = () => {
     limit: 10,
     totalPages: 0
   });
+
+  const handleShiftUpdated = () => {
+    // increment value to trigger useEffect
+    setRefreshTrigger(prev => prev + 1);
+  };
+  
+
   // Auto-login bypass for local development
   useEffect(() => {
     if (process.env.NEXT_PUBLIC_DEV_SKIP_AUTH === "true") {
@@ -137,7 +147,7 @@ const MyShiftsPage: React.FC = () => {
     };
 
     fetchOpenShifts();
-  }, [firebaseReady, activeTab, currentDate, viewMode, openShiftsPagination.page]);
+  }, [firebaseReady, activeTab, currentDate, viewMode, openShiftsPagination.page, refreshTrigger]);
 
   // Function to get start and end dates for day view
   const getDayRange = (date: Date) => {
@@ -276,7 +286,7 @@ const MyShiftsPage: React.FC = () => {
     };
 
     fetchShifts();
-  }, [userEmail, firebaseReady, currentDate, viewMode, pagination.page, pagination.limit]);
+  }, [userEmail, firebaseReady, currentDate, viewMode, pagination.page, pagination.limit, refreshTrigger]);
 
   return (
     <div className={styles.container}>
@@ -322,6 +332,7 @@ const MyShiftsPage: React.FC = () => {
           loading={loading}
           error={error}
           isOpenShifts={activeTab === "openShifts"}
+          onShiftUpdated={handleShiftUpdated}
         />
         
         {!loading && !error && (activeTab === "myShifts" ? shifts : openShifts).length > 0 && (

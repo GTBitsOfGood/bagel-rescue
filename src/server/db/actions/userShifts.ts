@@ -773,3 +773,197 @@ export async function createUserShift(userShiftData: {
     throw error;
   }
 }
+
+/**
+ * Request sub for a shift on a given date
+ * 
+ * 1. Adds date to shift's canceledShifts array
+ * 2. Deletes UserShift relationship
+ * 3. Creates new shift with "open" status on given date
+ * 
+ * @param userShiftId the user that is requesting a sub
+ * @param specificDate the date that is being requested for a sub
+ * @returns message indicating success
+ */
+export async function requestSubForShift(
+  userShiftId: string,
+  specificDate: Date
+): Promise<string> {
+  await requireUser();
+  await dbConnect();
+
+  try {
+    // grab user shift
+    const userShift = await UserShiftModel.findById(userShiftId).lean();
+    if (!userShift) {
+      throw new Error("UserShift not found");
+    }
+
+    // get the actual shift
+    const originalShift = await ShiftModel.findById(userShift.shiftId);
+    if (!originalShift) {
+      throw new Error("Original shift not found");
+    }
+
+    // add to canceledShifts array in original shift
+    if (!originalShift.canceledShifts) {
+      originalShift.canceledShifts = [];
+    }
+
+    // duplicate check
+    const dateString = specificDate.toISOString();
+    const alreadyCanceled = originalShift.canceledShifts.some(
+      (date) => new Date(date).toISOString() === dateString
+    );
+
+    if (!alreadyCanceled) {
+      originalShift.canceledShifts.push(specificDate);
+      await originalShift.save();
+    }
+
+    // deleting UserShift relationship
+    await UserShiftModel.findByIdAndDelete(userShiftId);
+
+    // gets route for new shift
+    const route = await RouteModel.findById(userShift.routeId).lean();
+    if (!route) {
+      throw new Error("Route not found");
+    }
+
+    // new shift with "open" status
+    const newOpenShift = new ShiftModel({
+      routeId: userShift.routeId,
+      status: "open",
+      shiftStartTime: originalShift.shiftStartTime,
+      shiftEndTime: originalShift.shiftEndTime,
+      shiftStartDate: specificDate,
+      shiftEndDate: specificDate,
+      additionalInfo: originalShift.additionalInfo || "",
+      recurrenceDates: userShift.recurrenceDates,
+      timeSpecific: originalShift.timeSpecific || false,
+      confirmationForm: {},
+      canceledShifts: [],
+      comments: {},
+      creationDate: new Date(),
+      shiftDate: specificDate,
+      capacity: originalShift.capacity,
+      currSignedUp: 0, // resets to 0 since shift is open
+      recurrenceRule: originalShift.recurrenceRule || "",
+      recurrences: []
+    });
+
+    await newOpenShift.save();
+
+    console.log(`sub requested for shift ${userShiftId} on ${specificDate}`);
+    console.log(`created new open shift: ${newOpenShift._id}`);
+
+    return "Sub requested successfully";
+  } catch (error) {
+    console.error("Error requesting sub:", error);
+    throw new Error("Failed to request sub");
+  }
+}
+
+/**
+ * Pick up open shift
+ * 
+ * 1. Gets current user
+ * 2. Creates new UserShift that links user to the new shift
+ * 3. Updates shift status from "open" to "assigned"
+ * 
+ * @param shiftId the shift to pick up
+ * @returns message if successful
+ */
+export async function pickUpShift(shiftId: string): Promise<string> {
+  await requireUser();
+  await dbConnect();
+
+  try {
+    // get user id
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      throw new Error("No authenticated user found");
+    }
+
+    // get the shift
+    const shift = await ShiftModel.findById(shiftId);
+    if (!shift) {
+      throw new Error("Shift not found");
+    }
+
+    // see if shift is really open
+    if (shift.status !== "open") {
+      throw new Error("This shift is not available to pick up");
+    }
+    // make sure user doesn't have the shift already to prevent duplicates
+    const existingUserShift = await UserShiftModel.findOne({
+      userId: new mongoose.Types.ObjectId(userId),
+      shiftId: shift._id,
+      shfitDate: shift.shiftStartDate
+    });
+
+    if (existingUserShift) {
+      throw new Error("You have already picked up this shift");
+    }
+
+    // new UserShift creation
+    const newUserShift = new UserShiftModel({
+      userId: new mongoose.Types.ObjectId(userId),
+      shiftId: shift._id,
+      routeId: shift.routeId,
+      recurrenceDates: shift.recurrenceDates || [],
+      shfitDate: shift.shiftStartDate,
+      shiftEndDate: shift.shiftEndDate,
+      status: "Incomplete"
+    });
+
+    await newUserShift.save();
+
+    // update status of shift to "assigned"
+    shift.status = "assigned";
+    shift.currSignedUp = (shift.currSignedUp || 0) + 1;
+    await shift.save();
+    console.log(`User ${userId} picked up shift ${shiftId}`);
+    console.log(`Created UserShift: ${newUserShift._id}`);
+
+    return "Shift pickup successful";
+  } catch (error) {
+    console.error("Error picking up shift:", error);
+    if (error instanceof Error) {
+      throw error; 
+    }
+    throw new Error("Failed to pick up shift");
+  }
+}
+
+/**
+ * Requests sub for current user's shift
+ * 
+ * @param userShiftId the user making the sub request
+ * @param specificDate the date to request a sub for
+ * @returns message if successful
+ */
+export async function requestSubForCurrentUserShift(
+  userShiftId: string,
+  specificDate: Date
+): Promise<string> {
+  await requireUser();
+
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    throw new Error("No authenticated user found");
+  }
+
+  // make sure UserShift is current user's 
+  const userShift = await UserShiftModel.findById(userShiftId).lean();
+  if (!userShift) {
+    throw new Error("Shift not found");
+  }
+
+  if (userShift.userId.toString() !== userId) {
+    throw new Error("You can only request subs for your own shifts");
+  }
+
+  return requestSubForShift(userShiftId, specificDate);
+
+}
