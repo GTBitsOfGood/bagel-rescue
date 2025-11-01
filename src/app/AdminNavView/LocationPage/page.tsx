@@ -54,8 +54,6 @@ function LocationDashboardPage() {
       console.error("Error deleting location:", error);
     }
   }
-    
-
 
   const handleSortChange = () => {
     const sortedLocations = [...locations];
@@ -75,6 +73,17 @@ function LocationDashboardPage() {
   const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSortOption(event.target.value);
 
+  };
+
+  const handleThreeDotClick = (e: React.MouseEvent, locationId: string) => {
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    setModalPosition({
+      x: rect.right,
+      y: rect.top
+    });
+    setActiveLocationId(locationId);
+    setIsModalOpen(true);
   };
 
   return (
@@ -137,38 +146,29 @@ function LocationDashboardPage() {
                     </div>
                     <div className={styles.locationInfo}>{location.bags}</div>
                     <div className={styles.locationInfo}>{location.notes}</div>
-                    <div className={styles.actionColumn}>
+                    <div className={styles.locationEllipsis}>
                       <button 
                         className={styles.threeDotButton}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const rect = e.currentTarget.getBoundingClientRect();
-                          setModalPosition({
-                            x: rect.right,
-                            y: rect.top
-                          });
-                          setActiveLocationId(location._id?.toString() || null);
-                          setIsModalOpen(true);
-                        }}
+                        onClick={(e) => handleThreeDotClick(e, location._id?.toString() || '')}
                       >
                         <FontAwesomeIcon icon={faEllipsis} />
                       </button>
+                      {activeLocationId === location._id?.toString() && (
+                        <ThreeDotModal
+                          isOpen={isModalOpen} 
+                          onClose={() => {
+                            setIsModalOpen(false);
+                            setActiveLocationId(null);
+                          }}
+                          onDelete={() => {
+                            handleDeleteLocation(location._id?.toString()!);
+                            setIsModalOpen(false);
+                            setActiveLocationId(null);
+                          }}
+                          position={modalPosition}
+                        />
+                      )}
                     </div>
-                    {activeLocationId === location._id?.toString() && (
-                      <ThreeDotModal
-                        isOpen={isModalOpen} 
-                        onClose={() => {
-                          setIsModalOpen(false);
-                          setActiveLocationId(null);
-                        }}
-                        onDelete={() => {
-                          handleDeleteLocation(location._id?.toString()!);
-                          setIsModalOpen(false);
-                          setActiveLocationId(null);
-                        }}
-                        position={modalPosition}
-                      />
-                    )}
                   </div>
                 </div>
               ))}

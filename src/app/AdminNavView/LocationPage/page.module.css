@@ -141,7 +141,12 @@
   display: flex;
   flex-direction: column;
   padding-left: 20px;
-  
+}
+.locationEllipsis {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
 }
 
 .pickUp {
@@ -160,12 +165,6 @@
   text-align: center;
 }
 
-.moreOptionsButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 20px;
-}
 
 .searchInputContainer {
   display: flex;
@@ -195,4 +194,17 @@
 }
 .separator {
   border-top: 1px solid var(--Bagel-Rescue-Light-Grey);
+}
+
+.threeDotButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  color: #6C7D93;
+  transition: color 0.2s;
+}
+
+.threeDotButton:hover {
+  color: #072B68;
 }
