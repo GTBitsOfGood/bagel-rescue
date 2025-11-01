@@ -347,6 +347,7 @@ const MyShiftsPage: React.FC = () => {
           shifts={activeTab === "myShifts" ? shifts : openShifts}
           loading={loading}
           error={error}
+          viewingDate={currentDate}
           isOpenShifts={activeTab === "openShifts"}
           onShiftUpdated={handleShiftUpdated}
         />

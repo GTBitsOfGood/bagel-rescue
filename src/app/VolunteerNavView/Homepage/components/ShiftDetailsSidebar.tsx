@@ -17,6 +17,7 @@ interface ShiftDetailsSidebarProps {
   onCloseSidebar: () => void;
   isOpenShift?: boolean;
   onShiftUpdated?: () => void; // refresh shift lists
+  viewingDate: Date;
 }
 
 const dayMap: { [key: string]: string } = {
@@ -80,7 +81,8 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({
   selectedShift, 
   onCloseSidebar,
   isOpenShift = false,
-  onShiftUpdated 
+  onShiftUpdated ,
+  viewingDate
 }) => {
   const [detailedShift, setDetailedShift] = useState<DetailedShiftData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -128,7 +130,8 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({
       setActionLoading(true);
       setError(null);
 
-      const shiftDate = new Date(detailedShift.startTime); //minutes and hours? go back to this
+      const shiftDate = viewingDate ? new Date(viewingDate) : new Date(selectedShift.startTime);
+      shiftDate.setHours(0, 0, 0, 0);
 
       await requestSubForCurrentUserShift(detailedShift.id, shiftDate);
 
