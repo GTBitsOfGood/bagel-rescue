@@ -22,4 +22,8 @@ export type ShiftsTableProps = {
   shifts: UserShiftData[];
   loading: boolean;
   error: string | null;
+  isOpenShifts?: boolean;
+  onShiftUpdated?: () => void;
+  viewingDate: Date;
+  userShifts?: UserShiftData[];
 };

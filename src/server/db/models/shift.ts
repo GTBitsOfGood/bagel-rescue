@@ -12,6 +12,7 @@ interface Recurrence {
 interface Shift extends Document {
   _id: mongoose.Types.ObjectId;
   routeId: mongoose.Types.ObjectId;
+  status: "assigned" | "open";
   shiftStartTime: Date;
   shiftEndTime: Date;
   shiftStartDate: Date;
@@ -23,6 +24,10 @@ interface Shift extends Document {
   canceledShifts: Date[];
   comments: { [date: string]: string };
   creationDate: Date;
+
+  // used for undo sub request functionality
+  createdByUserId?: mongoose.Types.ObjectId; // help track who created open shift
+  parentShiftId?: mongoose.Types.ObjectId; // tracks original shift to
 
   // Old Schema
   // routeId: mongoose.Types.ObjectId;
@@ -53,6 +58,21 @@ const shiftSchema: Schema = new Schema({
   routeId: {
     type: ObjectId,
     ref: "Route",
+  },
+  status: {
+    type: String,
+    enum: ["assigned", "open"],
+    default: "assigned",
+  },
+  createdByUserId: {
+    type: ObjectId,
+    ref: "User",
+    required: false,
+  },
+  parentShiftId: {
+    type: ObjectId,
+    ref: "Shift",
+    required: false,
   },
   shiftStartTime: {
     type: Date,
