@@ -509,5 +509,42 @@ return JSON.stringify(shifts);
 
 }
 
+export async function updateShift(shiftId: string, shiftUpdatePayload: string): Promise<string | null> {
+  await requireAdmin();
+  try {
+    await dbConnect();
+    
+    const updateData = JSON.parse(shiftUpdatePayload);
+    
+    // Find and update the shift
+    const updatedShift = await ShiftModel.findByIdAndUpdate(
+      shiftId,
+      {
+        $set: {
+          routeId: updateData.routeId,
+          shiftStartTime: updateData.shiftStartTime,
+          shiftEndTime: updateData.shiftEndTime,
+          shiftStartDate: updateData.shiftStartDate,
+          shiftEndDate: updateData.shiftEndDate,
+          recurrenceDates: updateData.recurrenceDates,
+          timeSpecific: updateData.timeSpecific,
+          additionalInfo: updateData.additionalInfo,
+          currSignedUp: updateData.currSignedUp
+        }
+      },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedShift) {
+      throw new Error(`Shift not found with ID: ${shiftId}`);
+    }
+
+    return JSON.stringify(updatedShift);
+  } catch (error) {
+    const err = error as Error;
+    throw new Error(`Error updating shift: ${err.message}`);
+  }
+}
+
 
   
