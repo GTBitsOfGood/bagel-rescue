@@ -378,7 +378,7 @@ export default function EditShift() {
         endHour === 0 && endMinute === 0 || 
         endHour < startHour || 
         (endHour === startHour && endMinute <= startMinute)) {
-      alert("Please enter a valid start time.");
+      alert("Please enter valid times.");
       return;
     }
 
