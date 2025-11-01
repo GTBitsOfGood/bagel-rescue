@@ -5,6 +5,7 @@ import { ClientSession, UpdateQuery } from "mongoose";
 import User, { IUser } from "../models/User";
 import dbConnect from "../dbConnect";
 import { requireUser } from "../auth/auth";
+import { UserShiftModel } from "../models/userShift";
 
 export type UserStats = {
   bagelsDelivered: number;
@@ -90,6 +91,39 @@ async function updateUser(
   return document;
 }
 
+async function getUsersPerShift(
+  shiftId: string,
+  session?: ClientSession
+): Promise<IUser[]> {
+  await requireUser();
+  await dbConnect();
+  try {
+    const documents = await UserShiftModel.aggregate([
+    {
+      $match: { shiftId: new mongoose.Types.ObjectId(shiftId) } // filter by the specific shift
+    },
+    {
+      $lookup: {
+        from: "users",           // collection to join
+        localField: "userId",    // field from usershifts
+        foreignField: "_id",     // field from users
+        as: "userInfo"           // output field
+      }
+    },
+    {
+      $unwind: "$userInfo" // flatten the user array
+    },
+    {
+      $replaceRoot: { newRoot: "$userInfo" } // return just user objects
+    }
+  ]);
+  return documents; 
+} catch (error) {
+    console.error("Error fetching users per shift:", error);
+    throw new Error("Failed to fetch users per shift");
+  }
+} 
+
 async function getUserStats(
   id: mongoose.Types.ObjectId,
   session?: ClientSession
@@ -154,4 +188,5 @@ export {
   getAllUserStats,
   getTotalBagelsDelivered,
   getAllUsers,
+  getUsersPerShift
 };
