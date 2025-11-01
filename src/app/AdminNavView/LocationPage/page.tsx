@@ -51,7 +51,8 @@ function LocationDashboardPage() {
         );
       }
     } catch (error) {
-      console.error("Error deleting location:", error);
+      const err = error as Error;
+      alert(err.message);
     }
   }
 

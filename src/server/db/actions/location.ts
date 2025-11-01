@@ -1,9 +1,10 @@
 'use server';
 
 import { LocationModel, Location, Address } from "../models/location";
+import RouteModel from "../models/Route";
 import dbConnect from "../dbConnect";
 import { requireAdmin } from "../auth/auth";
-import { ObjectId } from "mongoose";
+import { Types } from "mongoose";
 
 export async function createLocation(newLocation: string): Promise<string | null> {
   await requireAdmin();
@@ -23,6 +24,14 @@ export async function deleteLocation(id: string): Promise<boolean> {
   await requireAdmin();
   await dbConnect();
   try {
+    const routesWithLocation = await RouteModel.find({
+      'locations.location': new Types.ObjectId(id),
+    });
+    
+    if (routesWithLocation.length > 0) {
+      throw new Error(`Cannot delete location: it is referenced in ${routesWithLocation.length} route(s): ${routesWithLocation.map((route) => route.routeName)}`);
+    }
+    
     const result = await LocationModel.findByIdAndDelete(id);
     return result !== null;
   } catch (error) {

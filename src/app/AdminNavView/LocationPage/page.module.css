@@ -140,7 +140,7 @@
 .locationInfo {
   display: flex;
   flex-direction: column;
-  padding-left: 20px;
+  padding-left: 1.2rem;
 }
 .locationEllipsis {
   position: relative;
@@ -201,10 +201,10 @@
   border: none;
   cursor: pointer;
   padding: 0.5rem;
-  color: #6C7D93;
+  color: var(--Bagel-Rescue-Light-Text);
   transition: color 0.2s;
 }
 
 .threeDotButton:hover {
-  color: #072B68;
+  color: var(--Bagel-Rescue-Dark-Blue);
 }
