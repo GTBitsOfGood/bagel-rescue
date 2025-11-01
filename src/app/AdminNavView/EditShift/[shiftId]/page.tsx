@@ -13,7 +13,6 @@ import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import dayToNumber from "@/lib/dayHandler";
 
-// ADDED imports for update/delete usershift / update shift (adjust function names if your server API differs)
 import { updateShift } from "@/server/db/actions/shift";
 import { deleteUserShift, updateUserShiftsRoute } from "@/server/db/actions/userShifts";
 
@@ -43,12 +42,10 @@ export default function EditShift() {
     const [originalVolunteers, setOriginalVolunteers] = useState<any[]>([]);
     const [originalRouteId, setOriginalRouteId] = useState<string | null>(null);
     const [isDirty, setIsDirty] = useState<boolean>(false);
-    const [isSearchingVolunteers, setIsSearchingVolunteers] = useState<boolean>(false);
 
   // Prepopulate shift information
   useEffect(() => {
     const getShiftInformation = async () => {
-      console.log(shiftId)
       const shift = await getShiftFromString(shiftId);
       const volunteersData = await getUsersPerShift(shiftId);
       const routeData = await getRoutesByShiftId(shiftId);
@@ -103,8 +100,6 @@ export default function EditShift() {
     getShiftInformation();
   }, [shiftId]);
 
-  console.log("Start Time", startTime);
-  console.log("End Time", endTime);
 
   useEffect(() => {
     const fetchRoutes = async () => {
@@ -317,7 +312,6 @@ export default function EditShift() {
           placeholder="Type to search..."
           value={volunteerSearchText}
           onChange={(e) => setVolunteerSearchText(e.target.value)}
-          onClick={() => setIsSearchingVolunteers(true)}
           style={{
             border: 'none',
             outline: 'none',
