@@ -327,6 +327,8 @@ const MyShiftsPage: React.FC = () => {
           </button>
         </div>
 
+
+
         <ShiftsTable 
           shifts={activeTab === "myShifts" ? shifts : openShifts}
           loading={loading}
@@ -334,6 +336,7 @@ const MyShiftsPage: React.FC = () => {
           viewingDate={currentDate}
           isOpenShifts={activeTab === "openShifts"}
           onShiftUpdated={handleShiftUpdated}
+          userShifts={shifts}
         />
         
         {!loading && !error && (activeTab === "myShifts" ? shifts : openShifts).length > 0 && (

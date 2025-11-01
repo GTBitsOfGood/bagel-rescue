@@ -25,4 +25,5 @@ export type ShiftsTableProps = {
   isOpenShifts?: boolean;
   onShiftUpdated?: () => void;
   viewingDate: Date;
+  userShifts?: UserShiftData[];
 };

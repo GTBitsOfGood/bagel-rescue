@@ -23,7 +23,8 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({
   error, 
   isOpenShifts = false,
   onShiftUpdated,
-  viewingDate
+  viewingDate,
+  userShifts = []
  }) => {
   const [selectedShift, setSelectedShift] = useState<UserShiftData | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
@@ -87,6 +88,7 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({
           isOpenShift={isOpenShifts}
           onShiftUpdated={onShiftUpdated}
           viewingDate={viewingDate}
+          userShifts={userShifts}
         />
       )}
 
