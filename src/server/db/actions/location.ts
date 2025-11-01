@@ -1,4 +1,4 @@
-'use server';
+"use server";
 
 import { LocationModel, Location, Address } from "../models/location";
 import RouteModel from "../models/Route";
@@ -6,119 +6,128 @@ import dbConnect from "../dbConnect";
 import { requireAdmin } from "../auth/auth";
 import { Types } from "mongoose";
 
-export async function createLocation(newLocation: string): Promise<string | null> {
-  await requireAdmin();
-  await dbConnect();
-  try {
-    const newShift = new LocationModel(JSON.parse(newLocation || "{}"));
-    return JSON.stringify(await newShift.save());
-  } catch (error) {
-    const err = error as Error;
-    throw new Error(`Error creating location: ${err.message}`);
-  }
-}
-
-
-
-export async function deleteLocation(id: string): Promise<boolean> {
-  await requireAdmin();
-  await dbConnect();
-  try {
-    const routesWithLocation = await RouteModel.find({
-      'locations.location': new Types.ObjectId(id),
-    });
-    
-    if (routesWithLocation.length > 0) {
-      throw new Error(`Cannot delete location: it is referenced in ${routesWithLocation.length} route(s): ${routesWithLocation.map((route) => route.routeName)}`);
+export async function createLocation(
+    newLocation: string
+): Promise<string | null> {
+    await requireAdmin();
+    await dbConnect();
+    try {
+        const newShift = new LocationModel(JSON.parse(newLocation || "{}"));
+        return JSON.stringify(await newShift.save());
+    } catch (error) {
+        const err = error as Error;
+        throw new Error(`Error creating location: ${err.message}`);
     }
-    
-    const result = await LocationModel.findByIdAndDelete(id);
-    return result !== null;
-  } catch (error) {
-    const err = error as Error;
-    throw new Error(`Error deleting location: ${err.message}`);
-  }
 }
 
+export async function deleteLocation(
+    id: string
+): Promise<{ success: boolean; message?: string }> {
+    await requireAdmin();
+    await dbConnect();
+    try {
+        const routesWithLocation = await RouteModel.find({
+            "locations.location": new Types.ObjectId(id),
+        });
 
-export async function getAllLocationsById(id: string[]): Promise<string | null> {
-  // await requireAdmin();
-  await dbConnect();
-  try {
-    const location = await LocationModel.find({_id: id});
-    return JSON.stringify(location);
-  }
-  catch (error) {
-    const err = error as Error;
-    throw new Error(`Error getting location by id: ${err.message}`);
-  }
+        if (routesWithLocation.length > 0) {
+            return {
+                success: false,
+                message: `Cannot delete location: it is referenced in ${
+                    routesWithLocation.length
+                } route(s): ${routesWithLocation.map(
+                    (route) => route.routeName
+                )}`,
+            };
+        }
+
+        const result = await LocationModel.findByIdAndDelete(id);
+        return { success: result !== null };
+    } catch (error) {
+        const err = error as Error;
+        return { success: false, message: `Error deleting location: ${err.message}` };
+    }
+}
+
+export async function getAllLocationsById(
+    id: string[]
+): Promise<string | null> {
+    // await requireAdmin();
+    await dbConnect();
+    try {
+        const location = await LocationModel.find({ _id: id });
+        return JSON.stringify(location);
+    } catch (error) {
+        const err = error as Error;
+        throw new Error(`Error getting location by id: ${err.message}`);
+    }
 }
 
 export async function updateLocationName(
-  id: string,
-  newLocationName: string
+    id: string,
+    newLocationName: string
 ): Promise<Location | null> {
-  await requireAdmin();
-  await dbConnect();
-  try {
-    const location = await LocationModel.findByIdAndUpdate(
-      id,
-      { locationName: newLocationName },
-      { new: true }
-    );
-    return location;
-  } catch (error) {
-    const err = error as Error;
-    throw new Error(`Error creating location name: ${err.message}`);
-  }
+    await requireAdmin();
+    await dbConnect();
+    try {
+        const location = await LocationModel.findByIdAndUpdate(
+            id,
+            { locationName: newLocationName },
+            { new: true }
+        );
+        return location;
+    } catch (error) {
+        const err = error as Error;
+        throw new Error(`Error creating location name: ${err.message}`);
+    }
 }
 
 export async function updateNotes(
-  id: string,
-  newNote: string
+    id: string,
+    newNote: string
 ): Promise<Location | null> {
-  await requireAdmin();
-  await dbConnect();
-  try {
-    const location = await LocationModel.findByIdAndUpdate(
-      id,
-      { notes: newNote },
-      { new: true }
-    );
-    return location;
-  } catch (error) {
-    const err = error as Error;
-    throw new Error(`Error updating notes: ${err.message}`);
-  }
+    await requireAdmin();
+    await dbConnect();
+    try {
+        const location = await LocationModel.findByIdAndUpdate(
+            id,
+            { notes: newNote },
+            { new: true }
+        );
+        return location;
+    } catch (error) {
+        const err = error as Error;
+        throw new Error(`Error updating notes: ${err.message}`);
+    }
 }
 
 export async function updateAddress(
-  id: string,
-  newAddress: Address
+    id: string,
+    newAddress: Address
 ): Promise<Location | null> {
-  await requireAdmin();
-  await dbConnect();
-  try {
-    const location = await LocationModel.findByIdAndUpdate(
-      id,
-      { address: newAddress },
-      { new: true }
-    );
-    return location;
-  } catch (error) {
-    const err = error as Error;
-    throw new Error(`Error updating address: ${err.message}`);
-  }
+    await requireAdmin();
+    await dbConnect();
+    try {
+        const location = await LocationModel.findByIdAndUpdate(
+            id,
+            { address: newAddress },
+            { new: true }
+        );
+        return location;
+    } catch (error) {
+        const err = error as Error;
+        throw new Error(`Error updating address: ${err.message}`);
+    }
 }
 
 export async function getAllLocations(): Promise<string | null> {
-  await requireAdmin();
-  try {
-    await dbConnect();
-    const locations = await LocationModel.find();
-    return JSON.stringify(locations);
-  } catch (error) {
-    const err = error as Error;
-    throw new Error(`Error getting all locations: ${err.message}`);
-  }
+    await requireAdmin();
+    try {
+        await dbConnect();
+        const locations = await LocationModel.find();
+        return JSON.stringify(locations);
+    } catch (error) {
+        const err = error as Error;
+        throw new Error(`Error getting all locations: ${err.message}`);
+    }
 }
