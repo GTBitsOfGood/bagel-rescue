@@ -40,8 +40,6 @@ function DailyShiftDashboardPage() {
       const response = await getAllShifts();
       const data = JSON.parse(response || "[]");
 
-      console.log("Shifts fetched:", data);
-
       setShifts(data || []);
 
       const routeIds = data.map((shift: Shift) => shift.routeId);
