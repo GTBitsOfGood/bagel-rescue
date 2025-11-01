@@ -3,9 +3,9 @@
 import "./stylesheet.css";
 import AdminSidebar from "@/components/AdminSidebar";
 import { getAllLocationsById } from "@/server/db/actions/location";
-import { getAllRoutes } from "@/server/db/actions/Route";
+import { getAllRoutes, getRoute, getRouteByShiftId, getRoutesByShiftId } from "@/server/db/actions/Route";
 import { createShift, getShift, getShiftFromString } from "@/server/db/actions/shift";
-import { getAllUsers } from "@/server/db/actions/User";
+import { getAllUsers, getUser, getUsersPerShift } from "@/server/db/actions/User";
 import { createUserShift } from "@/server/db/actions/userShifts";
 import { Location } from "@/server/db/models/location";
 import { IRoute } from "@/server/db/models/Route";
@@ -16,6 +16,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { ObjectId } from 'bson'; 
 import dayToNumber from "@/lib/dayHandler";
 import { startAfter } from "firebase/firestore";
+import { set } from "mongoose";
 
 export default function EditShift() {
     const timeStartInputRef = useRef<HTMLInputElement>(null);
@@ -44,7 +45,11 @@ export default function EditShift() {
   useEffect(() => {
     const getShiftInformation = async () => {
       const shift = await getShiftFromString(shiftId);
-      console.log("SHIFT DATA: ", shift);
+      const volunteersData = await getUsersPerShift(shiftId);
+      const routeData = await getRoutesByShiftId(shiftId);
+      console.log("routeData: ", routeData)
+
+      // console.log("SHIFT DATA: ", shift);
       if (shift) {
         // Format times in HH:mm format for time input
         const startTimeDate = new Date(shift.shiftStartTime);
@@ -74,8 +79,17 @@ export default function EditShift() {
           setStartDate(formatDateForInput(shift.shiftStartDate));
           setEndDate(formatDateForInput(shift.shiftEndDate));
         }
+        setSelectedDays(shift.recurrenceDates.map((day: string) => day.charAt(0).toUpperCase() + day.slice(1)));
+        if (volunteersData.length > 0) {
+          setVolunteers(volunteersData);
+        }
+        if (routeData.length > 0) {
+          console.log("SETTING ROUTES: ", routeData)
+          setRoutes(routeData);
+          setHasAddedRoute(true);
+        }
+      }
     };
-  }
     getShiftInformation();
   }, [shiftId]);
 
@@ -635,6 +649,7 @@ export default function EditShift() {
                             {/* this is the additional information area */}
                             <p className="text-[#072B68] font-bold text-lg">Additional Information</p>
                             <textarea
+                                value={additionalInfo}
                                 className="additional-info-textarea"
                                 placeholder="Enter additional information here"
                                 onChange={(e) => setAdditionalInfo(e.target.value)}
