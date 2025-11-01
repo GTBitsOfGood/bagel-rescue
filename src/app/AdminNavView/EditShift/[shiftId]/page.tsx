@@ -64,7 +64,7 @@ export default function EditShift() {
         setEndTime(formatTimeForInput(endTimeDate));
         setTimeSpecific(shift.timeSpecific);
         setAdditionalInfo(shift.additionalInfo || "");
-        setSelectedDays(shift.recurrenceDates);
+        setSelectedDays(shift.recurrenceDates.map((day: string) => day.charAt(0).toUpperCase() + day.slice(1)));
         if (shift.shiftStartDate && shift.shiftEndDate) {
           const formatDateForInput = (dateString: string) => {
             const date = new Date(dateString);
@@ -78,9 +78,6 @@ export default function EditShift() {
           setStartDate(formatDateForInput(shift.shiftStartDate));
           setEndDate(formatDateForInput(shift.shiftEndDate));
         }
-
-        // Normalize selectedDays for UI (keep as is to avoid changing UI behaviour)
-        setSelectedDays(shift.recurrenceDates.map((day: string) => day.charAt(0).toUpperCase() + day.slice(1)));
 
         if (volunteersData.length > 0) {
           setVolunteers(volunteersData);
@@ -428,11 +425,8 @@ export default function EditShift() {
     let finalEndDay: Date;
 
     if (!dateRange) {
-      const targetDay = selectedDays.map((day) => day.toLowerCase());
-      const first = findFirstDateAfterToday(targetDay)!;
-      finalStartDay = first;
-      finalEndDay = new Date(finalStartDay);
-      finalEndDay.setFullYear(finalEndDay.getFullYear() + 5);
+      finalStartDay = new Date();
+      finalEndDay = new Date();
     } else {
       finalStartDay = new Date(startDate);
       finalEndDay = new Date(endDate);
@@ -482,7 +476,7 @@ export default function EditShift() {
             userId: v._id,
             shiftId: shiftId,
             routeId: selectedRouteId,
-            recurrenceDates: selectedDays.map(d => d.toLowerCase()),
+            recurrenceDates: selectedDays,
             shiftDate: finalStartDay,
             shiftEndDate: finalEndDay
           });
