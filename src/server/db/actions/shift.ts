@@ -106,7 +106,7 @@ TODO:
 When a shift's date changes, all associated UserShift records need to be updated to reflect the new date
 */
 export async function updateDate(
-  shiftId: ObjectId,
+  shiftId: Types.ObjectId,
   newDate: Date
 ): Promise<Shift | null> {
   await requireAdmin();
@@ -161,7 +161,7 @@ export async function updateDate(
 
 // updates the capacity of a shift and all its recurrences
 export async function updateCapacity(
-  shiftId: ObjectId,
+  shiftId: Types.ObjectId,
   newCapacity: number
 ): Promise<Shift | null> {
   await requireAdmin();
@@ -222,7 +222,7 @@ export async function updateRecurrenceRule(
  * If capacity is reached for that specific date, then false is returned
  */
 export async function newSignUp(
-  shiftId: ObjectId,
+  shiftId: Types.ObjectId,
   userId: ObjectId,
   shiftDate?: Date
 ): Promise<boolean> {
