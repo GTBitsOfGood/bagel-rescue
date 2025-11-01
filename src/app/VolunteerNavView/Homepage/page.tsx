@@ -88,6 +88,9 @@ const MyShiftsPage: React.FC = () => {
         process.env.NEXT_PUBLIC_TEST_USER_EMAIL || "testuser@example.com";
       setUserEmail(testEmail);
       setFirebaseReady(true);
+
+      
+
       return;
     }
 
