@@ -128,14 +128,12 @@ const MyShiftsPage: React.FC = () => {
             openShiftsPagination.page,
             openShiftsPagination.limit
           );
-          console.log("day view. get open shifts");
         } else {
           const { startDate, endDate } = getWeekRange(currentDate);
           shiftsData = await getOpenShifts(
             startDate, endDate, openShiftsPagination.page,
             openShiftsPagination.limit
           );
-          console.log("week view. get open shifts");
         }
 
         setOpenShifts(shiftsData.shifts);
@@ -235,12 +233,6 @@ const MyShiftsPage: React.FC = () => {
           if (viewMode === "Day") {
             const { startDate, endDate } = getDayRange(currentDate);
 
-            console.log("Fetching My Shifts for Day View:");
-            console.log("  Current Date:", currentDate);
-            console.log("  Start Date:", startDate);
-            console.log("  End Date:", endDate);
-            console.log("  User ID:", userData._id.toString());
-
             shiftsData = await getUserShiftsByDateRange(
               userData._id.toString(),
               startDate,
@@ -278,17 +270,6 @@ const MyShiftsPage: React.FC = () => {
             );
           }
         }
-
-        console.log("✅ Shifts Data returned:", shiftsData.shifts);
-        console.log("  Number of shifts:", shiftsData.shifts.length);
-        shiftsData.shifts.forEach((shift, i) => {
-          console.log(`  Shift ${i + 1}:`, {
-            id: shift.id,
-            routeName: shift.routeName,
-            startTime: shift.startTime,
-            endTime: shift.endTime
-          });
-        });
         
         setShifts(shiftsData.shifts);
         setPagination(shiftsData.pagination);

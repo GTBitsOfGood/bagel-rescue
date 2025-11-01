@@ -213,13 +213,6 @@ export async function getUserShiftsByDateRange(
 
     const startAbsDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
     const endAbsDate = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate() + 1);
-    
-
-    console.log("🔍 getUserShiftsByDateRange Query:");
-    console.log("  userId:", userId);
-    console.log("  startAbsDate:", startAbsDate);
-    console.log("  endAbsDate:", endAbsDate);
-
 
     // Get UserShift documents within date range
     const userShifts = await UserShiftModel.find({
@@ -246,19 +239,7 @@ export async function getUserShiftsByDateRange(
       .limit(limit)
       .lean();
 
-
-      console.log("✅ Found UserShifts:", userShifts.length);
-      userShifts.forEach((shift, i) => {
-        console.log(`  UserShift ${i + 1}:`, {
-          _id: shift._id,
-          shiftDate: shift.shiftDate,
-          recurrenceDates: shift.recurrenceDates
-        });
-      });
-
     userShifts.sort((a, b) => new Date(a.shiftDate).getTime() - new Date(b.shiftDate).getTime());
-
-    console.log(userShifts);
     
     // Get total count for pagination
     const total = await UserShiftModel.countDocuments({
@@ -372,16 +353,13 @@ export async function getDetailedShiftInfo(userShiftId: string): Promise<Detaile
 
     // Get the original Shift details for recurrence rule
     const shift = await ShiftModel.findById(userShift.shiftId).lean();
-    console.log("Shift: ", shift);
     
     // Get location names
     let locationNames: string[] = [];
     if (route.locations && route.locations.length > 0) {
-      console.log("Locations: ", route.locations);
       try {
         const locationIds = route.locations.map(loc => loc.location.toString());
         const locationsData = await getAllLocationsById(locationIds);
-        console.log("Location Data: ", locationsData);
         if (locationsData) {
           const parsedLocations = JSON.parse(locationsData);
           locationNames = parsedLocations.map((loc: any) => (loc.locationName + " - " + loc.area) || "Unknown Location");
@@ -455,8 +433,8 @@ export async function getDetailedOpenShiftInfo(shiftId: string): Promise<Detaile
       id: shift._id.toString(),
       routeName: route.routeName || "Unknown Route",
       area: route.locationDescription || "",
-      shiftStartTime: new Date(shift.shiftStartDate || new Date()),
-      shiftEndTime: new Date(shift.shiftEndDate || new Date()),
+      shiftStartTime: new Date(shift.shiftStartTime || new Date()),
+      shiftEndTime: new Date(shift.shiftEndTime || new Date()),
       shiftStartDate: new Date(shift.shiftStartDate || new Date()),
       shiftEndDate: new Date(shift.shiftEndDate || new Date()),
       startTime: new Date(shift.shiftStartDate || new Date()),
@@ -859,9 +837,6 @@ export async function requestSubForShift(
 
     const dayOfWeek = specificDate.toLocaleString('en-US', { weekday: 'short' }).toLowerCase().substring(0, 2);
 
-    console.log("Creating new open shift with date:", specificDate);
-    console.log("specificDate type:", typeof specificDate, specificDate);
-
 
     // new shift with "open" status
     const newOpenShift = new ShiftModel({
@@ -888,9 +863,6 @@ export async function requestSubForShift(
     });
 
     await newOpenShift.save();
-
-    console.log(`sub requested for shift ${userShiftId} on ${specificDate}`);
-    console.log(`created new open shift: ${newOpenShift._id}`);
 
     return "Sub requested successfully";
   } catch (error) {
@@ -958,8 +930,6 @@ export async function pickUpShift(shiftId: string): Promise<string> {
     shift.status = "assigned";
     shift.currSignedUp = (shift.currSignedUp || 0) + 1;
     await shift.save();
-    console.log(`User ${userId} picked up shift ${shiftId}`);
-    console.log(`Created UserShift: ${newUserShift._id}`);
 
     return "Shift pickup successful";
   } catch (error) {
@@ -1063,9 +1033,6 @@ export async function undoSubRequest(openShiftId: string): Promise<string> {
 
     // deletes open shift
     await ShiftModel.findByIdAndDelete(openShiftId);
-
-    console.log(`Undid sub request for open shift ${openShiftId}`);
-    console.log(`Recreated UserShift: ${newUserShift._id}`);
 
     return "Sub request undone successfully";
   } catch (error) {

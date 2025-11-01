@@ -30,19 +30,19 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             />
 
             {/* confirmation modal */}
-            <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl p-8 shadow-xl z-[1000] min-w-[400px] max-w-[500px]">
+            <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl p-8 shadow-xl z-[1000] min-w-[280px] max-w-[500px]">
                 <div className="flex flex-col gap-5">
-                    <h3 className="text-xl font-semibold text-[#072B68] text-center">
+                    <h3 className="text-xl font-bold text-black text-center">
                         {title}
                     </h3>
                 
-                    <p className="text-sm text-gray-600 leading-relaxed text-center">
+                    <p className="text-sm text-black leading-relaxed text-center">
                         {message}
                     </p>
                 
                     <div className="flex gap-3 justify-center mt-2">
                         <button
-                        className="px-6 py-3 rounded-lg text-sm font-medium transition-all bg-gray-200 text-[#072B68] hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-6 py-3 rounded-lg text-sm font-bold transition-all text-[var(--Bagel-Rescue-Blue)] hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
                         onClick={onCancel}
                         disabled={isLoading}
                         >
@@ -50,7 +50,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                         </button>
                         
                         <button
-                        className="px-6 py-3 rounded-lg text-sm font-medium transition-all bg-[#0F7AFF] text-white hover:bg-[#005bb5] disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-6 py-3 rounded-lg text-sm font-bold transition-all bg-[#0F7AFF] text-white hover:bg-[#005bb5] disabled:opacity-50 disabled:cursor-not-allowed"
                         onClick={onConfirm}
                         disabled={isLoading}
                         >
