@@ -354,45 +354,6 @@ export default function EditShift() {
     return [hours, minutes];
   }
 
-  const findFirstDateAfterToday = (days: string[]): Date | null => {
-    if (days.length === 0) return null;
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize to start of day
-    const currentDay = today.getDay();
-    
-    // Remove duplicates and convert to numbers
-    const uniqueDays: {[key: number]: boolean} = {};
-    for (const day of days) {
-      uniqueDays[dayToNumber[day]] = true;
-    }
-    
-    const dayNumbers: number[] = [];
-    for (const dayNumStr in uniqueDays) {
-      dayNumbers.push(parseInt(dayNumStr, 10));
-    }
-    
-    dayNumbers.sort((a, b) => a - b);
-    
-    // Find the first day after today
-    for (let i = 0; i < dayNumbers.length; i++) {
-      if (dayNumbers[i] > currentDay) {
-        const result = new Date(today);
-        result.setDate(today.getDate() + (dayNumbers[i] - currentDay));
-        return result;
-      }
-    }
-    
-    // If no day found after today, return the first day of next week
-    if (dayNumbers.length > 0) {
-      const result = new Date(today);
-      result.setDate(today.getDate() + (7 - currentDay + dayNumbers[0]));
-      return result;
-    }
-    
-    return null;
-  };
-
   async function saveEdits() {
 
     if (!originalShift) {
