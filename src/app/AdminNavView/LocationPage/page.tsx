@@ -6,17 +6,23 @@ import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import styles from './page.module.css';
 import { faAngleDown, faAngleLeft, faAngleRight, faArrowUpShortWide, faEllipsis, faPlus, faSearch } from '@fortawesome/free-solid-svg-icons';
 
-import { getAllLocations } from "@/server/db/actions/location";
+import { deleteLocation, getAllLocations } from "@/server/db/actions/location";
 import { Location } from "@/server/db/models/location";
 
 import AdminSidebar from '../../../components/AdminSidebar';
 import { useRouter } from "next/navigation";
 import { handleAuthError } from "@/lib/authErrorHandler";
+import ThreeDotModal from '@/app/components/ThreeDotModal';
+import { ObjectId } from 'mongoose';
 
 
 function LocationDashboardPage() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [sortOption, setSortOption] = useState<string>('alphabetically');
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [activeLocationId, setActiveLocationId] = useState<string | null>(null);
+  const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
+
   const router = useRouter();
 
   useEffect(() => {
@@ -35,6 +41,20 @@ function LocationDashboardPage() {
     };
     fetchLocations();
   }, [sortOption]);
+
+  const handleDeleteLocation = async (locationId: string) => {
+    try {
+      const deleted = await deleteLocation(locationId);
+      if (deleted) {
+        setLocations((prevLocations) =>
+          prevLocations.filter((location) => location._id !== locationId)
+        );
+      }
+    } catch (error) {
+      console.error("Error deleting location:", error);
+    }
+  }
+    
 
 
   const handleSortChange = () => {
@@ -117,7 +137,38 @@ function LocationDashboardPage() {
                     </div>
                     <div className={styles.locationInfo}>{location.bags}</div>
                     <div className={styles.locationInfo}>{location.notes}</div>
-                    <button className={styles.moreOptionsButton}>⋮</button>
+                    <div className={styles.actionColumn}>
+                      <button 
+                        className={styles.threeDotButton}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setModalPosition({
+                            x: rect.right,
+                            y: rect.top
+                          });
+                          setActiveLocationId(location._id?.toString() || null);
+                          setIsModalOpen(true);
+                        }}
+                      >
+                        <FontAwesomeIcon icon={faEllipsis} />
+                      </button>
+                    </div>
+                    {activeLocationId === location._id?.toString() && (
+                      <ThreeDotModal
+                        isOpen={isModalOpen} 
+                        onClose={() => {
+                          setIsModalOpen(false);
+                          setActiveLocationId(null);
+                        }}
+                        onDelete={() => {
+                          handleDeleteLocation(location._id?.toString()!);
+                          setIsModalOpen(false);
+                          setActiveLocationId(null);
+                        }}
+                        position={modalPosition}
+                      />
+                    )}
                   </div>
                 </div>
               ))}

@@ -3,6 +3,7 @@
 import { LocationModel, Location, Address } from "../models/location";
 import dbConnect from "../dbConnect";
 import { requireAdmin } from "../auth/auth";
+import { ObjectId } from "mongoose";
 
 export async function createLocation(newLocation: string): Promise<string | null> {
   await requireAdmin();
@@ -15,6 +16,21 @@ export async function createLocation(newLocation: string): Promise<string | null
     throw new Error(`Error creating location: ${err.message}`);
   }
 }
+
+
+
+export async function deleteLocation(id: string): Promise<boolean> {
+  await requireAdmin();
+  await dbConnect();
+  try {
+    const result = await LocationModel.findByIdAndDelete(id);
+    return result !== null;
+  } catch (error) {
+    const err = error as Error;
+    throw new Error(`Error deleting location: ${err.message}`);
+  }
+}
+
 
 export async function getAllLocationsById(id: string[]): Promise<string | null> {
   // await requireAdmin();
