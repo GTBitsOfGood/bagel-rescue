@@ -35,6 +35,7 @@ export default function NewShiftPage() {
     const [startDate, setStartDate] = useState<string>("");
     const [endDate, setEndDate] = useState<string>("");
     const [additionalInfo, setAdditionalInfo] = useState<string>("");
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
     const router = useRouter();
     
@@ -316,42 +317,55 @@ export default function NewShiftPage() {
   };
 
   async function saveEdits() {
+    // Prevent duplicate submissions
+    if (isSubmitting) {
+      return;
+    }
+
+    setIsSubmitting(true);
 
     // Validate required fields marked with asterisks
     if (!startTime.trim()) {
       alert("Please enter a start time.");
+      setIsSubmitting(false);
       return;
     }
     
     if (!endTime.trim()) {
       alert("Please enter an end time.");
+      setIsSubmitting(false);
       return;
     }
     
     if (dateRange) {
       if (!startDate.trim()) {
         alert("Please enter a start date.");
+        setIsSubmitting(false);
         return;
       }
       
       if (!endDate.trim()) {
         alert("Please enter an end date.");
+        setIsSubmitting(false);
         return;
       }
     }
     
     if (routes.length === 0) {
       alert("Please add a route.");
+      setIsSubmitting(false);
       return;
     }
     
     if (volunteers.length === 0) {
       alert("Please add at least one volunteer.");
+      setIsSubmitting(false);
       return;
     }
     
     if (selectedDays.length === 0) {
       alert("Please select at least one day.");
+      setIsSubmitting(false);
       return;
     }
     
@@ -378,6 +392,7 @@ export default function NewShiftPage() {
         endHour < startHour || 
         (endHour === startHour && endMinute <= startMinute)) {
       alert("Please enter a valid start time.");
+      setIsSubmitting(false);
       return;
     }
 
@@ -445,10 +460,13 @@ export default function NewShiftPage() {
     } catch (error) {
       console.error("Error creating shift or user shifts:", error);
       alert("Error creating shift. Please try again.");
+      setIsSubmitting(false);
       return;
     } finally {
       if (shiftCreationComplete) {
         router.push("/AdminNavView/DailyShiftDashboard");
+      } else {
+        setIsSubmitting(false);
       }
     }
 
@@ -470,7 +488,14 @@ export default function NewShiftPage() {
                     <div className="flex justify-between text-center align-middle">
                         <div className="text-[#072B68] font-bold text-4xl content-center">New Shift</div>
                         <div className="flex justify-end">
-                            <button onClick={() => saveEdits()} className="font-bold text-white px-6 py-[.8rem] rounded-xl text-base" style={{backgroundColor: '#A3A3A3'}}>Complete Shift</button>
+                            <button 
+                              onClick={() => saveEdits()} 
+                              disabled={isSubmitting}
+                              className="font-bold text-white px-6 py-[.8rem] rounded-xl text-base" 
+                              style={{backgroundColor: isSubmitting ? '#CCCCCC' : '#A3A3A3', cursor: isSubmitting ? 'not-allowed' : 'pointer'}}
+                            >
+                              {isSubmitting ? 'Creating...' : 'Complete Shift'}
+                            </button>
                         </div>
                     </div>
                 </div>
