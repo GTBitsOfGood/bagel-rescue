@@ -501,9 +501,121 @@ return JSON.stringify(shifts);
     const err = error as Error;
     throw new Error(`Error getting shifts by week: ${err.message}`);
   }
-  
-
 }
 
+export async function getShiftsByDay(
+  targetDate: Date
+): Promise<string | null> {
+  await requireAdmin();
 
-  
+  try {
+    await dbConnect();
+    
+    // Set targetDate to start and end of day for comparison
+    const startOfDay = new Date(targetDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(targetDate);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    // Get day abbreviation (e.g., "Mo", "Tu", etc.)
+    const dayNames = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+    const dayAbbr = dayNames[targetDate.getDay()];
+    
+    const shifts = await ShiftModel.aggregate([
+      // 1. Filter by day - check if shift occurs on the target date
+      {
+        $match: {
+          $expr: {
+            $or: [
+              // For shifts with recurrenceDates, check if they occur on this day
+              {
+                $and: [
+                  { $ne: [{ $size: { $ifNull: ["$recurrenceDates", []] } }, 0] },
+                  { $in: [dayAbbr.toLowerCase(), { $map: { input: "$recurrenceDates", as: "day", in: { $toLower: "$$day" } } } ] },
+                  { $lte: ["$shiftStartDate", endOfDay] },
+                  { $gte: ["$shiftEndDate", startOfDay] }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      
+      // 2. Join with routes to get route information
+      {
+        $lookup: {
+          from: "routes",
+          localField: "routeId",
+          foreignField: "_id",
+          as: "route"
+        }
+      },
+      { $unwind: { path: "$route", preserveNullAndEmptyArrays: true } },
+      
+      // 3. Join with userShifts to get volunteers for this shift
+      {
+        $lookup: {
+          from: "usershifts",
+          localField: "_id",
+          foreignField: "shiftId",
+          as: "usershifts"
+        }
+      },
+      
+      // 4. Join with users to get volunteer details
+      {
+        $lookup: {
+          from: "users",
+          localField: "usershifts.userId",
+          foreignField: "_id",
+          as: "volunteers"
+        }
+      },
+      
+      // 5. Project only the fields you need for the dashboard
+      {
+        $project: {
+          shiftStartTime: 1,
+          shiftEndTime: 1,
+          recurrenceDates: 1,
+          shiftStartDate: 1,
+          shiftEndDate: 1,
+          capacity: 1,
+          currSignedUp: 1,
+          additionalInfo: 1,
+          status: 1,
+          routeName: "$route.routeName",
+          routeId: "$route._id",
+          locationDescription: "$route.locationDescription",
+          comments: 1,
+          volunteers: {
+            $map: {
+              input: "$volunteers",
+              as: "volunteer",
+              in: {
+                userId: "$$volunteer._id",
+                firstName: "$$volunteer.firstName",
+                lastName: "$$volunteer.lastName",
+                email: "$$volunteer.email",
+                status: {
+                  $arrayElemAt: [
+                    "$usershifts.status",
+                    { $indexOfArray: ["$usershifts.userId", "$$volunteer._id"] }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      
+      // 6. Sort by shift time
+      { $sort: { shiftStartTime: 1 } }
+    ]);
+
+    return JSON.stringify(shifts);
+  } catch (error) {
+    const err = error as Error;
+    throw new Error(`Error getting shifts by day: ${err.message}`);
+  }
+}
