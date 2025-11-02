@@ -6,7 +6,7 @@ import { UserShiftModel, UserShift } from "../models/userShift";
 import RouteModel, { IRoute } from "../models/Route";
 import { ObjectId } from "mongodb";
 import User from "../models/User";
-import { requireUser } from "../auth/auth";
+import { requireUser, requireAdmin } from "../auth/auth";
 import { ShiftModel } from "../models/shift";
 import { getAllLocationsById } from "./location";
 import { cookies } from "next/headers";
@@ -59,6 +59,23 @@ export type PaginatedResult = {
     totalPages: number;
   };
 };
+
+
+
+export async function deleteUserShift(userId: string, shiftId: string): Promise<void> {
+  await requireUser();
+  await dbConnect();
+
+  try {
+    await UserShiftModel.findOneAndDelete({
+      userId: new mongoose.Types.ObjectId(userId),
+      shiftId: new mongoose.Types.ObjectId(shiftId),
+    });
+  } catch (error) {
+    console.error("Error deleting user shift:", error);
+    throw new Error("Failed to delete user shift");
+  }
+}
 
 /**
  * Gets the current user ID from Firebase session
@@ -616,8 +633,8 @@ export async function createUserShift(userShiftData: {
   shiftId: string;
   routeId: string;
   recurrenceDates: string[];
-  shiftDate: Date;
-  shiftEndDate: Date;
+  shiftDate: Date | string;
+  shiftEndDate: Date | string;
 }): Promise<string> {
   try {
     await dbConnect();
@@ -637,5 +654,20 @@ export async function createUserShift(userShiftData: {
   } catch (error) {
     console.error("Error creating UserShift:", error);
     throw error;
+  }
+}
+
+export async function updateUserShiftsRoute(shiftId: string, newRouteId: string): Promise<void> {
+  await requireAdmin();
+  try {
+    await dbConnect();
+    
+    await UserShiftModel.updateMany(
+      { shiftId: shiftId },
+      { $set: { routeId: newRouteId } }
+    );
+  } catch (error) {
+    const err = error as Error;
+    throw new Error(`Error updating userShifts route: ${err.message}`);
   }
 }
