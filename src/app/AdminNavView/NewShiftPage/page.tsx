@@ -13,7 +13,7 @@ import { faArrowLeft, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-import dayToNumber from "@/lib/dayHandler";
+import dayToNumber, { dayList } from "@/lib/dayHandler";
 
 export default function NewShiftPage() {
     const timeStartInputRef = useRef<HTMLInputElement>(null);
@@ -538,7 +538,7 @@ export default function NewShiftPage() {
                              <div className="flex flex-col space-y-2">
                                  <label htmlFor="day" className="text-[#072B68] font-bold text-lg">Day(s)<span className="text-red-500 ml-1">*</span></label>
                                   <div className="flex justify-between">
-                                     {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day, index) => {
+                                     {dayList.map((day, index) => {
                                          const isSelected = selectedDays.includes(day);
                                          return (
                                              <button
@@ -557,7 +557,7 @@ export default function NewShiftPage() {
                                                          : 'bg-white text-[#072B68] hover:bg-gray-100'
                                                  }`}
                                              >
-                                                 {day}
+                                                 {day.charAt(0).toUpperCase() + day.slice(1)}
                                              </button>
                                          );
                                      })}

@@ -11,10 +11,11 @@ import { faArrowLeft, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-import dayToNumber from "@/lib/dayHandler";
+import dayToNumber, { dayList } from "@/lib/dayHandler";
 
 import { updateShift } from "@/server/db/actions/shift";
 import { deleteUserShift, updateUserShiftsRoute } from "@/server/db/actions/userShifts";
+import { dateToString, stringToDate, stringZToDate } from "@/lib/dateHandler";
 
 export default function EditShift() {
     const timeStartInputRef = useRef<HTMLInputElement>(null);
@@ -64,19 +65,12 @@ export default function EditShift() {
         setEndTime(formatTimeForInput(endTimeDate));
         setTimeSpecific(shift.timeSpecific);
         setAdditionalInfo(shift.additionalInfo || "");
-        setSelectedDays(shift.recurrenceDates.map((day: string) => day.charAt(0).toUpperCase() + day.slice(1)));
+        setSelectedDays(shift.recurrenceDates.map((day: string) => day));
+        
         if (shift.shiftStartDate && shift.shiftEndDate) {
-          const formatDateForInput = (dateString: string) => {
-            const date = new Date(dateString);
-            const year = date.getFullYear();
-            const month = (date.getMonth() + 1).toString().padStart(2, '0');
-            const day = date.getDate().toString().padStart(2, '0');
-            return `${year}-${month}-${day}`;
-          };
-
           setDateRange(true);
-          setStartDate(formatDateForInput(shift.shiftStartDate));
-          setEndDate(formatDateForInput(shift.shiftEndDate));
+          setStartDate(dateToString(stringZToDate(shift.shiftStartDate)));
+          setEndDate(dateToString(stringZToDate(shift.shiftEndDate)));
         }
 
         if (volunteersData.length > 0) {
@@ -382,26 +376,24 @@ export default function EditShift() {
       return;
     }
 
-    let finalStartDay: Date;
-    let finalEndDay: Date;
+    let finalStartDate: Date;
+    let finalEndDate: Date;
 
     if (!dateRange) {
-      finalStartDay = new Date();
-      finalEndDay = new Date();
+      finalStartDate = stringToDate(startDate);
+      finalEndDate = new Date(stringToDate(startDate));
+      finalEndDate.setUTCFullYear(finalEndDate.getUTCFullYear() + 5);
     } else {
-      finalStartDay = new Date(startDate);
-      finalEndDay = new Date(endDate);
+      finalStartDate = stringToDate(startDate);
+      finalEndDate = stringToDate(endDate);
     }
-
-    finalStartDay.setHours(startHour, startMinute, 0, 0);
-    finalEndDay.setHours(endHour, endMinute, 0, 0);
 
     const shiftUpdatePayload: any = {
       routeId: selectedRouteId,
       shiftStartTime: new Date(1970,0,1,startHour,startMinute,0,0),
       shiftEndTime: new Date(1970,0,1,endHour,endMinute,0,0),
-      shiftStartDate: finalStartDay,
-      shiftEndDate: finalEndDay,
+      shiftStartDate: dateToString(finalStartDate),
+      shiftEndDate: dateToString(finalEndDate),
       recurrenceDates: selectedDays.map(d => d.toLowerCase()),
       timeSpecific: !!timeSpecific,
       additionalInfo: additionalInfo ?? "",
@@ -419,6 +411,7 @@ export default function EditShift() {
       // 1) Update shift record
       const updateResult = await updateShift(shiftId, JSON.stringify(shiftUpdatePayload));
       if (!updateResult) throw new Error("Failed to update shift");
+      // return;
 
       // 2) For removed volunteers, delete their userShift entry
       for (const v of removedVolunteerObjects) {
@@ -438,8 +431,8 @@ export default function EditShift() {
             shiftId: shiftId,
             routeId: selectedRouteId,
             recurrenceDates: selectedDays,
-            shiftDate: finalStartDay,
-            shiftEndDate: finalEndDay
+            shiftDate: dateToString(finalStartDate),
+            shiftEndDate: dateToString(finalEndDate),
           });
         } catch (err) {
           console.warn("Failed to create userShift for", v._id, err);
@@ -561,7 +554,7 @@ export default function EditShift() {
                              <div className="flex flex-col space-y-2">
                                  <label htmlFor="day" className="text-[#072B68] font-bold text-lg">Day(s)<span className="text-red-500 ml-1">*</span></label>
                                   <div className="flex justify-between">
-                                     {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day, index) => {
+                                     {dayList.map((day, index) => {
                                          const isSelected = selectedDays.includes(day);
                                          return (
                                              <button
@@ -580,7 +573,7 @@ export default function EditShift() {
                                                          : 'bg-white text-[#072B68] hover:bg-gray-100'
                                                  }`}
                                              >
-                                                 {day}
+                                                 {day.charAt(0).toUpperCase() + day.slice(1)}
                                              </button>
                                          );
                                      })}

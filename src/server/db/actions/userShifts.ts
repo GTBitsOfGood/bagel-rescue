@@ -633,8 +633,8 @@ export async function createUserShift(userShiftData: {
   shiftId: string;
   routeId: string;
   recurrenceDates: string[];
-  shiftDate: Date;
-  shiftEndDate: Date;
+  shiftDate: Date | string;
+  shiftEndDate: Date | string;
 }): Promise<string> {
   try {
     await dbConnect();

@@ -30,6 +30,8 @@ export const dayToFull: { [key: string]: string } = {
     su: "sunday",
 };
 
+export const dayList: string[] = ["mo", "tu", "we", "th", "fr", "sa", "su"];
+
 export function getDaysInRange(startDate: Date, endDate: Date): string[] {
     const daysSet = new Set<number>();
     const current = new Date(startDate);
