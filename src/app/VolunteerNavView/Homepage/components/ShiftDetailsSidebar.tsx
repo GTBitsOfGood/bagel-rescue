@@ -3,10 +3,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPenClip } from "@fortawesome/free-solid-svg-icons";
 import { UserShiftData, DetailedShiftData, getDetailedShiftInfo } from "@/server/db/actions/userShifts";
 import "./stylesheet.css";
+import { dateToString } from "@/lib/dateHandler";
 
 
 interface ShiftDetailsSidebarProps {
   selectedShift: UserShiftData | null;
+  date: Date;
   onCloseSidebar: () => void;
 }
 
@@ -20,24 +22,6 @@ const dayMap: { [key: string]: string } = {
   'su': 'Sunday'
 };
 
-const getDays = (recurrenceRule: string): string => {
-  try {
-    // Parse the recurrence rule string
-    const parts = recurrenceRule.split(';');
-    const byDayPart = parts.find(part => part.startsWith('BYDAY='));
-    
-    if (byDayPart) {
-      const dayCodes = byDayPart.substring(6).split(','); // Remove "BYDAY=" and split by comma
-      const dayNames = dayCodes.map(code => dayMap[code] || code);
-      return dayNames.join(', ');
-    }
-    
-    return "Daily"; // Return default if no BYDAY found
-  } catch (error) {
-    return "Daily"; // Return default if parsing fails
-  }
-}
-
 const formatTimeRange = (startTime: Date, endTime: Date): string => {
   const formatTime = (date: Date) => {
     return new Date(date).toLocaleTimeString("en-US", {
@@ -50,39 +34,21 @@ const formatTimeRange = (startTime: Date, endTime: Date): string => {
   return `${formatTime(startTime)} - ${formatTime(endTime)}`;
 };
 
-const formatDateRange = (startTime: Date, endTime: Date): string => {
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric"
-    });
-  };
-  
-  // If it's the same day, just show one date
-  if (startTime.toDateString() === endTime.toDateString()) {
-    return formatDate(startTime);
-  }
-  
-  return `${formatDate(startTime)} - ${formatDate(endTime)}`;
-};
-
 const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({ 
-  selectedShift, 
-  onCloseSidebar 
+  selectedShift,
+  date,
+  onCloseSidebar
 }) => {
   const [detailedShift, setDetailedShift] = useState<DetailedShiftData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchDetailedShift = async () => {
-      console.log("Selected shift: ", selectedShift);
       if (!selectedShift) return;
       
       setLoading(true);
       try {
         const detailed = await getDetailedShiftInfo(selectedShift.id);
-        console.log("detailed: ", detailed);
         setDetailedShift(detailed);
       } catch (error) {
         console.error("Error fetching detailed shift info:", error);
@@ -126,7 +92,7 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({
             {/* Content */}
             <div className="space-y-6 overflow-y-auto h-full [&::-webkit-scrollbar]:hidden">
 
-              {detailedShift?.comments && Object.keys(detailedShift.comments).length > 0 && (
+              {detailedShift?.comments && Object.keys(detailedShift?.comments || {}).includes(dateToString(date)) && (
                 <div 
                   className="flex flex-col w-full min-h-[88px] rounded-xl p-4 text-[var(--Bagel-Rescue-Error-Red)] font-bold gap-4"
                   style={{ backgroundColor: 'color-mix(in srgb, var(--Bagel-Rescue-Error-Red) 6%, transparent)' }}
@@ -141,10 +107,7 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({
                     <span>Comments</span>
                   </div>
                   <p className="w-full text-[var(--Bagel-Rescue-Text)] font-medium">
-                    {(() => {
-                      const dates = Object.keys(detailedShift.comments).sort().reverse();
-                      return detailedShift.comments[dates[0]];
-                    })()}
+                    {detailedShift.comments[dateToString(date)]}
                   </p>
                 </div>
               )}
