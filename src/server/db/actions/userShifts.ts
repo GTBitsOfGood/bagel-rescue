@@ -25,6 +25,7 @@ export type UserShiftData = {
   startTime: Date;
   endTime: Date;
   status: "Complete" | "Incomplete";
+  hasComment?: string[];
 };
 
 export type DetailedShiftData = {
@@ -48,6 +49,7 @@ export type DetailedShiftData = {
   shiftId: string;
   routeId: string;
   additionalInfo: string;
+  comments?: { [date: string] : string};
 };
 
 export type PaginatedResult = {
@@ -120,87 +122,6 @@ async function getCurrentUserId(): Promise<string | null> {
 }
 
 /**
- * Gets all shifts assigned to a user
- * 
- * @param userId The user's ID
- * @param page Page number for pagination
- * @param limit Number of items per page
- * @returns Paginated array of user shifts
- */
-export async function getUserShifts(
-  userId: string,
-  page: number = 1,
-  limit: number = 10
-): Promise<PaginatedResult> {
-  await requireUser();
-  await dbConnect();
-  
-  try {
-    const skip = (page - 1) * limit;
-    
-    // Get UserShift documents
-    const userShifts = await UserShiftModel.find({ userId: new mongoose.Types.ObjectId(userId) })
-      .sort({ shiftDate: 1 })  // Sort by shiftDate ascending
-      .skip(skip)
-      .limit(limit)
-      .lean();
-    
-    // Get total count for pagination
-    const total = await UserShiftModel.countDocuments({ userId: new mongoose.Types.ObjectId(userId) });
-    
-    // Get unique route IDs
-    const routeIds = Array.from(new Set(userShifts.map(shift => shift.routeId)));
-    
-    // Get route details
-    const routes = await RouteModel.find({
-      _id: { $in: routeIds }
-    }).lean();
-    
-    // Create a map of route IDs to route details
-    const routeMap = new Map();
-    routes.forEach(route => {
-      if (route._id) {
-        const routeId = route._id.toString();
-        routeMap.set(routeId, {
-          routeName: route.routeName || "Unknown Route",
-          locationDescription: route.locationDescription || ""
-        });
-      }
-    });
-    
-    // Transform the data for the frontend
-    const transformedShifts = userShifts.map(shift => {
-      const route = routeMap.get(shift.routeId.toString()) || {
-        routeName: "Unknown Route",
-        locationDescription: ""
-      };
-      
-      return {
-        id: shift._id.toString(),
-        routeName: route.routeName,
-        area: route.locationDescription,
-        startTime: new Date(shift.shiftDate),
-        endTime: new Date(shift.shiftEndDate),
-        status: shift.status || "Incomplete"
-      };
-    });
-    
-    return {
-      shifts: transformedShifts,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit)
-      }
-    };
-  } catch (error) {
-    console.error("Error fetching user shifts:", error);
-    throw new Error("Failed to fetch user shifts");
-  }
-}
-
-/**
  * Gets shifts for a user within a specific date range
  * 
  * @param userId The user's ID
@@ -262,12 +183,18 @@ export async function getUserShiftsByDateRange(
       shiftDate: { $gte: startDate, $lte: endDate }
     });
     
-    // Get unique route IDs
+    // Get unique route and shift IDs
     const routeIds = Array.from(new Set(userShifts.map(shift => shift.routeId)));
+    const shiftIds = Array.from(new Set(userShifts.map(shift => shift.shiftId)));
 
     // Get route details
     const routes = await RouteModel.find({
       _id: { $in: routeIds }
+    }).lean();
+
+    // Get shift details for comments
+    const shifts = await ShiftModel.find({
+      _id: { $in: shiftIds }
     }).lean();
 
     // Create a map of route IDs to route details
@@ -282,6 +209,14 @@ export async function getUserShiftsByDateRange(
       }
     });
     
+    const shiftCommentsMap = new Map();
+    shifts.forEach(shift => {
+      if (shift._id) {
+        const shiftId = shift._id.toString();
+        shiftCommentsMap.set(shiftId, shift.comments || {});
+      }
+    });
+
     // Transform the data for the frontend
     const transformedShifts = userShifts.map(shift => {
       const route = routeMap.get(shift.routeId.toString()) || {
@@ -295,7 +230,8 @@ export async function getUserShiftsByDateRange(
         area: route.locationDescription,
         startTime: new Date(shift.shiftDate),
         endTime: new Date(shift.shiftEndDate),
-        status: shift.status || "Incomplete"
+        status: shift.status || "Incomplete",
+        hasComment: Object.keys(shiftCommentsMap.get(shift.shiftId.toString()))
       };
     });
     
@@ -408,44 +344,14 @@ export async function getDetailedShiftInfo(userShiftId: string): Promise<Detaile
       recurrenceDates: shift?.recurrenceDates || [],
       shiftId: userShift.shiftId.toString(),
       routeId: userShift.routeId.toString(),
-      additionalInfo: shift?.additionalInfo || ""
+      additionalInfo: shift?.additionalInfo || "",
+      comments: shift?.comments || {}
     };
     
   } catch (error) {
     console.error("Error fetching detailed shift info:", error);
     throw new Error("Failed to fetch detailed shift info");
   }
-}
-
-/**
- * Gets shifts for the currently logged-in user
- * 
- * @param page Page number for pagination
- * @param limit Number of items per page
- * @returns Paginated array of user shifts
- */
-export async function getCurrentUserShifts(
-  page: number = 1,
-  limit: number = 10
-): Promise<PaginatedResult> {
-  await requireUser();
-
-  const userId = await getCurrentUserId();
-  
-  if (!userId) {
-    console.error("No authenticated user found");
-    return {
-      shifts: [],
-      pagination: {
-        total: 0,
-        page,
-        limit,
-        totalPages: 0
-      }
-    };
-  }
-  
-  return getUserShifts(userId, page, limit);
 }
 
 /**

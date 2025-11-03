@@ -5,9 +5,7 @@ import { useRouter } from "next/navigation";
 import Sidebar from "../../../components/Sidebar";
 import styles from "./page.module.css";
 import {
-  getCurrentUserShifts,
   getCurrentUserShiftsByDateRange,
-  getUserShifts,
   getUserShiftsByDateRange,
   UserShiftData
 } from "@/server/db/actions/userShifts";
@@ -47,11 +45,16 @@ const FilterIcon = () => (
  */
 
 const MyShiftsPage: React.FC = () => {
+  const today = new Date();
+  const yearUTC = today.getUTCFullYear();
+  const monthUTC = today.getUTCMonth();
+  const dayUTC = today.getUTCDate();
+
   const router = useRouter();
   const [shifts, setShifts] = useState<UserShiftData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const [currentDate, setCurrentDate] = useState<Date>(new Date(Date.UTC(yearUTC, monthUTC, dayUTC)));
   const [viewMode, setViewMode] = useState<ViewMode>("Day");
   const [activeTab, setActiveTab] = useState<"myShifts" | "openShifts">("myShifts");
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -206,8 +209,6 @@ const MyShiftsPage: React.FC = () => {
             );
           }
         }
-
-        console.log("Shifts Data: ", shiftsData.shifts);
         
         setShifts(shiftsData.shifts);
         setPagination(shiftsData.pagination);
@@ -267,6 +268,7 @@ const MyShiftsPage: React.FC = () => {
 
         <ShiftsTable 
           shifts={shifts}
+          date={currentDate}
           loading={loading}
           error={error}
         />
