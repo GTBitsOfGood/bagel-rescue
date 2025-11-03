@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import styles from "./ProfileForm.module.css";
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { auth } from '../server/db/firebase';
 import { signOut } from 'firebase/auth';
 import { getUserByEmail } from '../server/db/actions/User';
@@ -14,10 +14,14 @@ const ProfileForm: React.FC = () => {
     lastName: '',
     email: '',
     phoneNumber: '',
-    location: '',
-    role: 'Volunteer'
+    locations: [] as string[],
+    role: 'Volunteer',
+    prefersNormalRoutes: false,
+    prefersSubOnly: false,
+    openToAny: false
   });
   const [loading, setLoading] = useState(true);
+  const pathname = usePathname();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -31,8 +35,11 @@ const ProfileForm: React.FC = () => {
               lastName: mongoUser.lastName || '',
               email: currentUser.email || '',
               phoneNumber: mongoUser.phoneNumber || '(123) 456-7890',
-              location: 'Alpharetta, GA', // TODO: get location from mongoUser
-              role: mongoUser.isAdmin ? 'Admin' : 'Volunteer'
+              locations: mongoUser.locations || [],
+              role: mongoUser.isAdmin ? 'Admin' : 'Volunteer',
+              prefersNormalRoutes: mongoUser.prefersNormalRoutes ? true : false,
+              prefersSubOnly: mongoUser.prefersSubOnly ? true : false,
+              openToAny: mongoUser.openToAny ? true : false,
             });
           }
         } else {
@@ -77,7 +84,7 @@ const ProfileForm: React.FC = () => {
       <div className={styles.sidebar}>
         <ul className={styles.menu}>
           <li className={`${styles.menuItem} ${styles.active}`}>Profile</li>
-          <li className={styles.menuItem}>Password</li>
+          <li className={styles.menuItem} onClick={() => router.push(`${pathname}/Password`)}>Password</li>
           <li 
             className={`${styles.menuItem} ${styles.signOut}`}
             onClick={handleSignOut}
@@ -89,8 +96,16 @@ const ProfileForm: React.FC = () => {
       </div>
 
       <div className={styles.formContainer}>
-        <h2 className={styles.name}>{`${userData.firstName} ${userData.lastName}`}</h2>
-        <p className={styles.role}>{userData.role}</p>
+        <div className={styles.top}>
+          <div>
+            <h2 className={styles.name}>{`${userData.firstName} ${userData.lastName}`}</h2>
+            <p className={styles.role}>{userData.role}</p>
+          </div>
+          <button className={styles.savebutton} onClick={() => router.push(`${pathname}/Edit`)}>
+            <span className={styles.flip}>&#9998;</span> Edit Profile
+          </button>
+        </div>
+        <hr className={styles.line}></hr>
 
         <form className={styles.form}>
           <div className={styles.row}>
@@ -115,16 +130,6 @@ const ProfileForm: React.FC = () => {
             </div>
           </div>
 
-          <div className={styles.field}>
-            <label className={styles.fieldLabel}>Location</label>
-            <input
-              type="text"
-              className={styles.fieldInput}
-              value={userData.location}
-              disabled
-            />
-          </div>
-
           <div className={styles.row}>
             <div className={styles.field}>
               <label className={styles.fieldLabel}>Phone Number</label>
@@ -144,6 +149,52 @@ const ProfileForm: React.FC = () => {
                 value={userData.email}
                 disabled
               />
+            </div>
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.fieldLabel}>Location Preferences</label>
+            <div className={styles.locationContainer}>
+              {userData.locations.map((loc) => (
+                <div className={styles.locationBox} key={loc}>
+                  <label>{loc}</label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className={styles.row}>
+            <div className={styles.field}>
+              <label className={styles.fieldLabel}>Volunteering Preferences</label>
+              <div className={styles.checkboxes}>
+                <div className={styles.checkboxContainer}>
+                  <input 
+                    type='checkbox'
+                    name='prefersNormalRoutes'
+                    className={styles.checkbox}
+                    checked={userData.prefersNormalRoutes}
+                    /> 
+                    <span className={styles.checkboxLabel}>Normal Routes</span>
+                </div>
+                <div className={styles.checkboxContainer}>
+                  <input 
+                    type='checkbox'
+                    name='prefersSubOnly'
+                    className={styles.checkbox}
+                    checked={userData.prefersSubOnly}
+                    /> 
+                    <span className={styles.checkboxLabel}>Sub Only</span>
+                </div>
+                <div className={styles.checkboxContainer}>
+                  <input 
+                    type='checkbox'
+                    name='openToAny'
+                    className={styles.checkbox}
+                    checked={userData.openToAny}
+                    /> 
+                    <span className={styles.checkboxLabel}>Open to Any</span>
+                </div>
+              </div>
             </div>
           </div>
         </form>

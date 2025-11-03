@@ -14,6 +14,10 @@
     padding-right: 2rem;
     border-right: 1px solid #E5E7EB;
   }
+
+  .line {
+    padding-bottom: 2rem;
+  }
   
   .menu {
     list-style: none;
@@ -87,16 +91,71 @@
   }
   
   .fieldInput {
-    padding: 0.75rem;
-    background-color: #ECF2F9;
-    border: 1px solid border #D3D8DE; 
-    border-radius: 8px;
-    color: #6C7D93;
+    font-weight: bold;
+    color: #072B68;
+    background-color: white;
     font-size: 1rem;
+    margin-bottom: 0.5rem;
   }
   
-  .fieldInput:focus {
-    outline: none;
-    border-color: #1D4ED8; 
+  .savebutton {
+    background-color: #016ff3;
+    color: white;
+    padding: 1rem;
+    height: fit-content;
+    border-radius: 8px;
+  }
+
+  .top {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .flip {
+    display: inline-block;
+    transform: scaleX(-1);
+  }
+
+  .checkboxes {
+    display: flex;
+    gap: 2rem;
+    
+  }
+
+  .checkbox {
+    width: 16px;
+    height: 16px;
+    margin-right: 10px;
+  }
+
+  .checkbox:not(:checked) + .checkboxLabel {
+    opacity: 0.5;
+  }
+
+  .checkbox:not(:checked) {
+    opacity: 0.5;
+  }
+
+  .checkboxContainer {
+    color: #072B68;
+    display: flex;
+    align-items: center;
+  }
+
+  .locationContainer {
+    display: flex;
+    flex-wrap: wrap;
+    border-radius: 8px;
+    font-size: 1rem;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .locationBox {
+    background-color: rgb(238, 238, 238);
+    color: #1E3A8A;
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
   }
   
