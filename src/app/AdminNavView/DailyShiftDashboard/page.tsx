@@ -109,14 +109,56 @@ function DailyShiftDashboardPage() {
       endTime.setHours(i + 4, 0, 0, 0);
 
       let currShifts = shifts.filter((shift) => {
-        const shiftDate = new Date(shift.shiftDate);
-        return shiftDate.getUTCHours() >= startTime.getHours() && shiftDate.getUTCHours() < endTime.getHours();
+        // Check if shift occurs on the selected date
+        let occursOnDate = false;
+        
+        // Handle recurring shifts (check if date falls on one of the recurring days)
+        if (shift.recurrenceDates && shift.recurrenceDates.length > 0 && shift.shiftStartDate && shift.shiftEndDate) {
+          const selectedDate = new Date(date);
+          selectedDate.setHours(0, 0, 0, 0);
+          const shiftStart = new Date(shift.shiftStartDate);
+          shiftStart.setHours(0, 0, 0, 0);
+          const shiftEnd = new Date(shift.shiftEndDate);
+          shiftEnd.setHours(0, 0, 0, 0);
+          
+          // Check if date is within range
+          if (selectedDate >= shiftStart && selectedDate <= shiftEnd) {
+            // Get day of week for selected date (0 = Sunday, 1 = Monday, etc.)
+            const selectedDayOfWeek = selectedDate.getDay();
+            const dayToAbbr: { [key: number]: string } = { 0: "su", 1: "mo", 2: "tu", 3: "we", 4: "th", 5: "fr", 6: "sa" };
+            const selectedDayAbbr = dayToAbbr[selectedDayOfWeek];
+            
+            // Check if this day is in recurrenceDates
+            occursOnDate = shift.recurrenceDates.includes(selectedDayAbbr);
+          }
+        } 
+        // Handle non-recurring shifts - check shiftStartDate or shiftDate (for backward compatibility)
+        else {
+          const shiftDate = shift.shiftStartDate ? new Date(shift.shiftStartDate) : (shift.shiftDate ? new Date(shift.shiftDate) : null);
+          if (shiftDate) {
+            shiftDate.setHours(0, 0, 0, 0);
+            const selectedDate = new Date(date);
+            selectedDate.setHours(0, 0, 0, 0);
+            occursOnDate = shiftDate.getTime() === selectedDate.getTime();
+          }
+        }
+        
+        if (!occursOnDate) return false;
+        
+        // Check if shift time falls within this time block
+        const shiftStartTime = shift.shiftStartTime ? new Date(shift.shiftStartTime) : 
+                              (shift.shiftStartDate ? new Date(shift.shiftStartDate) : 
+                              (shift.shiftDate ? new Date(shift.shiftDate) : null));
+        if (!shiftStartTime) return false;
+        
+        const shiftHour = shiftStartTime.getHours();
+        return shiftHour >= i && shiftHour < i + 4;
       });
       
       divs.push(
         <div key={i} className='min-h-[5rem]'>
           <DailyShiftBar onOpenSidebar={(shift: Shift, route: IRoute, location_list: string[]) => {
-              setSelectedItem({shift, route, location_list});
+              setSelectedItem({shift, route, shiftDate: new Date(date), location_list});
             }}
             onDeleteShift={handleDeleteShift}
             shift={currShifts}

@@ -4,6 +4,7 @@ import { ObjectId } from "mongodb";
 import RouteModel, { ILocation, IRoute } from "../models/Route";
 import dbConnect from "../dbConnect";
 import { requireUser, requireAdmin } from "../auth/auth";
+import { UserShiftModel } from "../models/userShift";
 
 export async function getRoute(id: string): Promise<IRoute | null> {
   await requireAdmin();
@@ -114,5 +115,35 @@ export async function getAllRoutesbyIds(routeIds: ObjectId[]): Promise<string | 
   } catch (error) {
       const err = error as Error;
       throw new Error(`Error has occurred when getting all routes: ${err.message}`);
+  }
+}
+
+export async function getRoutesByShiftId(shiftId: string): Promise<IRoute[]> {
+  try {
+    await requireAdmin();
+    await dbConnect();
+    const routes = await UserShiftModel.aggregate([
+      {
+        $match: { shiftId: new ObjectId(shiftId) } // filter by this shift
+      },
+      {
+        $lookup: {
+          from: "routes",           // the collection to join
+          localField: "routeId",    // field in usershifts
+          foreignField: "_id",      // field in routes
+          as: "routeInfo"           // name for joined field
+        }
+      },
+      {
+        $unwind: "$routeInfo"       // flatten
+      },
+      {
+        $replaceRoot: { newRoot: "$routeInfo" }  // return only route data
+      }
+    ]);
+    return routes;
+  } catch (error) {
+    console.error("Error fetching route by shift ID:", error);
+    throw new Error("Failed to fetch route by shift ID");
   }
 }

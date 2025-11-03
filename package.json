@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "secrets:linux": "echo Enter Bitwarden Password: && read BW_PASSWORD && (bw logout || exit 0) && export BW_SESSION=`bw login gt.engineering@hack4impact.org $BW_PASSWORD --raw` && yarn secrets:get",
+    "secrets:windows": "set /p BW_PASSWORD=Enter Bitwarden Password:&& (bw logout || VER>NUL) && yarn secrets:login",
+    "secrets:login": "FOR /F %a IN ('bw login gt.engineering@hack4impact.org %BW_PASSWORD% --raw') DO SET BW_SESSION=%a && yarn secrets:get",
+    "secrets:get": "bw sync && bw get item 48cbd005-e9ce-4f2a-b52b-b384003d2e54 | fx .notes > \".env\""
   },
   "browser": {
     "child_process": false
@@ -29,6 +33,7 @@
     "react-dom": "^18",
     "react-hook-form": "^7.53.2",
     "react-icons": "^5.3.0",
+    "react-select": "^5.10.2",
     "rrule": "^2.8.1"
   },
   "devDependencies": {
