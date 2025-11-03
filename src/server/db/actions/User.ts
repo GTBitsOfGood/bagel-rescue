@@ -34,23 +34,25 @@ async function createUser(
 }
 
 async function getUser(
-  id: mongoose.Types.ObjectId,
+  id: string,
   session?: ClientSession
 ): Promise<IUser | null> {
   await requireUser();
   await dbConnect();
 
+  const userId = new mongoose.Types.ObjectId(id);
+
   const document = await User.findById(
-    id,
+    userId,
     { __v: 0 },
     {
       session: session,
     }
-  );
+  ).lean<IUser>();
   if (!document) {
-    throw new Error("User with that id " + id.toString() + " does not exist");
+    throw new Error("User with that id " + id + " does not exist");
   }
-  return document;
+  return JSON.parse(JSON.stringify(document));
 }
 
 async function getUserByEmail(
