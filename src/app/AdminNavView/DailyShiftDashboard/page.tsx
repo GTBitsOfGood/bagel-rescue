@@ -26,12 +26,8 @@ import { dateToString, getTodayDate } from '@/lib/dateHandler';
 
 function DailyShiftDashboardPage() {
   const [shiftSearchText, setShiftSearchText] = useState("");
-  const [search, setSearch] = useState<string>('');
   const [date, setDate] = useState<Date>(getTodayDate());
   const [dailyShiftData, setDailyShiftData] = useState([]);
-  const [shifts, setShifts] = useState<Shift[]>([]);
-  const [routes, setRoutes] = useState<{ [key: string]: IRoute }>({});
-  const [locations, setLocations] = useState<{ [key: string]: string[] }>({});
   const [selectedItem, setSelectedItem] = useState<ShiftSidebarInfo | null>(null);
   const [activeTab, setActiveTab] = useState<"assigned" | "open">("assigned");
   const [shiftToRouteMap, setShiftToRouteMap] = useState<Map<string, IRoute>>(
