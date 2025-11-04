@@ -416,7 +416,7 @@ export async function getShiftsByWeek(
       $match: {
         $expr: {
           $and: [
-            { $lte: ["$shiftDate", endDate] },     // shift starts before the week ends
+            { $lte: ["$shiftStartDate", endDate] },     // shift starts before the week ends
             { $gte: ["$shiftEndDate", startDate] } // shift ends after the week starts
           ]
       }
