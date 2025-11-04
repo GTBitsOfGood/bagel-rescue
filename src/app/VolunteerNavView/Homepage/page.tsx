@@ -5,9 +5,7 @@ import { useRouter } from "next/navigation";
 import Sidebar from "../../../components/Sidebar";
 import styles from "./page.module.css";
 import {
-  getCurrentUserShifts,
   getCurrentUserShiftsByDateRange,
-  getUserShifts,
   getUserShiftsByDateRange,
   UserShiftData,
   getOpenShifts,
@@ -50,7 +48,6 @@ const FilterIcon = () => (
  */
 
 const MyShiftsPage: React.FC = () => {
-
   const router = useRouter();
   const [shifts, setShifts] = useState<UserShiftData[]>([]);
   const [openShifts, setOpenShifts] = useState<UserShiftData[]>([]);
@@ -325,6 +322,7 @@ const MyShiftsPage: React.FC = () => {
 
         <ShiftsTable 
           shifts={activeTab === "myShifts" ? shifts : openShifts}
+          date={currentDate}
           loading={loading}
           error={error}
           viewingDate={currentDate}

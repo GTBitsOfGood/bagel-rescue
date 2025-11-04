@@ -2,20 +2,22 @@
 
 import "./stylesheet.css";
 import AdminSidebar from "@/components/AdminSidebar";
-import { getAllLocationsById } from "@/server/db/actions/location";
-import { getAllRoutes } from "@/server/db/actions/Route";
-import { createShift } from "@/server/db/actions/shift";
-import { getAllUsers } from "@/server/db/actions/User";
+import { getAllRoutes, getRoutesByShiftId } from "@/server/db/actions/Route";
+import { createShift, getShiftFromString } from "@/server/db/actions/shift";
+import { getAllUsers, getUsersPerShift } from "@/server/db/actions/User";
 import { createUserShift } from "@/server/db/actions/userShifts";
-import { Location } from "@/server/db/models/location";
 import { IRoute } from "@/server/db/models/Route";
 import { faArrowLeft, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import dayToNumber, { dayList } from "@/lib/dayHandler";
 
-export default function NewShiftPage() {
+import { updateShift } from "@/server/db/actions/shift";
+import { deleteUserShift, updateUserShiftsRoute } from "@/server/db/actions/userShifts";
+import { dateToString, stringToDate, stringZToDate } from "@/lib/dateHandler";
+
+export default function EditShift() {
     const timeStartInputRef = useRef<HTMLInputElement>(null);
     const timeEndInputRef = useRef<HTMLInputElement>(null);
     const [searchRoutes, setSearchRoutes] = useState<IRoute[]>([]);
@@ -24,9 +26,7 @@ export default function NewShiftPage() {
     const [volunteerSearchText, setVolunteerSearchText] = useState<string>("");
     const [searchVolunteers, setSearchVolunteers] = useState<any[]>([]);
     const [volunteers, setVolunteers] = useState<any[]>([]);
-    const [isSearchingVolunteers, setIsSearchingVolunteers] = useState<boolean>(false);
     const [hasAddedRoute, setHasAddedRoute] = useState<boolean>(false);
-    const [locations, setLocations] = useState<Location[]>([]);
     const [selectedDays, setSelectedDays] = useState<string[]>([]);
     const [startTime, setStartTime] = useState<string>("");
     const [endTime, setEndTime] = useState<string>("");
@@ -35,10 +35,62 @@ export default function NewShiftPage() {
     const [startDate, setStartDate] = useState<string>("");
     const [endDate, setEndDate] = useState<string>("");
     const [additionalInfo, setAdditionalInfo] = useState<string>("");
-    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-
+    const { shiftId } = useParams<{ shiftId: string }>();
     const router = useRouter();
-    
+
+    // NEW state to retain original server data for diffing
+    const [originalShift, setOriginalShift] = useState<any | null>(null);
+    const [originalVolunteers, setOriginalVolunteers] = useState<any[]>([]);
+    const [originalRouteId, setOriginalRouteId] = useState<string | null>(null);
+    const [isDirty, setIsDirty] = useState<boolean>(false);
+
+  // Prepopulate shift information
+  useEffect(() => {
+    const getShiftInformation = async () => {
+      const shift = await getShiftFromString(shiftId);
+      const volunteersData = await getUsersPerShift(shiftId);
+      const routeData = await getRoutesByShiftId(shiftId);
+
+      if (shift) {
+        const startTimeDate = new Date(shift.shiftStartTime);
+        const endTimeDate = new Date(shift.shiftEndTime);
+        
+        const formatTimeForInput = (date: Date) => {
+          const hours = date.getHours().toString().padStart(2, '0');
+          const minutes = date.getMinutes().toString().padStart(2, '0');
+          return `${hours}:${minutes}`;
+        };
+
+        setStartTime(formatTimeForInput(startTimeDate));
+        setEndTime(formatTimeForInput(endTimeDate));
+        setTimeSpecific(shift.timeSpecific);
+        setAdditionalInfo(shift.additionalInfo || "");
+        setSelectedDays(shift.recurrenceDates.map((day: string) => day));
+        
+        if (shift.shiftStartDate && shift.shiftEndDate) {
+          setDateRange(true);
+          setStartDate(dateToString(stringZToDate(shift.shiftStartDate)));
+          setEndDate(dateToString(stringZToDate(shift.shiftEndDate)));
+        }
+
+        if (volunteersData.length > 0) {
+          setVolunteers(volunteersData);
+        }
+        if (routeData.length > 0) {
+          setRoutes(routeData);
+          setHasAddedRoute(true);
+        }
+
+        // NEW: store originals for diffing
+        setOriginalShift(shift);
+        setOriginalVolunteers(volunteersData || []);
+        // prefer shift.routeId if present, otherwise first route from routeData
+        setOriginalRouteId(shift.routeId ?? (routeData && routeData[0]?._id) ?? null);
+      }
+    };
+    getShiftInformation();
+  }, [shiftId]);
+
 
   useEffect(() => {
     const fetchRoutes = async () => {
@@ -58,15 +110,48 @@ export default function NewShiftPage() {
     fetchVolunteers();
   }, []);
 
+  // HELPER: compare arrays of objects by _id
+  function idsEqualArray(a: any[], b: any[]) {
+    const aIds = (a || []).map((x) => x._id).filter(Boolean).sort();
+    const bIds = (b || []).map((x) => x._id).filter(Boolean).sort();
+    if (aIds.length !== bIds.length) return false;
+    for (let i = 0; i < aIds.length; i++) if (aIds[i] !== bIds[i]) return false;
+    return true;
+  }
+
+  function daysEqual(a: string[], b: string[]) {
+    const norm = (arr: string[]) => (arr || []).map(s => s.toString().toLowerCase()).sort();
+    const A = norm(a), B = norm(b);
+    if (A.length !== B.length) return false;
+    for (let i = 0; i < A.length; i++) if (A[i] !== B[i]) return false;
+    return true;
+  }
+
+  // COMPUTE dirty (enable Save Changes only when something changed)
   useEffect(() => {
-    const fetchLocations = async () => {
-      if (routes.length === 0) return;
-      const response = await getAllLocationsById(routes[0].locations.map((loc) => String(loc.location)));
-      const data = JSON.parse(response || "[]");
-      setLocations(data || []);
-    };
-    fetchLocations();
-  }, [routes]);
+    if (!originalShift) {
+      setIsDirty(false);
+      return;
+    }
+
+    const routeIdCurrent = routes[0]?._id.toString() ?? originalRouteId;
+    const timesChanged = (startTime !== (() => {
+      const d = new Date(originalShift.shiftStartTime); return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+    })()) || (endTime !== (() => {
+      const d = new Date(originalShift.shiftEndTime); return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+    })());
+
+    const timeSpecificChanged = (timeSpecific !== !!originalShift.timeSpecific);
+    const dateRangeChanged = (dateRange !== !!(originalShift.shiftStartDate && originalShift.shiftEndDate));
+    const startDateChanged = (startDate !== (originalShift.shiftStartDate ? (new Date(originalShift.shiftStartDate)).toISOString().slice(0,10) : ""));
+    const endDateChanged = (endDate !== (originalShift.shiftEndDate ? (new Date(originalShift.shiftEndDate)).toISOString().slice(0,10) : ""));
+    const additionalInfoChanged = (additionalInfo !== (originalShift.additionalInfo || ""));
+    const recurrenceChanged = !daysEqual(selectedDays, originalShift.recurrenceDates || []);
+    const volunteersChanged = !idsEqualArray(volunteers, originalVolunteers);
+    const routeChanged = (routeIdCurrent !== originalRouteId);
+
+    setIsDirty(timesChanged || timeSpecificChanged || dateRangeChanged || startDateChanged || endDateChanged || additionalInfoChanged || recurrenceChanged || volunteersChanged || routeChanged);
+  }, [startTime, endTime, timeSpecific, dateRange, startDate, endDate, additionalInfo, selectedDays, volunteers, routes, originalShift, originalVolunteers, originalRouteId]);
 
   function addRoute(index: number): void {
     const newRoutes = [...routes];
@@ -100,7 +185,6 @@ export default function NewShiftPage() {
     setSearchVolunteers(newSearchVolunteers);
 
     setVolunteerSearchText("");
-    setIsSearchingVolunteers(false);
   }
 
   function removeVolunteer(index: number): void {
@@ -111,18 +195,6 @@ export default function NewShiftPage() {
     const newVolunteers = [...volunteers];
     newVolunteers.splice(index, 1);
     setVolunteers(newVolunteers);
-  }
-
-  function locationsList() {
-    if (locations.length === 0) return <div></div>;
-    return locations.map((loc) => {
-        return (
-            <div key={loc._id} className="content-center bg-blue-300 px-2 rounded-lg mr-2">
-            <p className="text-[#072B68] font-bold text-xs content-center">{loc["locationName"]}</p>
-            </div>
-        );
-    }
-    );
   }
 
 
@@ -231,7 +303,6 @@ export default function NewShiftPage() {
           placeholder="Type to search..."
           value={volunteerSearchText}
           onChange={(e) => setVolunteerSearchText(e.target.value)}
-          onClick={() => setIsSearchingVolunteers(true)}
           style={{
             border: 'none',
             outline: 'none',
@@ -277,200 +348,120 @@ export default function NewShiftPage() {
     return [hours, minutes];
   }
 
-  const findFirstDateAfterToday = (days: string[]): Date | null => {
-    if (days.length === 0) return null;
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize to start of day
-    const currentDay = today.getDay();
-    
-    // Remove duplicates and convert to numbers
-    const uniqueDays: {[key: number]: boolean} = {};
-    for (const day of days) {
-      uniqueDays[dayToNumber[day]] = true;
-    }
-    
-    const dayNumbers: number[] = [];
-    for (const dayNumStr in uniqueDays) {
-      dayNumbers.push(parseInt(dayNumStr, 10));
-    }
-    
-    dayNumbers.sort((a, b) => a - b);
-    
-    // Find the first day after today
-    for (let i = 0; i < dayNumbers.length; i++) {
-      if (dayNumbers[i] > currentDay) {
-        const result = new Date(today);
-        result.setDate(today.getDate() + (dayNumbers[i] - currentDay));
-        return result;
-      }
-    }
-    
-    // If no day found after today, return the first day of next week
-    if (dayNumbers.length > 0) {
-      const result = new Date(today);
-      result.setDate(today.getDate() + (7 - currentDay + dayNumbers[0]));
-      return result;
-    }
-    
-    return null;
-  };
-
   async function saveEdits() {
-    // Prevent duplicate submissions
-    if (isSubmitting) {
+
+    if (!originalShift) {
+      alert("Original shift data not loaded.");
       return;
     }
-
-    setIsSubmitting(true);
 
     // Validate required fields marked with asterisks
-    if (!startTime.trim()) {
-      alert("Please enter a start time.");
-      setIsSubmitting(false);
-      return;
-    }
-    
-    if (!endTime.trim()) {
-      alert("Please enter an end time.");
-      setIsSubmitting(false);
-      return;
-    }
-    
-    if (dateRange) {
-      if (!startDate.trim()) {
-        alert("Please enter a start date.");
-        setIsSubmitting(false);
-        return;
-      }
-      
-      if (!endDate.trim()) {
-        alert("Please enter an end date.");
-        setIsSubmitting(false);
-        return;
-      }
-    }
-    
-    if (routes.length === 0) {
-      alert("Please add a route.");
-      setIsSubmitting(false);
-      return;
-    }
-    
-    if (volunteers.length === 0) {
-      alert("Please add at least one volunteer.");
-      setIsSubmitting(false);
-      return;
-    }
-    
-    if (selectedDays.length === 0) {
-      alert("Please select at least one day.");
-      setIsSubmitting(false);
-      return;
-    }
-    
-    const selectedRoute = routes[0]._id;
+    if (!startTime.trim()) { alert("Please enter a start time."); return; }
+    if (!endTime.trim()) { alert("Please enter an end time."); return; }
+    if (dateRange) { if (!startDate.trim()) { alert("Please enter a start date."); return; } if (!endDate.trim()) { alert("Please enter an end date."); return; } }
+    if (routes.length === 0) { alert("Please add a route."); return; }
+    if (volunteers.length === 0) { alert("Please add at least one volunteer."); return; }
+    if (selectedDays.length === 0) { alert("Please select at least one day."); return; }
 
+    // Build shift update payload (only fields this UI edits)
+    const selectedRouteId = routes[0]._id.toString();
     const [startHour, startMinute] = timeIntoHoursandMinutes(startTime);
     const [endHour, endMinute] = timeIntoHoursandMinutes(endTime);
-    const startTimeAsDate = new Date("1970-01-01T09:00:00.000Z");
-    startTimeAsDate.setHours(startHour);
-    startTimeAsDate.setMinutes(startMinute);
-    startTimeAsDate.setSeconds(0);
-
-    const endTimeAsDate = new Date("1970-01-01T09:00:00.000Z");
-    endTimeAsDate.setHours(endHour);
-    endTimeAsDate.setMinutes(endMinute);
-    endTimeAsDate.setSeconds(0);
-    
-    const targetDay = selectedDays.map((day) => day.toLowerCase());
-    let finalStartDay = new Date(); 
-    let finalEndDay = new Date();
 
     if (startHour === 0 && startMinute === 0 || 
         endHour === 0 && endMinute === 0 || 
         endHour < startHour || 
         (endHour === startHour && endMinute <= startMinute)) {
-      alert("Please enter a valid start time.");
-      setIsSubmitting(false);
+      alert("Please enter valid times.");
       return;
     }
 
+    let finalStartDate: Date;
+    let finalEndDate: Date;
+
     if (!dateRange) {
-      finalStartDay = findFirstDateAfterToday(targetDay)!;
-      finalEndDay = new Date(finalStartDay); 
-      finalEndDay.setFullYear(finalEndDay.getFullYear() + 5);
+      finalStartDate = stringToDate(startDate);
+      finalEndDate = new Date(stringToDate(startDate));
+      finalEndDate.setUTCFullYear(finalEndDate.getUTCFullYear() + 5);
     } else {
-      finalStartDay = new Date(startDate);
-      finalEndDay = new Date(endDate);
+      finalStartDate = stringToDate(startDate);
+      finalEndDate = stringToDate(endDate);
     }
 
-    // TODO: remove
-    finalStartDay.setHours(0);
-    finalStartDay.setMinutes(0);
-    finalStartDay.setSeconds(0);
-
-    // TODO: remove
-    finalEndDay.setHours(0);
-    finalEndDay.setMinutes(0);
-    finalEndDay.setSeconds(0);
-
-    const newShift = {
-      routeId: selectedRoute,
-      shiftStartTime: startTimeAsDate,
-      shiftEndTime: endTimeAsDate,
-      shiftStartDate: finalStartDay,
-      shiftEndDate: finalEndDay,
-      recurrenceDates: targetDay,
-      timeSpecific: timeSpecific ?? false,
-      confirmationForm: {},
-      canceledShifts: [],
-      comments: {},
-      capacity: 0,
-      creationDate: new Date(),
+    const shiftUpdatePayload: any = {
+      routeId: selectedRouteId,
+      shiftStartTime: new Date(1970,0,1,startHour,startMinute,0,0),
+      shiftEndTime: new Date(1970,0,1,endHour,endMinute,0,0),
+      shiftStartDate: dateToString(finalStartDate),
+      shiftEndDate: dateToString(finalEndDate),
+      recurrenceDates: selectedDays.map(d => d.toLowerCase()),
+      timeSpecific: !!timeSpecific,
       additionalInfo: additionalInfo ?? "",
       currSignedUp: volunteers.length,
     };
 
-    var shiftCreationComplete = false;
-    
+    // Determine volunteers added/removed relative to originalVolunteers
+    const origIds = (originalVolunteers || []).map(v => v._id);
+    const currIds = (volunteers || []).map(v => v._id);
+
+    const addedVolunteerObjects = volunteers.filter(v => !origIds.includes(v._id));
+    const removedVolunteerObjects = originalVolunteers.filter(v => !currIds.includes(v._id));
+
     try {
-      // Create the shift first
-      const shiftResult = await createShift(JSON.stringify(newShift));
-      if (!shiftResult) {
-        throw new Error("Failed to create shift");
-      }
-      const shiftData = JSON.parse(shiftResult!);
-      const shiftId = shiftData._id;
-      const routeId = shiftData.routeId;
+      // 1) Update shift record
+      const updateResult = await updateShift(shiftId, JSON.stringify(shiftUpdatePayload));
+      if (!updateResult) throw new Error("Failed to update shift");
+      // return;
 
-      // Create UserShift records for each volunteer
-      for (const volunteer of volunteers) {
-        await createUserShift({
-          userId: volunteer._id,
-          shiftId: shiftId,
-          routeId: routeId,
-          recurrenceDates: targetDay,
-          shiftDate: finalStartDay,
-          shiftEndDate: finalEndDay,
-        });
+      // 2) For removed volunteers, delete their userShift entry
+      for (const v of removedVolunteerObjects) {
+        try {
+          // adjust delete API call signature to your backend (this assumes deleteUserShift(userId, shiftId))
+          await deleteUserShift(v._id.toString(), shiftId);
+        } catch (err) {
+          console.warn("Failed to delete userShift for", v._id, err);
+        }
       }
 
-      shiftCreationComplete = true;
+      // 3) For added volunteers, create userShift entries
+      for (const v of addedVolunteerObjects) {
+        try {
+          await createUserShift({
+            userId: v._id,
+            shiftId: shiftId,
+            routeId: selectedRouteId,
+            recurrenceDates: selectedDays,
+            shiftDate: dateToString(finalStartDate),
+            shiftEndDate: dateToString(finalEndDate),
+          });
+        } catch (err) {
+          console.warn("Failed to create userShift for", v._id, err);
+        }
+      }
+
+      // 4) If route changed, update userShifts' routeId for this shift
+      if (originalRouteId && selectedRouteId && selectedRouteId !== originalRouteId) {
+        try {
+          // adjust the updateUserShiftsRoute signature if needed
+          await updateUserShiftsRoute(shiftId, selectedRouteId);
+        } catch (err) {
+          console.warn("Failed to update userShifts routeId for shift", shiftId, err);
+        }
+      }
+
+      // On success: update originals and navigate
+      setOriginalShift({ ...originalShift, ...shiftUpdatePayload });
+      setOriginalVolunteers([...volunteers]);
+      setOriginalRouteId(selectedRouteId);
+      setIsDirty(false);
+
+      router.push("/AdminNavView/DailyShiftDashboard");
+      // optional success message
+      // alert("Shift updated successfully.");
     } catch (error) {
-      console.error("Error creating shift or user shifts:", error);
-      alert("Error creating shift. Please try again.");
-      setIsSubmitting(false);
-      return;
-    } finally {
-      if (shiftCreationComplete) {
-        router.push("/AdminNavView/DailyShiftDashboard");
-      } else {
-        setIsSubmitting(false);
-      }
+      console.error("Error updating shift or user shifts:", error);
+      alert("Error saving changes. Please try again.");
     }
-
-    alert("Shift(s) created successfully.");
   }
 
 
@@ -486,15 +477,15 @@ export default function NewShiftPage() {
                         <span className="font-semibold text-base text-[#6C7D93]">Back</span>
                     </div>
                     <div className="flex justify-between text-center align-middle">
-                        <div className="text-[#072B68] font-bold text-4xl content-center">New Shift</div>
+                        <div className="text-[#072B68] font-bold text-4xl content-center">Edit Shift</div>
                         <div className="flex justify-end">
-                            <button 
-                              onClick={() => saveEdits()} 
-                              disabled={isSubmitting}
-                              className="font-bold text-white px-6 py-[.8rem] rounded-xl text-base" 
-                              style={{backgroundColor: isSubmitting ? '#CCCCCC' : '#A3A3A3', cursor: isSubmitting ? 'not-allowed' : 'pointer'}}
+                            <button
+                              onClick={() => saveEdits()}
+                              className="font-bold text-white px-6 py-[.8rem] rounded-xl text-base"
+                              style={{ backgroundColor: isDirty ? '#0F7AFF' : '#A3A3A3' }}
+                              disabled={!isDirty}
                             >
-                              {isSubmitting ? 'Creating...' : 'Complete Shift'}
+                              Save Changes
                             </button>
                         </div>
                     </div>
@@ -509,11 +500,11 @@ export default function NewShiftPage() {
                             <div className="flex space-x-12">
                               <div className="flex flex-col space-y-2 flex-1">
                                   <p className="text-[#072B68] font-bold text-lg">Start Time <span className="text-red-500">*</span></p>
-                                  <input onChange={(e) => setStartTime(e.target.value)} ref={timeStartInputRef} onClick={() => handleClick()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
+                                  <input value={startTime} onChange={(e) => setStartTime(e.target.value)} ref={timeStartInputRef} onClick={() => handleClick()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
                               </div>
                               <div className="flex flex-col space-y-2 flex-1">
                                 <p className="text-[#072B68] font-bold text-lg">End Time <span className="text-red-500">*</span></p>
-                                <input onChange={(e) => setEndTime(e.target.value)} ref={timeEndInputRef} onClick={() => handleClickEnd()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
+                                <input value={endTime} onChange={(e) => setEndTime(e.target.value)} ref={timeEndInputRef} onClick={() => handleClickEnd()} className="px-4 py-[.8rem] rounded-lg border border-blue-600 h-full text-gray-500" type="time" placeholder="Enter additional information here"/>
                               </div>
                             </div>
                             {/* this is the time specific area */}
@@ -617,6 +608,7 @@ export default function NewShiftPage() {
                             {/* this is the additional information area */}
                             <p className="text-[#072B68] font-bold text-lg">Additional Information</p>
                             <textarea
+                                value={additionalInfo}
                                 className="additional-info-textarea"
                                 placeholder="Enter additional information here"
                                 onChange={(e) => setAdditionalInfo(e.target.value)}
