@@ -1,30 +1,32 @@
-## Getting Started
+# Bagels Rescue
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- React.js: Front-end
+- Next.js: API routes and server-side rendering
+- MongoDB: Permanently storing info
+- Mail System???
+- Netlify: Deployment and preview envs
+- npm: Package management.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Initializing Env Vars
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+- If you are an EM setting up a project for the first time, read [the Bitwarden guide here](https://gtbitsofgood.notion.site/Secrets-Passwords-Bitwarden-74c4806a1f29485b8fb85ea29f273ab9) before continuing forward.
+- Run `npm run secrets:linux` for mac/linux or `npm run secrets:windows` on windows to sync development secrets from Bitwarden and save them to a local `.env` file. Contact a leadership member for the Bitwarden password.
 
-## Connecting to MongoDB and other stuff
+### Updating Env Vars
 
-Contact EM for .env file which will contain the URI.
+- For dev, update `.env` and `next.config.js`
+- For production, add the env vars to your host, **NEVER** commit `.env` to your version control system.
 
-## Tech Stack
+## Running
 
-- Next.js (frontend & backend)
-- Firebase (auth)
-- Tailwind (styling)
-- Mongo (db)
+### Development
+
+To understand this code better, read the [Code Tour](/CODETOUR.md).
+
+1. Run `npm run dev`
+
+![image info](./public/images/bog.svg)

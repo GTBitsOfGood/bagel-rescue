@@ -153,10 +153,7 @@ export default function LoginScreen() {
                         const res = await loginWithCredentials(email, password);
                         console.log(res);
                         if (res.success) {
-                          console.log("success!")
-                          console.log('isAdmin' in res);
                           if ('isAdmin' in res) {
-                            console.log("Pushing???");
                             router.push(res.isAdmin === 'admin' 
                               ? "/AdminNavView/WeeklyShiftDashboard" 
                               : "/VolunteerNavView/Homepage");

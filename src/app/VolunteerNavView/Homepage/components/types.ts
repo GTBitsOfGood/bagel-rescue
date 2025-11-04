@@ -20,6 +20,7 @@ export type DateNavigationProps = {
 
 export type ShiftsTableProps = {
   shifts: UserShiftData[];
+  date: Date;
   loading: boolean;
   error: string | null;
   isOpenShifts?: boolean;

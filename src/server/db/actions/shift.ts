@@ -7,6 +7,7 @@ import dbConnect from "../dbConnect";
 import { RecurrenceModel, Shift, ShiftModel } from "../models/shift";
 import { UserShiftModel } from "../models/userShift";
 import { requireAdmin } from "../auth/auth";
+import { Types } from "mongoose";
 
 export async function createShift(shiftObject: string): Promise<string | null> {
   await requireAdmin();
@@ -20,17 +21,21 @@ export async function createShift(shiftObject: string): Promise<string | null> {
   }
 }
 
-export async function getShift(shiftId: ObjectId): Promise<Shift | null> {
+export async function getShift(shiftId: Types.ObjectId): Promise<Shift | null> {
   await requireAdmin();
   try {
     await dbConnect();
-
     const data = await ShiftModel.findById(shiftId);
     return data;
   } catch (error) {
     const err = error as Error;
     throw new Error(`Error has occurred when getting shift: ${err.message}`);
   }
+}
+
+
+export async function getShiftFromString(id: string) {
+  return JSON.parse(JSON.stringify(await getShift(new mongoose.Types.ObjectId(id))));
 }
 
 export async function updateComment(data: string): Promise<any> {
@@ -101,7 +106,7 @@ TODO:
 When a shift's date changes, all associated UserShift records need to be updated to reflect the new date
 */
 export async function updateDate(
-  shiftId: ObjectId,
+  shiftId: Types.ObjectId,
   newDate: Date
 ): Promise<Shift | null> {
   await requireAdmin();
@@ -156,7 +161,7 @@ export async function updateDate(
 
 // updates the capacity of a shift and all its recurrences
 export async function updateCapacity(
-  shiftId: ObjectId,
+  shiftId: Types.ObjectId,
   newCapacity: number
 ): Promise<Shift | null> {
   await requireAdmin();
@@ -217,7 +222,7 @@ export async function updateRecurrenceRule(
  * If capacity is reached for that specific date, then false is returned
  */
 export async function newSignUp(
-  shiftId: ObjectId,
+  shiftId: Types.ObjectId,
   userId: ObjectId,
   shiftDate?: Date
 ): Promise<boolean> {
@@ -503,11 +508,47 @@ return JSON.stringify(shifts);
   }
 }
 
+export async function updateShift(shiftId: string, shiftUpdatePayload: string): Promise<string | null> {
+  await requireAdmin();
+  try {
+    await dbConnect();
+    
+    const updateData = JSON.parse(shiftUpdatePayload);
+    
+    // Find and update the shift
+    const updatedShift = await ShiftModel.findByIdAndUpdate(
+      shiftId,
+      {
+        $set: {
+          routeId: updateData.routeId,
+          shiftStartTime: updateData.shiftStartTime,
+          shiftEndTime: updateData.shiftEndTime,
+          shiftStartDate: updateData.shiftStartDate,
+          shiftEndDate: updateData.shiftEndDate,
+          recurrenceDates: updateData.recurrenceDates,
+          timeSpecific: updateData.timeSpecific,
+          additionalInfo: updateData.additionalInfo,
+          currSignedUp: updateData.currSignedUp
+        }
+      },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedShift) {
+      throw new Error(`Shift not found with ID: ${shiftId}`);
+    }
+
+    return JSON.stringify(updatedShift);
+  } catch (error) {
+    const err = error as Error;
+    throw new Error(`Error updating shift: ${err.message}`);
+  }
+}
+
 export async function getShiftsByDay(
   targetDate: Date
 ): Promise<string | null> {
   await requireAdmin();
-
   try {
     await dbConnect();
     
