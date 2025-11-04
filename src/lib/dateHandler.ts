@@ -25,3 +25,9 @@ export const combineDateAndTime = (date: Date, time: Date) => {
     combinedDate.setHours(time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds());
     return combinedDate;
 };
+
+export const normalizeDate = (date: Date) => {
+    const normalizedDate = new Date(date);
+    normalizedDate.setHours(0, 0, 0, 0);
+    return normalizedDate;
+};

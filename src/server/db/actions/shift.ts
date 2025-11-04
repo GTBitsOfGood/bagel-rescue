@@ -8,6 +8,7 @@ import { RecurrenceModel, Shift, ShiftModel } from "../models/shift";
 import { UserShiftModel } from "../models/userShift";
 import { requireAdmin } from "../auth/auth";
 import { Types } from "mongoose";
+import { normalizeDate } from "@/lib/dateHandler";
 
 export async function createShift(shiftObject: string): Promise<string | null> {
   await requireAdmin();
@@ -33,6 +34,17 @@ export async function getShift(shiftId: Types.ObjectId): Promise<Shift | null> {
   }
 }
 
+export async function deleteShift(shiftId: Types.ObjectId): Promise<void> {
+  await requireAdmin();
+  try {
+    await dbConnect();
+    await UserShiftModel.deleteMany({ shiftId });
+    await ShiftModel.findByIdAndDelete(shiftId);
+  } catch (error) {
+    const err = error as Error;
+    throw new Error(`Error has occurred when deleting shift: ${err.message}`);
+  }
+}
 
 export async function getShiftFromString(id: string) {
   return JSON.parse(JSON.stringify(await getShift(new mongoose.Types.ObjectId(id))));
@@ -413,6 +425,9 @@ export async function getShiftsByWeek(
 ): Promise<string | null> {
   await requireAdmin();
 
+  startDate = normalizeDate(startDate);
+  endDate = normalizeDate(endDate);
+
   try {
     await dbConnect();
     const shifts = await ShiftModel.aggregate([
@@ -420,9 +435,25 @@ export async function getShiftsByWeek(
     {
       $match: {
         $expr: {
-          $and: [
-            { $lte: ["$shiftStartDate", endDate] },     // shift starts before the week ends
-            { $gte: ["$shiftEndDate", startDate] } // shift ends after the week starts
+          $or: [
+            {
+              $and: [
+                { $lte: ["$shiftStartDate", endDate] },     // shift starts before the week ends
+                { $gte: ["$shiftEndDate", startDate] } // shift ends after the week starts
+              ]
+            },
+            {
+              $and: [
+                { $lte: ["$shiftEndDate", endDate] },     // shift ends before the week ends
+                { $gte: ["$shiftEndDate", startDate] } // shift starts after the week starts
+              ]
+            },
+            {
+              $and: [
+                { $lte: ["$shiftStartDate", endDate] },     // shift ends before the week ends
+                { $gte: ["$shiftStartDate", startDate] } // shift starts after the week starts
+              ]
+            }
           ]
       }
     }
@@ -470,6 +501,7 @@ export async function getShiftsByWeek(
         capacity: 1,
         currSignedUp: 1,
         additionalInfo: 1,
+        canceledShifts: 1,
         status: 1,
         routeName: "$route.routeName",
         routeId: "$route._id",
@@ -621,6 +653,7 @@ export async function getShiftsByDay(
           recurrenceDates: 1,
           shiftStartDate: 1,
           shiftEndDate: 1,
+          canceledShifts: 1,
           capacity: 1,
           currSignedUp: 1,
           additionalInfo: 1,
