@@ -3,6 +3,7 @@ import styles from "../page.module.css";
 import { ShiftsTableProps } from "./types";
 import ShiftDetailsSidebar from "./ShiftDetailsSidebar";
 import { UserShiftData } from "@/server/db/actions/userShifts";
+import { dateToString } from "@/lib/dateHandler";
 
 /**
  * ShiftsTable is a React component that displays a table of shifts.
@@ -98,12 +99,13 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({
         <div className={styles.headerCell}>Time</div>
         <div className={styles.headerCell}>Area</div>
         <div className={styles.headerCell}>Status</div>
+        <div className={styles.headerCell}>Shift Date</div>
         <div className={styles.headerCell}></div>
       </div>
       
       {/* Table body section */}
       <div className={styles.tableBody}>
-        {shifts.map((shift) => (
+        {shifts.map((shift: UserShiftData) => (
           <div key={shift.id} className={styles.tableRow} onClick={() => handleRowClick(shift)}>
             <div className={styles.routeNameCell}>{shift.routeName}</div>
             <div className={styles.timeCell}>
@@ -120,6 +122,9 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({
               >
                 {shift.status}
               </span>
+            </div>
+            <div className={styles.routeNameCell}>
+              {shift.occurrenceDate ? dateToString(shift.occurrenceDate) : ""}
             </div>
             <div>
               {/* Ellipsis button - this will be implemented in the future */}

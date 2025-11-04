@@ -13,6 +13,7 @@ import { cookies } from "next/headers";
 import { adminAuth } from "../firebase/admin/firebaseAdmin";
 import { getDaysInRange } from '@/lib/dayHandler';
 import { ShaCertificate } from "firebase-admin/project-management";
+import { dateToString } from "@/lib/dateHandler";
 
 export type UserRoute = {
   name: string;
@@ -27,6 +28,8 @@ export type UserShiftData = {
   endTime: Date;
   status: "Complete" | "Incomplete";
   occurrenceDate?: Date;
+  canceledShifts?: string[];
+  recurrenceDates?: string[];
 };
 
 export type DetailedShiftData = {
@@ -280,7 +283,9 @@ export async function getUserShiftsByDateRange(
         area: route.locationDescription,
         startTime: new Date(shift.shiftDate),
         endTime: new Date(shift.shiftEndDate),
-        status: shift.status || "Incomplete"
+        status: shift.status || "Incomplete",
+        canceledShifts: shift.canceledShifts,
+        recurrenceDates: shift.recurrenceDates
       };
     });
     
@@ -762,7 +767,8 @@ export async function createUserShift(userShiftData: {
       recurrenceDates: userShiftData.recurrenceDates,
       shiftDate: userShiftData.shiftDate,
       shiftEndDate: userShiftData.shiftEndDate,
-      status: "Incomplete"
+      status: "Incomplete",
+      canceledShifts: [],
     });
 
     await newUserShift.save();
@@ -777,8 +783,7 @@ export async function createUserShift(userShiftData: {
  * Request sub for a shift on a given date
  * 
  * 1. Adds date to shift's canceledShifts array
- * 2. Deletes UserShift relationship
- * 3. Creates new shift with "open" status on given date
+ * 2. Creates new shift with "open" status on given date
  * 
  * @param userShiftId the user that is requesting a sub
  * @param specificDate the date that is being requested for a sub
@@ -799,7 +804,7 @@ export async function requestSubForShift(
     }
 
     // grab user shift
-    const userShift = await UserShiftModel.findById(userShiftId).lean();
+    const userShift = await UserShiftModel.findById(userShiftId);
     if (!userShift) {
       throw new Error("UserShift not found");
     }
@@ -816,9 +821,9 @@ export async function requestSubForShift(
     }
 
     // duplicate check
-    const dateString = specificDate.toISOString();
+    const dateString = dateToString(specificDate);
     const alreadyCanceled = originalShift.canceledShifts.some(
-      (date) => new Date(date).toISOString() === dateString
+      (date) => dateToString(new Date(date)) === dateString
     );
 
     if (!alreadyCanceled) {
@@ -826,8 +831,9 @@ export async function requestSubForShift(
       await originalShift.save();
     }
 
-    // deleting UserShift relationship
-    await UserShiftModel.findByIdAndDelete(userShiftId);
+    // update canceledShifts array in userShift
+    userShift.canceledShifts.push(dateString);
+    await userShift.save();
 
     // gets route for new shift
     const route = await RouteModel.findById(userShift.routeId).lean();
@@ -851,7 +857,7 @@ export async function requestSubForShift(
       timeSpecific: originalShift.timeSpecific || false,
       confirmationForm: {},
       canceledShifts: [],
-      comments: {},
+      comments: originalShift.comments || {},
       creationDate: new Date(),
       shiftDate: specificDate,
       capacity: originalShift.capacity,
@@ -921,7 +927,8 @@ export async function pickUpShift(shiftId: string): Promise<string> {
       recurrenceDates: shift.recurrenceDates || [],
       shiftDate: shift.shiftStartDate,
       shiftEndDate: shift.shiftEndDate,
-      status: "Incomplete"
+      status: "Incomplete",
+      canceledShifts: [],
     });
 
     await newUserShift.save();
@@ -995,6 +1002,15 @@ export async function undoSubRequest(openShiftId: string): Promise<string> {
       throw new Error("Open shift not found");
     }
 
+    // grab user shift
+    const userShift = await UserShiftModel.findOne({
+      shiftId: openShift.parentShiftId,
+      userId: new mongoose.Types.ObjectId(userId)
+    })
+    if (!userShift) {
+      throw new Error("User shift not found");
+    }
+
     // make sure this user created it (only they can undo)
     if (!openShift.createdByUserId || openShift.createdByUserId.toString() !== userId) {
       throw new Error("You can only undo your own sub requests");
@@ -1003,6 +1019,10 @@ export async function undoSubRequest(openShiftId: string): Promise<string> {
     if (openShift.status !== "open") {
       throw new Error("This shift is not an open shift");
     }
+    
+    // remove canceledShift from UserShift
+    userShift.canceledShifts = userShift.canceledShifts.filter(shift => shift !== dateToString(openShift.shiftStartDate));
+    await userShift.save();
 
     // get the parent shift ID (the original shift this was created from)
     const parentShiftId = openShift.parentShiftId || openShift._id;
@@ -1010,26 +1030,12 @@ export async function undoSubRequest(openShiftId: string): Promise<string> {
     const parentShift = await ShiftModel.findById(parentShiftId);
     if (parentShift && parentShift.canceledShifts) {
       // Remove this date from canceledShifts
-      const dateToRemove = openShift.shiftStartDate.toISOString();
+      const dateToRemove = dateToString(openShift.shiftStartDate);
       parentShift.canceledShifts = parentShift.canceledShifts.filter(
-        (date) => new Date(date).toISOString() !== dateToRemove
+        (date) => dateToString(new Date(date)) !== dateToRemove
       );
       await parentShift.save();
     }
-
-
-    // recreate UserShift
-    const newUserShift = new UserShiftModel({
-      userId: new mongoose.Types.ObjectId(userId),
-      shiftId: parentShiftId,
-      routeId: openShift.routeId,
-      recurrenceDates: openShift.recurrenceDates,
-      shiftDate: openShift.shiftStartDate,
-      shiftEndDate: openShift.shiftEndDate,
-      status: "Incomplete"
-    });
-
-    await newUserShift.save();
 
     // deletes open shift
     await ShiftModel.findByIdAndDelete(openShiftId);
