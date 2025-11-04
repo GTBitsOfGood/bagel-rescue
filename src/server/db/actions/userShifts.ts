@@ -13,7 +13,7 @@ import { cookies } from "next/headers";
 import { adminAuth } from "../firebase/admin/firebaseAdmin";
 import { getDaysInRange } from '@/lib/dayHandler';
 import { ShaCertificate } from "firebase-admin/project-management";
-import { dateToString } from "@/lib/dateHandler";
+import { combineDateAndTime, dateToString } from "@/lib/dateHandler";
 
 export type UserRoute = {
   name: string;
@@ -331,7 +331,7 @@ export async function getDetailedShiftInfo(userShiftId: string): Promise<Detaile
       id: userShift._id.toString(),
       routeName: route.routeName || "Unknown Route",
       area: route.locationDescription || "",
-      shiftStartTime: new Date(shift?.shiftStartDate || new Date()),
+      shiftStartTime: new Date(shift?.shiftStartTime || new Date()),
       shiftEndTime: new Date(shift?.shiftEndTime || new Date()),
       shiftStartDate: new Date(shift?.shiftStartDate || new Date()),
       shiftEndDate: new Date(shift?.shiftEndDate || new Date()),
@@ -405,6 +405,7 @@ export async function getDetailedOpenShiftInfo(shiftId: string): Promise<Detaile
         locations: locationNames
       },
       recurrenceDates: shift.recurrenceDates || [],
+      comments: shift.comments || {},
       shiftId: shift._id.toString(),
       routeId: shift.routeId.toString(),
       additionalInfo: shift.additionalInfo || "",
@@ -596,8 +597,8 @@ export async function getOpenShifts(
         id: shift._id.toString(),
         routeName: route.routeName,
         area: route.locationDescription,
-        startTime: new Date(shift.shiftStartDate),
-        endTime: new Date(shift.shiftEndDate),
+        startTime: new Date(shift.shiftStartTime),
+        endTime: new Date(shift.shiftEndTime),
         status: "Incomplete" as const // open shifts are not yet completed
       };
     });
@@ -781,7 +782,6 @@ export async function requestSubForShift(
       canceledShifts: [],
       comments: originalShift.comments || {},
       creationDate: new Date(),
-      shiftDate: specificDate,
       capacity: originalShift.capacity,
       currSignedUp: 0, // resets to 0 since shift is open
       recurrenceRule: originalShift.recurrenceRule || "",
@@ -847,8 +847,8 @@ export async function pickUpShift(shiftId: string): Promise<string> {
       shiftId: shift._id,
       routeId: shift.routeId,
       recurrenceDates: shift.recurrenceDates || [],
-      shiftDate: shift.shiftStartDate,
-      shiftEndDate: shift.shiftEndDate,
+      shiftDate: combineDateAndTime(shift.shiftStartDate, shift.shiftStartTime),
+      shiftEndDate: combineDateAndTime(shift.shiftEndDate, shift.shiftEndTime),
       status: "Incomplete",
       canceledShifts: [],
     });

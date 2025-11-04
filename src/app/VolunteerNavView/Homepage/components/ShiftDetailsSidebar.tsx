@@ -338,7 +338,7 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({
                 {/* Time */}
                 <div>
                   <h3 className="font-semibold text-[#072B68] mb-2">Time</h3>
-                  <p className="text-gray-600">{formatTimeRange(detailedShift.shiftStartDate, detailedShift.shiftEndDate)}</p>
+                  <p className="text-gray-600">{formatTimeRange(detailedShift.shiftStartTime, detailedShift.shiftEndTime)}</p>
                 </div>
 
                 {/* Time Conflict Warning */}

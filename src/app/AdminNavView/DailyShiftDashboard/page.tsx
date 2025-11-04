@@ -15,11 +15,12 @@ import ShiftSidebar, { ShiftSidebarInfo } from '@/app/components/ShiftSidebar';
 import { Location } from '@/server/db/models/location';
 import { ILocation } from '@/server/db/models/Route';
 import { getAllLocationsById } from '@/server/db/actions/location';
+import { dateToString, getTodayDate } from '@/lib/dateHandler';
 
 function DailyShiftDashboardPage() {
 
   const [search, setSearch] = useState<string>('');
-  const [date, setDate] = useState<Date>(new Date());
+  const [date, setDate] = useState<Date>(getTodayDate());
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [routes, setRoutes] = useState<{ [key: string]: IRoute }>({});
   const [locations, setLocations] = useState<{ [key: string]: string[] }>({});
@@ -152,7 +153,11 @@ function DailyShiftDashboardPage() {
         if (!shiftStartTime) return false;
         
         const shiftHour = shiftStartTime.getHours();
-        return shiftHour >= i && shiftHour < i + 4;
+        if (!(shiftHour >= i && shiftHour < i + 4)) return false;
+
+        if (shift.canceledShifts.map((canceledShiftDate) => dateToString(new Date(canceledShiftDate))).includes(dateToString(new Date(date)))) return false;
+
+        return true;
       });
       
       divs.push(

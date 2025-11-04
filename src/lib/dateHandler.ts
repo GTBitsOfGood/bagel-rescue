@@ -19,3 +19,9 @@ export const getTodayDate = () => {
     const today = new Date();
     return new Date(today.getFullYear(), today.getMonth(), today.getDate());
 }
+
+export const combineDateAndTime = (date: Date, time: Date) => {
+    const combinedDate = new Date(date);
+    combinedDate.setHours(time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds());
+    return combinedDate;
+}

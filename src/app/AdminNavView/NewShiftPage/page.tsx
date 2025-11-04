@@ -405,14 +405,12 @@ export default function NewShiftPage() {
       finalEndDay = new Date(endDate);
     }
 
-    // TODO: remove
-    finalStartDay.setHours(0);
-    finalStartDay.setMinutes(0);
+    finalStartDay.setHours(startHour);
+    finalStartDay.setMinutes(startMinute);
     finalStartDay.setSeconds(0);
 
-    // TODO: remove
-    finalEndDay.setHours(0);
-    finalEndDay.setMinutes(0);
+    finalEndDay.setHours(endHour);
+    finalEndDay.setMinutes(endMinute);
     finalEndDay.setSeconds(0);
 
     const newShift = {
