@@ -165,7 +165,8 @@ function DailyShiftDashboardPage() {
             routes={routes} 
             locations={locations}
             startTime={startTime} 
-            endTime={endTime} />
+            endTime={endTime} 
+            dateKey={date.toISOString()}/>
         </div>
       )
     }

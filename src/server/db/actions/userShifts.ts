@@ -1,6 +1,6 @@
 "use server";
 
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import dbConnect from "../dbConnect";
 import { UserShiftModel, UserShift } from "../models/userShift";
 import RouteModel, { IRoute } from "../models/Route";
@@ -575,5 +575,18 @@ export async function updateUserShiftsRoute(shiftId: string, newRouteId: string)
   } catch (error) {
     const err = error as Error;
     throw new Error(`Error updating userShifts route: ${err.message}`);
+  }
+}
+
+export async function getUserShift(shiftId: string | Types.ObjectId): Promise<UserShift | null> {
+  // await requireAdmin();
+  try {
+    await dbConnect();
+    const objectId = typeof shiftId === "string" ? new mongoose.Types.ObjectId(shiftId) : shiftId;
+    const data = await UserShiftModel.findById(objectId);
+    return data;
+  } catch (error) {
+    const err = error as Error;
+    throw new Error(`Error has occurred when getting user shift: ${err.message}`);
   }
 }

@@ -3,12 +3,16 @@ import { adminAuth } from "../firebase/admin/firebaseAdmin";
 import { getUserByEmail } from "../actions/User";
 
 export async function requireUser() {
-  const token = cookies().get("authToken")?.value;
+  const cookieStore = cookies()
+
+  const token = cookieStore.get("authToken")?.value;
   if (!token) throw new Error("Unauthorized");
 
   try {
     return await adminAuth.verifyIdToken(token);
   } catch {
+    cookieStore.delete("authToken");
+
     throw new Error("Forbidden");
   }
 }

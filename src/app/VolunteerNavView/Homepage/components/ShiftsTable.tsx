@@ -4,6 +4,7 @@ import { ShiftsTableProps } from "./types";
 import ShiftDetailsSidebar from "./ShiftDetailsSidebar";
 import { UserShiftData } from "@/server/db/actions/userShifts";
 import { dateToString } from "@/lib/dateHandler";
+import { useRouter } from "next/navigation";
 
 /**
  * ShiftsTable is a React component that displays a table of shifts.
@@ -21,6 +22,8 @@ import { dateToString } from "@/lib/dateHandler";
 const ShiftsTable: React.FC<ShiftsTableProps> = ({ shifts, date, loading, error }) => {
   const [selectedShift, setSelectedShift] = useState<UserShiftData | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const router = useRouter();
+
 
   // Handle row click to open sidebar
   const handleRowClick = (shift: UserShiftData) => {
@@ -33,6 +36,11 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({ shifts, date, loading, error 
     setIsSidebarOpen(false);
     setSelectedShift(null);
   };
+
+  const handlePostShift = (shift: UserShiftData, e:any) => {
+    e.stopPropagation();
+    router.push(`/VolunteerNavView/ConfirmationForm?userShiftId=${shift.id}&date=${date.toLocaleDateString("en-CA")}`);
+  }
 
   // Format time range for display (e.g. "10:00 AM - 12:00 PM")
   const formatTimeRange = (startTime: Date, endTime: Date) => {
@@ -112,15 +120,26 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({ shifts, date, loading, error 
             </div>
             <div className={styles.areaCell}>{shift.area}</div>
             <div className={styles.statusCell}>
-              <span
-                className={`${styles.statusBadge} ${
-                  shift.status === "Complete"
-                    ? styles.completeStatus
-                    : styles.incompleteStatus
-                }`}
+              <button
+                onClick={(e) => handlePostShift(shift, e)}
+                disabled={shift.status === "Complete"}
               >
-                {shift.status}
-              </span>
+                <span
+                  className={`${styles.statusBadge} ${
+                    shift.status === "Complete"
+                      ? styles.completeStatus
+                      : styles.incompleteStatus
+                  }`}
+                >
+                  {shift.status}
+                  {shift.status === "Complete" ?
+                    <></> : 
+                    <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg" className="inline-block align-middle gap-1">
+                      <path d="M8.5 2.5H2.5C1.96957 2.5 1.46086 2.71071 1.08579 3.08579C0.710714 3.46086 0.5 3.96957 0.5 4.5V14.5C0.5 15.0304 0.710714 15.5391 1.08579 15.9142C1.46086 16.2893 1.96957 16.5 2.5 16.5H12.5C13.0304 16.5 13.5391 16.2893 13.9142 15.9142C14.2893 15.5391 14.5 15.0304 14.5 14.5V8.5M7.5 9.5L16.5 0.5M16.5 0.5H11.5M16.5 0.5V5.5" stroke="#59431B" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  }
+                </span>
+              </button>
             </div>
             <div>
               {/* Ellipsis button - this will be implemented in the future */}
