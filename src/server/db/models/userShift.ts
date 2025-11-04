@@ -7,6 +7,8 @@ interface UserShift extends Document {
   recurrenceDates: string[];
   shiftDate: Date;
   shiftEndDate: Date;
+  canceledShifts: string[];
+
   status: "Complete" | "Incomplete";
 }
 
@@ -30,6 +32,11 @@ const UserShiftSchema: Schema<UserShift> = new Schema(
     recurrenceDates: {
       type: [String],
       required: true,
+    },
+    canceledShifts: {
+      type: [String],
+      required: true,
+      default: [],
     },
     shiftDate: {
       type: Date,

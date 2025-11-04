@@ -7,7 +7,8 @@ import styles from "./page.module.css";
 import {
   getCurrentUserShiftsByDateRange,
   getUserShiftsByDateRange,
-  UserShiftData
+  UserShiftData,
+  getOpenShifts,
 } from "@/server/db/actions/userShifts";
 import { getUserByEmail } from "@/server/db/actions/User";
 import DateNavigation from "./components/DateNavigation";
@@ -16,6 +17,8 @@ import Pagination from "./components/Pagination";
 import { ViewMode } from "./components/types";
 import { handleAuthError } from "@/lib/authErrorHandler";
 import { auth } from "@/server/db/firebase";
+import { dateToString, getTodayDate } from "@/lib/dateHandler";
+import { findDayInRange } from "@/lib/dateRangeHandler";
 
 // Filter Icon Component
 const FilterIcon = () => (
@@ -45,26 +48,39 @@ const FilterIcon = () => (
  */
 
 const MyShiftsPage: React.FC = () => {
-  const today = new Date();
-  const yearUTC = today.getUTCFullYear();
-  const monthUTC = today.getUTCMonth();
-  const dayUTC = today.getUTCDate();
-
   const router = useRouter();
   const [shifts, setShifts] = useState<UserShiftData[]>([]);
+  const [openShifts, setOpenShifts] = useState<UserShiftData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentDate, setCurrentDate] = useState<Date>(new Date(Date.UTC(yearUTC, monthUTC, dayUTC)));
+  const [currentDate, setCurrentDate] = useState<Date>(getTodayDate());
   const [viewMode, setViewMode] = useState<ViewMode>("Day");
   const [activeTab, setActiveTab] = useState<"myShifts" | "openShifts">("myShifts");
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [firebaseReady, setFirebaseReady] = useState<boolean>(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  
+  
+  // rename later for readability
   const [pagination, setPagination] = useState({
     total: 0,
     page: 1,
     limit: 10,
     totalPages: 0
   });
+  const [openShiftsPagination, setOpenShiftsPagination] = useState({
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 0
+  });
+
+  const handleShiftUpdated = () => {
+    // increment value to trigger useEffect
+    setRefreshTrigger(prev => prev + 1);
+  };
+  
+
   // Auto-login bypass for local development
   useEffect(() => {
     if (process.env.NEXT_PUBLIC_DEV_SKIP_AUTH === "true") {
@@ -72,6 +88,9 @@ const MyShiftsPage: React.FC = () => {
         process.env.NEXT_PUBLIC_TEST_USER_EMAIL || "testuser@example.com";
       setUserEmail(testEmail);
       setFirebaseReady(true);
+
+      
+
       return;
     }
 
@@ -89,6 +108,47 @@ const MyShiftsPage: React.FC = () => {
       }
     });
   }, [router]);
+
+  //fetches open shifts during on tab change
+  useEffect(() => {
+    if (!firebaseReady || activeTab !== "openShifts") return;
+
+    const fetchOpenShifts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        let shiftsData;
+
+        if (viewMode === "Day") {
+          const {startDate, endDate } = getDayRange(currentDate);
+          shiftsData = await getOpenShifts(
+            startDate,
+            endDate,
+            openShiftsPagination.page,
+            openShiftsPagination.limit
+          );
+        } else {
+          const { startDate, endDate } = getWeekRange(currentDate);
+          shiftsData = await getOpenShifts(
+            startDate, endDate, openShiftsPagination.page,
+            openShiftsPagination.limit
+          );
+        }
+
+        setOpenShifts(shiftsData.shifts);
+        setOpenShiftsPagination(shiftsData.pagination);
+
+      } catch (error) {
+        console.error("Error fetching open shifts:", error);
+        setError("Error loading open shifts. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOpenShifts();
+  }, [firebaseReady, activeTab, currentDate, viewMode, openShiftsPagination.page, refreshTrigger]);
 
   // Function to get start and end dates for day view
   const getDayRange = (date: Date) => {
@@ -162,55 +222,49 @@ const MyShiftsPage: React.FC = () => {
         setError(null);
 
         let shiftsData;
+        let shifts: UserShiftData[];
         
-        if (process.env.NEXT_PUBLIC_DEV_SKIP_AUTH === "true") {
-          // Test mode - use the test user email
-          const userData = await getUserByEmail(userEmail);
-          if (!userData || !userData._id) {
-            throw new Error("User not found");
-          }
-          
-          if (viewMode === "Day") {
-            const { startDate, endDate } = getDayRange(currentDate);
-            shiftsData = await getUserShiftsByDateRange(
-              userData._id.toString(),
-              startDate,
-              endDate,
-              pagination.page,
-              pagination.limit
-            );
-          } else {
-            const { startDate, endDate } = getWeekRange(currentDate);
-            shiftsData = await getUserShiftsByDateRange(
-              userData._id.toString(),
-              startDate,
-              endDate,
-              pagination.page,
-              pagination.limit
-            );
-          }
+        // Production mode with Firebase auth
+        if (viewMode === "Day") {
+          const { startDate, endDate } = getDayRange(currentDate);
+          shiftsData = await getCurrentUserShiftsByDateRange(
+            startDate,
+            endDate,
+            pagination.page,
+            pagination.limit
+          );
+          shifts = shiftsData.shifts;
+          shifts = shifts.map((shift) => {
+            return {
+              ...shift,
+              occurrenceDate: currentDate
+            }
+          })
         } else {
-          // Production mode with Firebase auth
-          if (viewMode === "Day") {
-            const { startDate, endDate } = getDayRange(currentDate);
-            shiftsData = await getCurrentUserShiftsByDateRange(
-              startDate,
-              endDate,
-              pagination.page,
-              pagination.limit
-            );
-          } else {
-            const { startDate, endDate } = getWeekRange(currentDate);
-            shiftsData = await getCurrentUserShiftsByDateRange(
-              startDate,
-              endDate,
-              pagination.page,
-              pagination.limit
-            );
-          }
+          const { startDate, endDate } = getWeekRange(currentDate);
+          shiftsData = await getCurrentUserShiftsByDateRange(
+            startDate,
+            endDate,
+            pagination.page,
+            pagination.limit
+          );
+          shifts = [];
+          shiftsData.shifts.map((shift) => {
+            shift.recurrenceDates?.map((date) => {
+              shifts.push({
+                ...shift,
+                occurrenceDate: findDayInRange(date, startDate, endDate)!
+              })
+            })
+            return shift;
+          })
         }
+
+        shifts = shifts.filter((shift) => {
+          return !shift.canceledShifts?.includes(dateToString(currentDate));
+        })
         
-        setShifts(shiftsData.shifts);
+        setShifts(shifts);
         setPagination(shiftsData.pagination);
         
       } catch (error) {
@@ -225,7 +279,7 @@ const MyShiftsPage: React.FC = () => {
     };
 
     fetchShifts();
-  }, [userEmail, firebaseReady, currentDate, viewMode, pagination.page, pagination.limit]);
+  }, [userEmail, firebaseReady, currentDate, viewMode, pagination.page, pagination.limit, refreshTrigger]);
 
   return (
     <div className={styles.container}>
@@ -255,7 +309,7 @@ const MyShiftsPage: React.FC = () => {
             className={`${styles.tabButton} ${activeTab === "openShifts" ? styles.activeTab : ""}`}
             onClick={() => setActiveTab("openShifts")}
           >
-            Open Shifts (0)
+            Open Shifts ({openShifts.length})
           </button>
         </div>
 
@@ -267,19 +321,29 @@ const MyShiftsPage: React.FC = () => {
         </div>
 
         <ShiftsTable 
-          shifts={shifts}
+          shifts={activeTab === "myShifts" ? shifts : openShifts}
           date={currentDate}
           loading={loading}
           error={error}
+          viewingDate={currentDate}
+          isOpenShifts={activeTab === "openShifts"}
+          onShiftUpdated={handleShiftUpdated}
+          userShifts={shifts}
         />
         
-        {!loading && !error && shifts.length > 0 && (
+        {!loading && !error && (activeTab === "myShifts" ? shifts : openShifts).length > 0 && (
           <Pagination
-            total={pagination.total}
-            page={pagination.page}
-            limit={pagination.limit}
-            totalPages={pagination.totalPages}
-            onPageChange={handlePageChange}
+            total={activeTab === "myShifts" ? pagination.total : openShiftsPagination.total}
+            page={activeTab === "myShifts" ? pagination.page : openShiftsPagination.page}
+            limit={activeTab === "myShifts" ? pagination.limit : openShiftsPagination.limit}
+            totalPages={activeTab === "myShifts" ? pagination.totalPages : openShiftsPagination.totalPages}
+            onPageChange={(page) => {
+              if (activeTab === "myShifts") {
+                handlePageChange(page);
+              } else {
+                setOpenShiftsPagination(prev => ({ ...prev, page }));
+              }
+            }}
           />
         )}
       </div>
