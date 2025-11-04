@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleDown, faAngleLeft, faAngleRight, faArrowUpShortWide, faEllipsis, faPlus, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { Shift } from '@/server/db/models/shift';
-import { getAllShifts } from '@/server/db/actions/shift';
+import { deleteShift, getAllShifts } from '@/server/db/actions/shift';
 import { IRoute } from '@/server/db/models/Route';
 import { getAllRoutesbyIds, getRoute } from '@/server/db/actions/Route';
 import WeeklyShiftBar from '../../components/DailyShiftBar';
@@ -25,13 +25,13 @@ function DailyShiftDashboardPage() {
   const [locations, setLocations] = useState<{ [key: string]: string[] }>({});
   const [selectedItem, setSelectedItem] = useState<ShiftSidebarInfo | null>(null);
 
-  const handleDeleteShift = (shift: Shift) => {
-    // TODO: Implement delete shift functionality
-    console.log('Delete shift:', shift);
+  const handleDeleteShift = async (shift: Shift) => {
+    console.log(shift)
     // You can add confirmation dialog here
     if (confirm('Are you sure you want to delete this shift?')) {
-      // Call delete API here
-      console.log('Confirmed deletion of shift:', shift._id);
+      await deleteShift(shift._id);
+      // Can change later to reloading just the array instead of the whole window.
+      window.location.reload();
     }
   };
 

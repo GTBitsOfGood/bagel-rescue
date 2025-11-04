@@ -33,6 +33,17 @@ export async function getShift(shiftId: Types.ObjectId): Promise<Shift | null> {
   }
 }
 
+export async function deleteShift(shiftId: Types.ObjectId): Promise<void> {
+  await requireAdmin();
+  try {
+    await dbConnect();
+    await UserShiftModel.deleteMany({ shiftId });
+    await ShiftModel.findByIdAndDelete(shiftId);
+  } catch (error) {
+    const err = error as Error;
+    throw new Error(`Error has occurred when deleting shift: ${err.message}`);
+  }
+}
 
 export async function getShiftFromString(id: string) {
   return JSON.parse(JSON.stringify(await getShift(new mongoose.Types.ObjectId(id))));
