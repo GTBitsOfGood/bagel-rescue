@@ -225,10 +225,10 @@ async function getVolunteerManagementData(): Promise<string> {
           totalShifts: 4,
         },
         [new Date(Date.UTC(2025, 1, 1)).toISOString()]: {
-          shiftTime: 8,
+          shiftTime: 2,
           bagelsDelivered: 7,
           bagelsReceived: 2,
-          totalShifts: 6,
+          totalShifts: 5,
         },
       },
       createdAt: new Date(),

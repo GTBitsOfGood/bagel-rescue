@@ -16,9 +16,14 @@ function ManagementPage() {
   }, [])
 
   async function fetchVolunteerData() {
-    const response = await fetch('/api/volunteers')
-    const data = await response.json();
-    setVolunteers(data);
+    try {
+      const response = await fetch('/api/volunteers')
+      const data = await response.json();
+      setVolunteers(data);
+    } catch (error) {
+      console.error('Failed to fetch volunteers:', error);
+      setVolunteers([]);
+    }
   }
 
   function formatStatus(status: string) {
@@ -98,10 +103,14 @@ function ManagementPage() {
                   </div>
                   {/* temporary parse for required shift data */}
                   <p className='w-[7rem] flex justify-start items-center'>
-                    {volunteer.monthlyShifts[Object.keys(volunteer.monthlyShifts).pop()!].totalShifts}
+                    {volunteer.monthlyShifts && Object.keys(volunteer.monthlyShifts).length > 0 
+                      ? volunteer.monthlyShifts[Object.keys(volunteer.monthlyShifts)[Object.keys(volunteer.monthlyShifts).length - 1]].totalShifts 
+                      : 0}
                   </p>
                   <p className='w-[8rem] flex justify-start items-center'>
-                    {volunteer.monthlyShifts[Object.keys(volunteer.monthlyShifts).pop()!].shiftTime} hours
+                    {volunteer.monthlyShifts && Object.keys(volunteer.monthlyShifts).length > 0 
+                      ? `${volunteer.monthlyShifts[Object.keys(volunteer.monthlyShifts)[Object.keys(volunteer.monthlyShifts).length - 1]].shiftTime} hours`
+                      : '0 hours'}
                   </p>
                 </button>
               ))}
