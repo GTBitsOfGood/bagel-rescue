@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "../Homepage/page.module.css"
 import { getShift } from "@/server/db/actions/shift";
@@ -97,103 +97,105 @@ export default function PostShiftForm() {
   };
 
   return (
-    <div className={styles.container}>
-      <Sidebar />
-      <div className={styles.mainContent}>
-        <div className={styles.header}>
-          <button onClick={() => router.push("/VolunteerNavView/Homepage")}>&lt;Back</button>
-          <h1 className={styles.pageTitle}>My Shifts</h1>
-        </div>
-        <div className={styles.formContainer}>
-          <div className={styles.formHeader}>Thank you for completing your route!</div>
-          <div className={styles.formQuestion}>Just a couple of questions</div>
-          <form onSubmit={handleSubmit}>
-            <div className={styles.formBody}>
-              <div>* Did you complete your route in full?</div>
-              <div>
+    <Suspense>
+      <div className={styles.container}>
+        <Sidebar />
+        <div className={styles.mainContent}>
+          <div className={styles.header}>
+            <button onClick={() => router.push("/VolunteerNavView/Homepage")}>&lt;Back</button>
+            <h1 className={styles.pageTitle}>My Shifts</h1>
+          </div>
+          <div className={styles.formContainer}>
+            <div className={styles.formHeader}>Thank you for completing your route!</div>
+            <div className={styles.formQuestion}>Just a couple of questions</div>
+            <form onSubmit={handleSubmit}>
+              <div className={styles.formBody}>
+                <div>* Did you complete your route in full?</div>
+                <div>
+                  <div>
+                    <input
+                      type="radio"
+                      name="completed"
+                      value="Yes"
+                      checked={formData.completed === true}
+                      onChange={handleChange}
+                    />{" "}
+                    Yes
+                  </div>
+                  <div>
+                    <input
+                      type="radio"
+                      name="completed"
+                      value="No"
+                      checked={formData.completed === false}
+                      onChange={handleChange}
+                    />{" "}
+                    No
+                  </div>
+                </div>
+
+                <div>* Approximately how many bagels did you pick up?</div>
                 <div>
                   <input
-                    type="radio"
-                    name="completed"
-                    value="Yes"
-                    checked={formData.completed === true}
+                    className={styles.inputOutline}
+                    type="number"
+                    name="bagelsPickedUp"
+                    value={formData.bagelsPickedUp}
                     onChange={handleChange}
-                  />{" "}
-                  Yes
+                  />
                 </div>
+
+                <div>* Approximately how many bagels did you deliver?</div>
                 <div>
                   <input
-                    type="radio"
-                    name="completed"
-                    value="No"
-                    checked={formData.completed === false}
+                    className={styles.inputOutline}
+                    type="number"
+                    name="bagelsDelivered"
+                    value={formData.bagelsDelivered}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                <div>* How much time did your route take?</div>
+                <div>
+                  <input
+                    className={styles.inputOutline}
+                    type="number"
+                    name="hours"
+                    value={formData.hours}
                     onChange={handleChange}
                   />{" "}
-                  No
+                  <span style={{ marginRight: "8px", marginLeft: "8px" }}>Hrs</span>
+                  <input
+                    className={styles.inputOutline}
+                    type="number"
+                    name="minutes"
+                    value={formData.minutes}
+                    onChange={handleChange}
+                  />{" "}
+                  <span style={{ marginRight: "8px", marginLeft: "8px" }}>Mins</span>
+                </div>
+
+                <div>Any additional comments?</div>
+                <div>
+                  <input
+                    className={styles.inputOutline}
+                    style={{ width: "400px" }}
+                    type="text"
+                    name="comments"
+                    value={formData.comments}
+                    onChange={handleChange}
+                  />
                 </div>
               </div>
 
-              <div>* Approximately how many bagels did you pick up?</div>
-              <div>
-                <input
-                  className={styles.inputOutline}
-                  type="number"
-                  name="bagelsPickedUp"
-                  value={formData.bagelsPickedUp}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div>* Approximately how many bagels did you deliver?</div>
-              <div>
-                <input
-                  className={styles.inputOutline}
-                  type="number"
-                  name="bagelsDelivered"
-                  value={formData.bagelsDelivered}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div>* How much time did your route take?</div>
-              <div>
-                <input
-                  className={styles.inputOutline}
-                  type="number"
-                  name="hours"
-                  value={formData.hours}
-                  onChange={handleChange}
-                />{" "}
-                <span style={{ marginRight: "8px", marginLeft: "8px" }}>Hrs</span>
-                <input
-                  className={styles.inputOutline}
-                  type="number"
-                  name="minutes"
-                  value={formData.minutes}
-                  onChange={handleChange}
-                />{" "}
-                <span style={{ marginRight: "8px", marginLeft: "8px" }}>Mins</span>
-              </div>
-
-              <div>Any additional comments?</div>
-              <div>
-                <input
-                  className={styles.inputOutline}
-                  style={{ width: "400px" }}
-                  type="text"
-                  name="comments"
-                  value={formData.comments}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <button className={styles.submitButton} type="submit">
-              Submit
-            </button>
-          </form>
+              <button className={styles.submitButton} type="submit">
+                Submit
+              </button>
+            </form>
+          </div>
         </div>
       </div>
-    </div>
+    </Suspense>
   );
 }
