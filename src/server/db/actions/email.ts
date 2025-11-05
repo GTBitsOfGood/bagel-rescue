@@ -15,6 +15,8 @@ export async function sendVolunteerSignupEmail(email: string, name: string) {
   await dbConnect();
   let firebaseUserId;
   let randomPassword;
+
+  const activationToken = uuidv4();
   try {
     randomPassword = crypto.randomBytes(12).toString("base64");
     const firebaseUser = await adminAuth.createUser({
@@ -37,7 +39,7 @@ export async function sendVolunteerSignupEmail(email: string, name: string) {
       },
     });
 
-    const loginLink = `${process.env.BASE_URL}/Login`;
+    const loginLink = `${process.env.BASE_URL}/activate?token=${activationToken}`;
     const info = await transporter.sendMail({
       from: process.env.BAGELS_EMAIL,
       to: email,
@@ -48,7 +50,7 @@ export async function sendVolunteerSignupEmail(email: string, name: string) {
                     <p>Bagel Rescue has invited you to join their organization as a volunteer! Please use the link below to set up your account and password:</p>
                     <br/>
                     <p>
-                        <strong>Volunteer Site Link: </strong>
+                        <strong>Account activation link: </strong>
                         <a href="${loginLink}" style="color: #1a73e8; text-decoration: none;">${loginLink}</a>
                     </p>
                     <p>
@@ -80,10 +82,16 @@ export async function sendVolunteerSignupEmail(email: string, name: string) {
     const mongoUser = await getUserByEmail(email);
     await updateUser(mongoUser?._id!.toString() ?? "", {
       status: "INVITE_SENT",
+      activationToken: activationToken,
+      firebaseUid: firebaseUserId,
     });
     return true;
   } catch (err) {
-    console.error("Failed to update user status in Mongo", err);
+    console.error(
+      "Failed to update user status/activation token in Mongo",
+      err
+    );
+    throw new Error("Failed to update user in MongoDB");
   }
 }
 

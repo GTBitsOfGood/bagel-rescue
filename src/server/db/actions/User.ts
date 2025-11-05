@@ -75,6 +75,28 @@ async function getUserByEmail(
   return JSON.parse(JSON.stringify(document));
 }
 
+async function getUserByActivationToken(
+  token: string,
+  session?: ClientSession
+): Promise<IUser | null> {
+  // await requireUser();
+  await dbConnect();
+
+  const document = await User.findOne(
+    { activationToken: token },
+    { __v: 0 },
+    {
+      session: session,
+    }
+  ).lean<IUser>();
+  if (!document) {
+    throw new Error(
+      "User with that activation token " + token + " does not exist"
+    );
+  }
+  return JSON.parse(JSON.stringify(document));
+}
+
 async function updateUser(
   id: string,
   updated: UpdateQuery<IUser>,
@@ -187,6 +209,7 @@ export {
   createUser,
   getUser,
   getUserByEmail,
+  getUserByActivationToken,
   updateUser,
   getUserStats,
   getAllUserStats,

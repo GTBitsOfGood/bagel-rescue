@@ -175,7 +175,7 @@ export default function LoginScreen() {
                             );
                           }
                         } else {
-                          setErrorBannerMsg("Incorrect email or password");
+                          setErrorBannerMsg(res.error);
                         }
                       } catch (err) {
                         console.error(err);
