@@ -8,15 +8,22 @@ import { Shift } from "@/server/db/models/shift";
 import Sidebar from "@/components/Sidebar";
 import { postConfirmationForm } from "@/server/db/actions/confirmationForm";
 
+interface FormData {
+  completed: boolean;
+  bagelsPickedUp: string;
+  bagelsDelivered: string;
+  hours: string;
+  minutes: string;
+  comments: string;
+}
 
 export default function PostShiftForm() {
   const searchParams = useSearchParams();
   const shiftId = searchParams.get("userShiftId");
   const date = searchParams.get("date")
-  const confirmationFormId = searchParams.get("confirmationFormId")
   const router = useRouter();
   const [shift, setShift] = useState<Shift|null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     completed: true,
     bagelsPickedUp: "",
     bagelsDelivered: "",
@@ -29,7 +36,7 @@ export default function PostShiftForm() {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" || type === "radio" ? (checked ? value : prev[name]) : value,
+      [name as keyof FormData]: type === "checkbox" || type === "radio" ? (checked ? value : prev[name as keyof FormData]) : value,
     }));
   };
 
@@ -74,14 +81,16 @@ export default function PostShiftForm() {
       return;
     }
 
-    console.log(date, shiftId)
-    await postConfirmationForm(date, shiftId, {
-      completed: completed,
-      numPickedUp: bagelsPickedUpInt,
-      numDelivered: bagelsDeliveredInt,
-      time: (hoursInt * 60 + minutesInt),
-      comments: comments
-    });
+    if (date) {
+      await postConfirmationForm(date, shiftId!, {
+        completed: completed,
+        numPickedUp: bagelsPickedUpInt,
+        numDelivered: bagelsDeliveredInt,
+        time: (hoursInt * 60 + minutesInt),
+        comments: comments
+      });
+    }
+    
     
     alert("Thank you for submitting!");
     router.push("/VolunteerNavView/Homepage")

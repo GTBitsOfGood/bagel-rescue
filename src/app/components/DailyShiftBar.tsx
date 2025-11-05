@@ -87,7 +87,7 @@ function DailyShiftBar({
               <div className="col-span-1">
                 {confirmationFormId !== undefined ?
                 <button
-                  onClick={(e) => handleViewShift(confirmationFormId, e)}
+                  onClick={(e) => handleViewShift(confirmationFormId.toString(), e)}
                   className="flex items-center gap-2 bg-[#E3FCEF] px-4 py-2 rounded-full whitespace-nowrap"
                 >
                   <span
