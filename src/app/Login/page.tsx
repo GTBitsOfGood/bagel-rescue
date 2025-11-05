@@ -3,9 +3,18 @@
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { getAuth, setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
+import {
+  getAuth,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
+} from "firebase/auth";
 
-import { loginWithCredentials, loginWithGoogle, checkAuthStatus } from "../../server/db/actions/Login";
+import {
+  loginWithCredentials,
+  loginWithGoogle,
+  checkAuthStatus,
+} from "../../server/db/actions/Login";
 
 import HalfScreen from "./HalfScreen";
 import Button from "./Button";
@@ -27,24 +36,25 @@ export default function LoginScreen() {
       setErrorBannerMsg("");
     }
   };
-  
 
   // Add useEffect to check if user is already logged in
   useEffect(() => {
     const checkUserAuth = async () => {
-      const { isLoggedIn, isAdmin } = await checkAuthStatus() as { 
-        isLoggedIn: boolean; 
-        isAdmin: boolean 
+      const { isLoggedIn, isAdmin } = (await checkAuthStatus()) as {
+        isLoggedIn: boolean;
+        isAdmin: boolean;
       };
-      
+
       if (isLoggedIn) {
         // Redirect to appropriate page based on user role
-        router.push(isAdmin 
-          ? "/AdminNavView/WeeklyShiftDashboard" 
-          : "/VolunteerNavView/Homepage");
+        router.push(
+          isAdmin
+            ? "/AdminNavView/WeeklyShiftDashboard"
+            : "/VolunteerNavView/Homepage"
+        );
       }
     };
-    
+
     checkUserAuth();
   }, [router]);
 
@@ -54,11 +64,13 @@ export default function LoginScreen() {
         <div className=" flex flex-col w-full h-full sm:flex-row">
           <HalfScreen />
           <div className="relative flex flex-col w-full h-full justify-center items-center mt-8 sm:mt-0 sm:w-1/2 bg-white rounded-l-3xl">
-            <div className={`relative flex flex-col w-[90%] sm:w-[60%] sm:items-center`}>
+            <div
+              className={`relative flex flex-col w-[90%] sm:w-[60%] sm:items-center`}
+            >
               {errorBannerMsg && (
                 <div className="absolute -top-20 left-0 right-0 z-10">
-                  <ErrorBanner 
-                    text={errorBannerMsg} 
+                  <ErrorBanner
+                    text={errorBannerMsg}
                     onClose={() => setErrorBannerMsg("")}
                   />
                 </div>
@@ -96,26 +108,28 @@ export default function LoginScreen() {
                   onChange={clearError}
                 />
                 <div className="flex justify-center mb-4">
-                  <hr className="w-[45%] my-3 mr-5 border-t-2"/>
-                    <span className="text-gray-400">or</span>
-                  <hr className="w-[45%] my-3 ml-5 border-t-2"/>
+                  <hr className="w-[45%] my-3 mr-5 border-t-2" />
+                  <span className="text-gray-400">or</span>
+                  <hr className="w-[45%] my-3 ml-5 border-t-2" />
                 </div>
                 <Button type="Google" text="Sign in with Google"></Button>
                 <div className="flex justify-between mb-7 sm:mb-7">
                   <div className="flex justify-start">
                     <label className="flex items-center cursor-pointer">
-                      <input 
-                        className='rounded-none checked:bg-[#016ff3] mr-2' 
+                      <input
+                        className="rounded-none checked:bg-[#016ff3] mr-2"
                         type="checkbox"
                         checked={keepLoggedIn}
                         onChange={(e) => setKeepLoggedIn(e.target.checked)}
                         aria-label="Keep me logged in"
                       />
-                      <p className="text-[#016ff3] font-opensans text-sm">Keep me logged in</p>
+                      <p className="text-[#016ff3] font-opensans text-sm">
+                        Keep me logged in
+                      </p>
                     </label>
                   </div>
                   <button
-                    className="w-auto text-center text-mbb-pink text-sm font-semibold font-opensans text-[#016ff3]" 
+                    className="w-auto text-center text-mbb-pink text-sm font-semibold font-opensans text-[#016ff3]"
                     onClick={() => {
                       const email = getValues().email;
 
@@ -140,23 +154,25 @@ export default function LoginScreen() {
                       if (!isValid) return;
 
                       const { email, password } = getValues();
-                      
+
                       try {
                         // Set the persistence based on user choice
                         const auth = getAuth();
-                        const persistenceType = keepLoggedIn 
-                          ? browserLocalPersistence 
+                        const persistenceType = keepLoggedIn
+                          ? browserLocalPersistence
                           : browserSessionPersistence;
-                          
+
                         await setPersistence(auth, persistenceType);
-                        
+
                         const res = await loginWithCredentials(email, password);
                         console.log(res);
                         if (res.success) {
-                          if ('isAdmin' in res) {
-                            router.push(res.isAdmin === 'admin' 
-                              ? "/AdminNavView/WeeklyShiftDashboard" 
-                              : "/VolunteerNavView/Homepage");
+                          if ("isAdmin" in res) {
+                            router.push(
+                              res.isAdmin === "admin"
+                                ? "/AdminNavView/WeeklyShiftDashboard"
+                                : "/VolunteerNavView/Homepage"
+                            );
                           }
                         } else {
                           setErrorBannerMsg("Incorrect email or password");
@@ -170,8 +186,7 @@ export default function LoginScreen() {
                     }}
                   />
                 </div>
-                <div className="mb-1 flex justify-center items-center">
-                </div>
+                <div className="mb-1 flex justify-center items-center"></div>
                 <div className="flex flex-row justify-center mb-8 sm:mb-1">
                   <div className="text-[#063c7c] text-base font-normal font-opensans leading-tight tracking-tight mr-2">
                     Don&apos;t have an account?&nbsp;

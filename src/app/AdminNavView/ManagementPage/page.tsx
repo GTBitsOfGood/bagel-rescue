@@ -8,23 +8,10 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import AdminSidebar from "../../../components/AdminSidebar";
 import ManagementBar from "../../components/ManagementBar";
-import { getUser } from "@/server/db/actions/User";
-import { sendVolunteerSignupEmail } from "@/server/db/actions/email";
-import { IUser } from "@/server/db/models/User";
+import SendEmailButton from "./SendEmailButton";
 
 function ManagementPage() {
   const [search, setSearch] = useState<string>("");
-
-  // extract to volunteer card component
-  const handleSendEmail = async (userId: string) => {
-    try {
-      const user = (await getUser(userId)) as IUser;
-      console.log(user);
-      await sendVolunteerSignupEmail(user?.email, user?.firstName);
-    } catch (err) {
-      console.error("Failed to fetch user with id ", userId, err);
-    }
-  };
 
   return (
     <div className="flex">
@@ -50,15 +37,7 @@ function ManagementPage() {
             </div>
           </div>
           {/* Content will go here */}
-          <button
-            className="bg-[#0F7AFF] text-[#FFFFFF] font-[700] w-[150px] py-[10px] rounded-xl hover:bg-[#005bb5] cursor-pointer"
-            // when you extract this button to a component for each volunteer/user
-            // pass in the user id prop here as a param
-            // also, extract handleSendEmail to that component
-            onClick={() => handleSendEmail("69038bf9cd333dd1f5602e33")}
-          >
-            Send Email
-          </button>
+          <SendEmailButton userId={"69038bf9cd333dd1f5602e33"} />
         </div>
       </div>
     </div>

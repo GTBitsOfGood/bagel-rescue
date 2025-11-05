@@ -76,19 +76,21 @@ async function getUserByEmail(
 }
 
 async function updateUser(
-  id: mongoose.Types.ObjectId,
+  id: string,
   updated: UpdateQuery<IUser>,
   session?: ClientSession
 ): Promise<IUser | null> {
-  await requireUser();
+  // await requireUser();
   await dbConnect();
 
-  const document = await User.findByIdAndUpdate(id, updated, {
+  const userId = new mongoose.Types.ObjectId(id);
+
+  const document = await User.findByIdAndUpdate(userId, updated, {
     projection: { __v: 0 },
     session: session,
   });
   if (!document) {
-    throw new Error("User with that id " + id.toString() + " does not exist");
+    throw new Error("User with that id " + id + " does not exist");
   }
   return document;
 }
@@ -101,30 +103,30 @@ async function getUsersPerShift(
   await dbConnect();
   try {
     const documents = await UserShiftModel.aggregate([
-    {
-      $match: { shiftId: new mongoose.Types.ObjectId(shiftId) } // filter by the specific shift
-    },
-    {
-      $lookup: {
-        from: "users",           // collection to join
-        localField: "userId",    // field from usershifts
-        foreignField: "_id",     // field from users
-        as: "userInfo"           // output field
-      }
-    },
-    {
-      $unwind: "$userInfo" // flatten the user array
-    },
-    {
-      $replaceRoot: { newRoot: "$userInfo" } // return just user objects
-    }
-  ]);
-  return documents; 
-} catch (error) {
+      {
+        $match: { shiftId: new mongoose.Types.ObjectId(shiftId) }, // filter by the specific shift
+      },
+      {
+        $lookup: {
+          from: "users", // collection to join
+          localField: "userId", // field from usershifts
+          foreignField: "_id", // field from users
+          as: "userInfo", // output field
+        },
+      },
+      {
+        $unwind: "$userInfo", // flatten the user array
+      },
+      {
+        $replaceRoot: { newRoot: "$userInfo" }, // return just user objects
+      },
+    ]);
+    return documents;
+  } catch (error) {
     console.error("Error fetching users per shift:", error);
     throw new Error("Failed to fetch users per shift");
   }
-} 
+}
 
 async function getUserStats(
   id: mongoose.Types.ObjectId,
@@ -190,5 +192,5 @@ export {
   getAllUserStats,
   getTotalBagelsDelivered,
   getAllUsers,
-  getUsersPerShift
+  getUsersPerShift,
 };
