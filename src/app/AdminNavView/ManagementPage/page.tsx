@@ -6,6 +6,7 @@ import { faSearch, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import AdminSidebar from '../../../components/AdminSidebar';
 import ManagementBar from '../../components/ManagementBar';
 import {IUser} from '@/server/db/models/User';
+import { getVolunteerManagementData } from '@/server/db/actions/User';
 
 function ManagementPage() {
   const [search, setSearch] = useState<string>('');
@@ -17,9 +18,8 @@ function ManagementPage() {
 
   async function fetchVolunteerData() {
     try {
-      const response = await fetch('/api/volunteers')
-      const data = await response.json();
-      setVolunteers(data);
+      const data = await getVolunteerManagementData();
+      setVolunteers(JSON.parse(data));
     } catch (error) {
       console.error('Failed to fetch volunteers:', error);
       setVolunteers([]);
