@@ -64,7 +64,7 @@ function ManagementPage() {
             </div>
           </div>
           {/* Content will go here */}
-          <div className='w-full h-full flex flex-col gap-4'>
+          <div className='w-full h-full flex flex-col gap-4 pb-4'>
             <div className='w-full flex flex-row items-center py-4 px-[3.5rem] gap-x-12 bg-blue-200 rounded-lg text-[var(--Bagel-Rescue-Dark-Blue-2,#072b68)]'>
               <p className='w-[10rem]'>Name</p>
               <p className='w-[17rem]'>Locations</p>
@@ -74,16 +74,16 @@ function ManagementPage() {
             </div>
             <div className='w-full h-full flex flex-col gap-4'>
               {volunteers.map((volunteer, index) => (
-                <button key={index} className='w-full flex flex-row justify-start items-center py-4 px-[3.5rem] gap-x-12 border-2 rounded-lg border-[var(--Bagel-Rescue-Light-Grey-2,#d3d8de)] bg-[var(--Bagel-Rescue-Light-Blue-2,#ecf2f9)] text-[var(--Bagel-Rescue-Dark-Blue-2,#072b68)]'>
-                  <p className='w-[10rem] flex justify-start items-center'>{volunteer.firstName} {volunteer.lastName}</p>
+                <button key={index} className='w-full flex flex-row justify-start items-center py-4 px-[3.5rem] gap-x-12 border-2 rounded-lg border-[var(--Bagel-Rescue-Light-Grey-2,#d3d8de)] bg-white text-[var(--Bagel-Rescue-Dark-Blue-2,#072b68)]'>
+                  <p className='w-[10rem] flex justify-start items-center text-start'>{volunteer.firstName} {volunteer.lastName}</p>
                   <div className='w-[17rem] flex flex-row justify-start items-center gap-1'>
                     {volunteer?.locations?.slice(0, 3).map((location, i) => (
-                      <div key={i} className='text-sm bg-gray-200 rounded-lg px-2 py-[0.2rem]'>
+                      <div key={i} className='text-sm bg-[#F2F2F2] rounded-lg px-2 py-[0.2rem]'>
                         {location}
                       </div>
                     ))}
                     {(volunteer.locations) && volunteer.locations.length > 3 && (
-                      <div className='text-sm bg-gray-200 rounded-lg px-2 py-[0.2rem]'>
+                      <div className='text-sm bg-[#F2F2F2] rounded-lg px-2 py-[0.2rem]'>
                         ...
                       </div>
                     )}
@@ -101,7 +101,6 @@ function ManagementPage() {
                         {formatStatus(volunteer.status ?? "")}
                     </div>
                   </div>
-                  {/* temporary parse for required shift data */}
                   <p className='w-[7rem] flex justify-start items-center'>
                     {volunteer.monthlyShifts && Object.keys(volunteer.monthlyShifts).length > 0 
                       ? volunteer.monthlyShifts[Object.keys(volunteer.monthlyShifts)[Object.keys(volunteer.monthlyShifts).length - 1]].totalShifts 

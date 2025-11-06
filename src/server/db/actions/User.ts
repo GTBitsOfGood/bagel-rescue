@@ -180,83 +180,25 @@ async function getAllUsers(): Promise<string> {
 }
 
 async function getVolunteerManagementData(): Promise<string> {
-  const mockUsers: IUser[] = [
-    {
-      username: "emilycarter",
-      firstName: "Emily",
-      lastName: "Carter",
-      email: "emily.carter@example.com",
-      locations: ["Atlanta", "Savannah", "Boston"],
-      status: "ACTIVE",
-      bagelsDelivered: 12,
-      bagelsReceived: 3,
-      totalShifts: 10,
-      monthlyShifts: {
-        [new Date(Date.UTC(2025, 0, 1)).toISOString()]: {
-          shiftTime: 10,
-          bagelsDelivered: 5,
-          bagelsReceived: 1,
-          totalShifts: 4,
-        },
-        [new Date(Date.UTC(2025, 1, 1)).toISOString()]: {
-          shiftTime: 8,
-          bagelsDelivered: 7,
-          bagelsReceived: 2,
-          totalShifts: 6,
-        },
-      },
-      createdAt: new Date(),
-    },
-    {
-      username: "emilycarter",
-      firstName: "Emily",
-      lastName: "Carter",
-      email: "emily.carter@example.com",
-      locations: ["Atlanta", "Savannah", "Boston"],
-      status: "SEND_INVITE",
-      bagelsDelivered: 12,
-      bagelsReceived: 3,
-      totalShifts: 10,
-      monthlyShifts: {
-        [new Date(Date.UTC(2025, 0, 1)).toISOString()]: {
-          shiftTime: 10,
-          bagelsDelivered: 5,
-          bagelsReceived: 1,
-          totalShifts: 4,
-        },
-        [new Date(Date.UTC(2025, 1, 1)).toISOString()]: {
-          shiftTime: 2,
-          bagelsDelivered: 7,
-          bagelsReceived: 2,
-          totalShifts: 5,
-        },
-      },
-      createdAt: new Date(),
-    },
-    {
-      username: "liamrodriguez",
-      firstName: "Liam",
-      lastName: "Rodriguez",
-      email: "liam.rodriguez@example.com",
-      locations: ["Boston"],
-      status: "INVITE_SENT",
-      bagelsDelivered: 8,
-      bagelsReceived: 0,
-      totalShifts: 5,
-      monthlyShifts: {
-        [new Date(Date.UTC(2025, 0, 1)).toISOString()]: {
-          shiftTime: 6,
-          bagelsDelivered: 3,
-          bagelsReceived: 0,
-          totalShifts: 3,
-        },
-      },
-      createdAt: new Date(),
-    },
-  ];
+  try {
+    await dbConnect();
 
-  // Return as JSON string so the API route can parse it
-  return JSON.stringify(mockUsers);
+    const volunteers = await User.find(
+      { isAdmin: false },
+      {
+        firstName: 1,
+        lastName: 1,
+        status: 1,
+        locations: 1,
+        monthlyShifts: 1,
+      }
+    ).lean();
+
+    return JSON.stringify(volunteers);
+  } catch (error) {
+    console.error("Error fetching volunteer management data:", error);
+    return JSON.stringify([]);
+  }
 }
 
 export {
