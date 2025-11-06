@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import { ClientSession, UpdateQuery } from "mongoose";
 import User, { IUser } from "../models/User";
 import dbConnect from "../dbConnect";
-import { requireUser } from "../auth/auth";
+import { requireAdmin, requireUser } from "../auth/auth";
 import { UserShiftModel } from "../models/userShift";
 
 export type UserStats = {
@@ -182,6 +182,7 @@ async function getAllUsers(): Promise<string> {
 async function getVolunteerManagementData(): Promise<string> {
   try {
     await dbConnect();
+    await requireAdmin();
 
     const volunteers = await User.find(
       { isAdmin: false },
