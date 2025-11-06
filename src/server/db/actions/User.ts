@@ -194,8 +194,6 @@ async function getVolunteerManagementData(): Promise<string> {
       }
     ).lean();
 
-    throw new Error("Error fetching volunteer management data");
-
     return JSON.stringify(volunteers);
   } catch (error: any) {
     console.error("Error fetching volunteer management data:", error);
