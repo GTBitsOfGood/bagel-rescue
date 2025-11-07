@@ -114,7 +114,10 @@ function ManagementPage() {
                             handleSendEmail(volunteer._id.toString()).then((res) => {
                               if (!res) {
                                 alert("Failed to send email!");
+                                return;
                               }
+
+                              alert("Email sent successfully!");
                               setVolunteers(volunteers.map((v) => {
                                 if (v._id === volunteer._id) {
                                   return {

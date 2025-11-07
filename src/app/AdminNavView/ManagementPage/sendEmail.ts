@@ -7,7 +7,6 @@ export default async (userId: string) => {
       return await sendVolunteerSignupEmail(userId);
     } catch (err) {
       console.error("Failed to fetch user with id ", userId, err);
-      alert("Failed to fetch user with id " + userId);
       return false;
     }
   };
