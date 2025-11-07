@@ -405,12 +405,10 @@ export default function NewShiftPage() {
       finalEndDay = new Date(endDate);
     }
 
-    // TODO: remove
     finalStartDay.setHours(startHour);
     finalStartDay.setMinutes(startMinute);
     finalStartDay.setSeconds(0);
 
-    // TODO: remove
     finalEndDay.setHours(endHour);
     finalEndDay.setMinutes(endMinute);
     finalEndDay.setSeconds(0);
@@ -452,7 +450,7 @@ export default function NewShiftPage() {
           routeId: routeId,
           recurrenceDates: targetDay,
           shiftDate: finalStartDay,
-          shiftEndDate: finalEndDay
+          shiftEndDate: finalEndDay,
         });
       }
 

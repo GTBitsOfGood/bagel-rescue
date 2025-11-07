@@ -51,6 +51,7 @@
 }
 
 .sidebar-route-name {
+    color: var(--Bagel-Rescue-Dark-Blue, #072B68);
     font-family: Inter, sans-serif;
     font-weight: bold;
     font-size: 24px;
@@ -69,15 +70,6 @@
 
   .sidebar-content-header  {
     gap: 16px;
-  }
-
-  .sidebar-route-name {
-    color: var(--Bagel-Rescue-Dark-Blue, #072B68);
-    font-family: Inter;
-    font-size: 24px;
-    font-style: normal;
-    font-weight: 700;
-    line-height: 32px;
   }
 
   .volunteer-item {

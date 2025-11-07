@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import { ClientSession, UpdateQuery } from "mongoose";
 import User, { IUser } from "../models/User";
 import dbConnect from "../dbConnect";
-import { requireUser } from "../auth/auth";
+import { requireAdmin, requireUser } from "../auth/auth";
 import { UserShiftModel } from "../models/userShift";
 
 export type UserStats = {
@@ -205,6 +205,29 @@ async function getAllUsers(): Promise<string> {
   }
 }
 
+async function getVolunteerManagementData(): Promise<string> {
+  try {
+    await dbConnect();
+    await requireAdmin();
+
+    const volunteers = await User.find(
+      { isAdmin: false },
+      {
+        firstName: 1,
+        lastName: 1,
+        status: 1,
+        locations: 1,
+        monthlyShifts: 1,
+      }
+    ).lean();
+
+    return JSON.stringify(volunteers);
+  } catch (error) {
+    console.error("Error fetching volunteer management data:", error);
+    return JSON.stringify([]);
+  }
+}
+
 export {
   createUser,
   getUser,
@@ -216,4 +239,5 @@ export {
   getTotalBagelsDelivered,
   getAllUsers,
   getUsersPerShift,
+  getVolunteerManagementData
 };
