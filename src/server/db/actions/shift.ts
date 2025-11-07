@@ -8,6 +8,7 @@ import { RecurrenceModel, Shift, ShiftModel } from "../models/shift";
 import { UserShiftModel } from "../models/userShift";
 import { requireAdmin } from "../auth/auth";
 import { Types } from "mongoose";
+import { normalizeDate } from "@/lib/dateHandler";
 
 export async function createShift(shiftObject: string): Promise<string | null> {
   await requireAdmin();
@@ -34,6 +35,17 @@ export async function getShift(shiftId: string | Types.ObjectId): Promise<Shift 
   }
 }
 
+export async function deleteShift(shiftId: Types.ObjectId): Promise<void> {
+  await requireAdmin();
+  try {
+    await dbConnect();
+    await UserShiftModel.deleteMany({ shiftId });
+    await ShiftModel.findByIdAndDelete(shiftId);
+  } catch (error) {
+    const err = error as Error;
+    throw new Error(`Error has occurred when deleting shift: ${err.message}`);
+  }
+}
 
 export async function getShiftFromString(id: string) {
   return JSON.parse(JSON.stringify(await getShift(new mongoose.Types.ObjectId(id))));
@@ -414,6 +426,9 @@ export async function getShiftsByWeek(
 ): Promise<string | null> {
   await requireAdmin();
 
+  startDate = normalizeDate(startDate);
+  endDate = normalizeDate(endDate);
+
   try {
     await dbConnect();
     const shifts = await ShiftModel.aggregate([
@@ -421,9 +436,25 @@ export async function getShiftsByWeek(
     {
       $match: {
         $expr: {
-          $and: [
-            { $lte: ["$shiftDate", endDate] },     // shift starts before the week ends
-            { $gte: ["$shiftEndDate", startDate] } // shift ends after the week starts
+          $or: [
+            {
+              $and: [
+                { $lte: ["$shiftStartDate", endDate] },     // shift starts before the week ends
+                { $gte: ["$shiftEndDate", startDate] } // shift ends after the week starts
+              ]
+            },
+            {
+              $and: [
+                { $lte: ["$shiftEndDate", endDate] },     // shift ends before the week ends
+                { $gte: ["$shiftEndDate", startDate] } // shift starts after the week starts
+              ]
+            },
+            {
+              $and: [
+                { $lte: ["$shiftStartDate", endDate] },     // shift ends before the week ends
+                { $gte: ["$shiftStartDate", startDate] } // shift starts after the week starts
+              ]
+            }
           ]
       }
     }
@@ -471,6 +502,8 @@ export async function getShiftsByWeek(
         capacity: 1,
         currSignedUp: 1,
         additionalInfo: 1,
+        canceledShifts: 1,
+        status: 1,
         routeName: "$route.routeName",
         routeId: "$route._id",
         locationDescription: "$route.locationDescription",
@@ -507,8 +540,6 @@ return JSON.stringify(shifts);
     const err = error as Error;
     throw new Error(`Error getting shifts by week: ${err.message}`);
   }
-  
-
 }
 
 export async function updateShift(shiftId: string, shiftUpdatePayload: string): Promise<string | null> {
@@ -548,6 +579,7 @@ export async function updateShift(shiftId: string, shiftUpdatePayload: string): 
   }
 }
 
+
 export async function updateShiftConfirmation(
   shiftId: string,
   dateKey: string,
@@ -572,3 +604,119 @@ export async function updateShiftConfirmation(
   }
 }
   
+export async function getShiftsByDay(
+  targetDate: Date
+): Promise<string | null> {
+  await requireAdmin();
+  try {
+    await dbConnect();
+    
+    // Set targetDate to start and end of day for comparison
+    const startOfDay = new Date(targetDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(targetDate);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    // Get day abbreviation (e.g., "Mo", "Tu", etc.)
+    const dayNames = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+    const dayAbbr = dayNames[targetDate.getDay()];
+    
+    const shifts = await ShiftModel.aggregate([
+      // 1. Filter by day - check if shift occurs on the target date
+      {
+        $match: {
+          $expr: {
+            $or: [
+              // For shifts with recurrenceDates, check if they occur on this day
+              {
+                $and: [
+                  { $ne: [{ $size: { $ifNull: ["$recurrenceDates", []] } }, 0] },
+                  { $in: [dayAbbr.toLowerCase(), { $map: { input: "$recurrenceDates", as: "day", in: { $toLower: "$$day" } } } ] },
+                  { $lte: ["$shiftStartDate", endOfDay] },
+                  { $gte: ["$shiftEndDate", startOfDay] }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      
+      // 2. Join with routes to get route information
+      {
+        $lookup: {
+          from: "routes",
+          localField: "routeId",
+          foreignField: "_id",
+          as: "route"
+        }
+      },
+      { $unwind: { path: "$route", preserveNullAndEmptyArrays: true } },
+      
+      // 3. Join with userShifts to get volunteers for this shift
+      {
+        $lookup: {
+          from: "usershifts",
+          localField: "_id",
+          foreignField: "shiftId",
+          as: "usershifts"
+        }
+      },
+      
+      // 4. Join with users to get volunteer details
+      {
+        $lookup: {
+          from: "users",
+          localField: "usershifts.userId",
+          foreignField: "_id",
+          as: "volunteers"
+        }
+      },
+      
+      // 5. Project only the fields you need for the dashboard
+      {
+        $project: {
+          shiftStartTime: 1,
+          shiftEndTime: 1,
+          recurrenceDates: 1,
+          shiftStartDate: 1,
+          shiftEndDate: 1,
+          canceledShifts: 1,
+          capacity: 1,
+          currSignedUp: 1,
+          additionalInfo: 1,
+          status: 1,
+          routeName: "$route.routeName",
+          routeId: "$route._id",
+          locationDescription: "$route.locationDescription",
+          comments: 1,
+          volunteers: {
+            $map: {
+              input: "$volunteers",
+              as: "volunteer",
+              in: {
+                userId: "$$volunteer._id",
+                firstName: "$$volunteer.firstName",
+                lastName: "$$volunteer.lastName",
+                email: "$$volunteer.email",
+                status: {
+                  $arrayElemAt: [
+                    "$usershifts.status",
+                    { $indexOfArray: ["$usershifts.userId", "$$volunteer._id"] }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      
+      // 6. Sort by shift time
+      { $sort: { shiftStartTime: 1 } }
+    ]);
+
+    return JSON.stringify(shifts);
+  } catch (error) {
+    const err = error as Error;
+    throw new Error(`Error getting shifts by day: ${err.message}`);
+  }
+}

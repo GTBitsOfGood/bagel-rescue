@@ -1,8 +1,10 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEllipsis } from "@fortawesome/free-solid-svg-icons";
 import "./shiftCardStyle.css";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import ThreeDotModal from "@/app/components/ThreeDotModal";
+import { Shift } from "@/server/db/models/shift";
 
 interface ShiftCardVolunteer {
     userId: string;
@@ -13,6 +15,7 @@ interface ShiftCardVolunteer {
 }
 
 interface ShiftCardProps {
+    shift: Shift;
     volunteers: ShiftCardVolunteer[];
     startDate: Date;
     endDate: Date;
@@ -24,6 +27,7 @@ interface ShiftCardProps {
     shiftDate: string;
     confirmationForm: string;
     onOpenSidebar: () => void;
+    onDeleteShift: (shift: Shift) => void;
 }
 
 const DAY_MAP: Record<string, number> = {
@@ -37,6 +41,7 @@ const DAY_MAP: Record<string, number> = {
 };
 
 export default function ShiftCard({
+    shift,
     volunteers,
     startDate,
     endDate,
@@ -48,15 +53,38 @@ export default function ShiftCard({
     shiftDate,
     confirmationForm,
     onOpenSidebar,
+    onDeleteShift,
 }: ShiftCardProps) {
     const [volunteerDisplay, setVolunteerDisplay] = useState("");
     const [timeRange, setTimeRange] = useState("");
     const [recurrenceDateStr, setRecurrenceDateStr] = useState("");
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
+    const ellipsisRef = useRef<HTMLButtonElement>(null);
 
     const startDateObj = new Date(startDate);
     const endDateObj = new Date(endDate);
 
     const router = useRouter();
+
+    const handleEllipsisClick = (e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent triggering the row click
+
+        // Calculate position for the modal
+        const rect = e.currentTarget.getBoundingClientRect();
+        setModalPosition({
+            x: rect.left + rect.width / 2,
+            y: rect.bottom - 10,
+        });
+
+        setModalOpen(true);
+    };
+
+    const handleDelete = () => {
+        if (shift) {
+            onDeleteShift(shift);
+        }
+    };
 
     // Format volunteer names for display
     useEffect(() => {
@@ -103,7 +131,7 @@ export default function ShiftCard({
     }, [startTime, endTime, recurrenceDates]);
 
     return (
-        <div className="shift-card" onClick={() => onOpenSidebar()}>
+        <div className="shift-card" onClick={onOpenSidebar}>
             {/* Header Section */}
             <div className="shift-card-header">
                 <div className="shift-card-header-content">
@@ -159,12 +187,23 @@ export default function ShiftCard({
                     </div>
                 </div>
 
+                <ThreeDotModal
+                    isOpen={modalOpen}
+                    onClose={() => setModalOpen(false)}
+                    onDelete={handleDelete}
+                    position={modalPosition}
+                />
                 <button
-                    className="shift-card-menu-button"
+                    ref={ellipsisRef}
+                    onClick={(e) => handleEllipsisClick(e)}
+                    className="flex-shrink mt-1 min-w-0 hover:bg-gray-100 rounded p-1"
                     title="More options"
                     aria-label="More options"
                 >
-                    <FontAwesomeIcon icon={faEllipsis} />
+                    <FontAwesomeIcon
+                        icon={faEllipsis}
+                        className="flex-shrink mt-1 min-w-0"
+                    />
                 </button>
             </div>
 
