@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { activateUserAccount } from "@/server/db/actions/Login";
 
-export default function ActivatePage() {
+function ActivationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState("");
@@ -17,8 +17,12 @@ export default function ActivatePage() {
     }
 
     const activateAccount = async () => {
-      await activateUserAccount(token);
-      router.push("/Login");
+      try {
+        await activateUserAccount(token);
+        router.push("/Login");
+      } catch (err) {
+        setError("Activation failed. Please try again.");
+      }
     };
 
     activateAccount();
@@ -29,4 +33,12 @@ export default function ActivatePage() {
   }
 
   return <div>Activating your account...</div>;
+}
+
+export default function ActivatePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ActivationContent />
+    </Suspense>
+  );
 }
