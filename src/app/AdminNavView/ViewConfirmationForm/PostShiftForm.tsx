@@ -10,6 +10,7 @@ import { getConfirmationForm, postConfirmationForm } from "@/server/db/actions/c
 export default function PostShiftForm() {
   const searchParams = useSearchParams();
   const confirmationFormId = searchParams.get("confirmationFormId")
+  const returnRoute = searchParams.get("returnRoute");
   const router = useRouter();
   const [formData, setFormData] = useState({
     completed: true,
@@ -48,7 +49,7 @@ export default function PostShiftForm() {
         <Sidebar />
         <div className={styles.mainContent}>
           <div className={styles.header}>
-            <button onClick={() => router.push("/AdminNavView/DailyShiftDashboard")}>&lt;Back</button>
+            <button onClick={() => router.push(returnRoute || "/AdminNavView/DailyShiftDashboard")}>&lt;Back</button>
             <h1 className={styles.pageTitle}>My Shifts</h1>
           </div>
           <div className={styles.formContainer}>

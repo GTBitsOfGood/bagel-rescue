@@ -23,6 +23,7 @@ import { getAllLocationsById } from "@/server/db/actions/location";
 import { Location } from "@/server/db/models/location";
 import { IRoute } from "@/server/db/models/Route";
 import { findDayInRange, getWeekRange } from "@/lib/dateRangeHandler";
+import { dateToString, normalizeDate } from "@/lib/dateHandler";
 
 function WeeklyShiftDashboard() {
     const router = useRouter();
@@ -173,8 +174,8 @@ function WeeklyShiftDashboard() {
                 .map((day: string, dateIndex: number) => {
                     const shiftDate = findDayInRange(
                         day,
-                        startOfWeek,
-                        endOfWeek
+                        normalizeDate(startOfWeek),
+                        normalizeDate(endOfWeek)
                     );
                     if (!shiftDate) return null;
 
@@ -189,6 +190,15 @@ function WeeklyShiftDashboard() {
                             routeName={shift["routeName"] || "--"}
                             locationDescription={
                                 shift["locationDescription"] || ""
+                            }
+                            confirmationForm={
+                                Object.keys(shift.confirmationForm).includes(
+                                    dateToString(shiftDate)
+                                )
+                                    ? shift.confirmationForm[
+                                            dateToString(shiftDate)
+                                        ]
+                                    : null
                             }
                             recurrenceDates={shift["recurrenceDates"] || []}
                             shiftDate={shiftDate.toLocaleDateString("en-US", {

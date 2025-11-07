@@ -474,6 +474,7 @@ export async function getShiftsByWeek(
         routeName: "$route.routeName",
         routeId: "$route._id",
         locationDescription: "$route.locationDescription",
+        confirmationForm: 1,
         comments: 1,
         volunteers: {
           $map: {

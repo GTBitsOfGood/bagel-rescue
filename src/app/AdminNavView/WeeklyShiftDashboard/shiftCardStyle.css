@@ -154,6 +154,18 @@
   width: 100px;
 }
 
+.shift-card-shift-form {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.625rem;
+  background-color: var(--Bagel-Rescue-Light-Green);
+  padding: 0.625rem 1rem;
+  font-size: 0.75rem;
+  border-radius: 2rem;
+  cursor: pointer;
+}
+
 /* Responsive Design (Optional Enhancement) */
 @media (max-width: 768px) {
   .shift-card-header-content {
