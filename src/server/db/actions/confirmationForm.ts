@@ -29,8 +29,7 @@ export async function postConfirmationForm(date: string, userShift: string, form
     })
     const savedConfirmation = await newConfirmationForm.save();
     const dateKey = date.slice(0, 10);
-
-    console.log(userShift, date)
+    
     if (form.completed) {
       await updateUserShiftStatus(userShift, "Complete");
     }
