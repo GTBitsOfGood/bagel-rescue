@@ -8,15 +8,25 @@ import { requireAdmin } from "../auth/auth";
 
 import * as crypto from "crypto";
 import { adminAuth } from "../firebase/admin/firebaseAdmin";
-import { getUserByEmail, updateUser } from "./User";
+import { getUser, getUserByEmail, updateUser } from "./User";
+import { IUser } from "../models/User";
 
-export async function sendVolunteerSignupEmail(email: string, name: string) {
+export async function sendVolunteerSignupEmail(userId: string) {
   await requireAdmin();
   await dbConnect();
+
+  const user = (await getUser(userId)) as IUser;
+  if (!user) {
+    throw new Error("User with that id " + userId + " does not exist");
+  }
+
+  const { firstName, email } = user;
+
   let firebaseUserId;
   let randomPassword;
 
   const activationToken = uuidv4();
+
   try {
     randomPassword = crypto.randomBytes(12).toString("base64");
     const firebaseUser = await adminAuth.createUser({
@@ -28,6 +38,7 @@ export async function sendVolunteerSignupEmail(email: string, name: string) {
     console.error("Failed to create firebase user for ", email, err);
     throw new Error("Failed to create firebase user");
   }
+
   try {
     const transporter = nodemailer.createTransport({
       host: "smtp.resend.com",
@@ -46,7 +57,7 @@ export async function sendVolunteerSignupEmail(email: string, name: string) {
       subject: "Bagel Rescue Volunteer Sign Up Invite",
       html: `
                 <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-                    <p>Hello ${name}, </p>
+                    <p>Hello ${firstName}, </p>
                     <p>Bagel Rescue has invited you to join their organization as a volunteer! Please use the link below to set up your account and password:</p>
                     <br/>
                     <p>
@@ -78,6 +89,7 @@ export async function sendVolunteerSignupEmail(email: string, name: string) {
     }
     throw new Error("Failed to send email");
   }
+
   try {
     const mongoUser = await getUserByEmail(email);
     await updateUser(mongoUser?._id!.toString() ?? "", {
@@ -85,7 +97,6 @@ export async function sendVolunteerSignupEmail(email: string, name: string) {
       activationToken: activationToken,
       firebaseUid: firebaseUserId,
     });
-    return true;
   } catch (err) {
     console.error(
       "Failed to update user status/activation token in Mongo",
@@ -93,6 +104,8 @@ export async function sendVolunteerSignupEmail(email: string, name: string) {
     );
     throw new Error("Failed to update user in MongoDB");
   }
+
+  return true;
 }
 
 export async function sendVolunteerSignupEmails(emails: string[]) {

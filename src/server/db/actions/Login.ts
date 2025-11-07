@@ -73,7 +73,7 @@ export const loginWithGoogle = async () => {
     });
 };
 
-export const activationLogin = async (authToken: string) => {
+export const activateUserAccount = async (authToken: string) => {
   let firebaseToken;
   try {
     const res = await fetch("/api/activate", {
@@ -95,23 +95,8 @@ export const activationLogin = async (authToken: string) => {
     console.error(err);
     return { success: false, error: "Invalid activation token" };
   }
-  return await signInWithCustomToken(auth, firebaseToken)
-    .then(async (userCredential) => {
-      const user = userCredential.user;
-      const token = await user.getIdToken();
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
-      });
 
-      const response = await res.json();
-      return response;
-    })
-    .catch((error) => {
-      console.error("Error logging in with custom token");
-      return { success: false, error: "Error logging in with custom token" };
-    });
+  return { success: true };
 };
 
 // Add this new function to check if a user is already logged in and get their admin status

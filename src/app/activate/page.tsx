@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { activationLogin } from "@/server/db/actions/Login";
+import { activateUserAccount } from "@/server/db/actions/Login";
 
 export default function ActivatePage() {
   const router = useRouter();
@@ -17,12 +17,8 @@ export default function ActivatePage() {
     }
 
     const activateAccount = async () => {
-      const res = await activationLogin(token);
-      if (res.success) {
-        router.push("/VolunteerNavView/Homepage");
-      } else {
-        setError("Failed to activate account/login");
-      }
+      await activateUserAccount(token);
+      router.push("/Login");
     };
 
     activateAccount();
