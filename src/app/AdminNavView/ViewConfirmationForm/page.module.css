@@ -12,84 +12,183 @@
   padding: 0;
   background-color: #F6F9FC;
   overflow-y: auto;
+  padding-bottom: 1rem;
 }
 
 /* Header */
 .header {
   display: flex;
-  flex-direction: row; 
+  flex-direction: column;
   justify-content: space-between;
-  align-items: center; 
+  align-items: flex-start;
   padding: 2rem 2rem 1.5rem 2rem;
   background-color: white;
   border-bottom: 1px solid #E5E7EB;
-  gap:1rem;
+  gap: 1rem;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 16px;
+  color: var(--Bagel-Rescue-Light-Text);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.backButton:hover {
+  opacity: 0.8;
 }
 
 .pageTitle {
   margin: 0;
   font-size: 1.75rem;
-  font-weight: 600; 
+  font-weight: 600;
   color: #072B68;
-  flex-grow: 1;
 }
 
+/* Form Container */
 .formContainer {
-  display: flex;
-  align-items: center;     /* optional: centers items vertically */
-  padding: 1rem;
+  padding: 2rem;
   border-radius: 0.5rem;
-  margin: 1rem 2rem 0 2rem;
-  min-height: 100vh;
+  margin: 1rem 2rem;
   background-color: white;
   display: flex;
-  flex-direction: column; /* stacks items vertically */
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.formHeaderContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 1rem;
+  text-align: center;
+}
+
+.formIcon {
+  font-size: 3rem;
+  line-height: 1;
 }
 
 .formHeader {
   font-weight: 700;
-  font-style: Bold;
-  font-size: 24px;
-  line-height: 100%;
-  letter-spacing: 0%;
-  color: #072B68;
+  font-size: 1.5rem;
+  color: var(--Bagel-Rescue-Dark-Blue);
+  margin: 0;
 }
-.formQuestion {
-  font-weight: 500;
-  font-style: Bold;
-  font-size: 16px;
-  line-height: 100%;
-  letter-spacing: 0%;
-  color: #072B68;
+
+.formSubHeader {
+  font-size: 1.25rem;
+  color: var(--Bagel-Rescue-Dark-Blue);
+  margin: 0;
+}
+
+.formDivider {
+  border-top: 1px solid var(--Bagel-Rescue-Light-Grey);
+  width: 100%;
+  max-width: 600px;
+  margin: 1rem 0;
+}
+
+/* Form Body */
+.formBodyContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
 .formBody {
-  display: flex;           /* enables gap */
-  flex-direction: column;  /* stack items vertically */
-  gap: 1rem;               /* space between each child */
-  font-weight: 500;
-  color: #072B68;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 600px;
 }
 
-.submitButton {
-  width: 150px;
-  margin: 60px auto 0 auto;
-  height: 51;
-  border-radius: 12px;
-  opacity: 1;
-  gap: 8px;
-  padding-top: 12px;
-  padding-right: 24px;
-  padding-bottom: 12px;
-  padding-left: 24px;
-  background-color: #0F7AFF;
-  color: white;
+.formQuestion {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--Bagel-Rescue-Dark-Blue);
+  margin-bottom: 0.5rem;
+}
+
+/* Radio Buttons */
+.radioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.radioOption {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.radioChecked {
+  accent-color: var(--Bagel-Rescue-Blue);
+}
+
+.radioUnchecked {
+  accent-color: #D1D5DB;
+}
+
+/* Input Fields */
+.inputFull {
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--Bagel-Rescue-Light-Grey);
+  width: 100%;
+  color: var(--Bagel-Rescue-Dark-Blue);
+  font-weight: 400;
+  background-color: #F9FAFB;
+}
+
+.input {
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--Bagel-Rescue-Light-Grey);
+  width: 80px;
+  color: var(--Bagel-Rescue-Dark-Blue);
+  font-weight: 400;
+  background-color: #F9FAFB;
 }
 
 .inputOutline {
   width: 100px;
-  border: 1px solid #D3D8DE;
-  border-radius: 4px;
+  border: 1px solid var(--Bagel-Rescue-Light-Grey);
+  border-radius: 0.25rem;
   box-sizing: border-box;
+}
+
+/* Time Input Group */
+.timeInputGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.timeLabel {
+  color: var(--Bagel-Rescue-Dark-Blue);
+  font-weight: 500;
+  margin-right: 1rem;
+}
+
+/* Form Footer */
+.formFooter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  text-align: center;
+  color: var(--Bagel-Rescue-Light-Text);
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--Bagel-Rescue-Light-Grey);
 }

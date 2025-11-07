@@ -5,8 +5,12 @@ import mongoose from "mongoose";
 import dbConnect from "../dbConnect";
 import { ConfirmationModel, Confirmation } from "../models/confirmationForm";
 import { updateShiftConfirmation } from "./shift";
-import { getUserShift, updateUserShiftStatus } from "./userShifts";
-import { ObjectId } from "mongoose";
+import { getCurrentUserId, getUserShift, updateUserShiftStatus } from "./userShifts";
+import { requireUser } from "../auth/auth";
+import { UserShiftModel } from "../models/userShift";
+import RouteModel from "../models/Route";
+import User from "../models/User";
+import { stringToDate } from "@/lib/dateHandler";
 
 
 interface confirmationFormField {
@@ -19,17 +23,38 @@ interface confirmationFormField {
 
 export async function postConfirmationForm(date: string, userShift: string, form: confirmationFormField): Promise<void> {
   try {
+    await requireUser();
     await dbConnect();
+
+    // Check whether user has access to this userShift
+    const userShiftModel = await UserShiftModel.findById(userShift);
+    if (!userShiftModel || userShiftModel.userId.toString() !== (await getCurrentUserId())) {
+      throw new Error("You do not have access to this user shift");
+    }
+
+    const route = await RouteModel.findById(userShiftModel.routeId);
+    if (!route) {
+      throw new Error("Route not found");
+    }
+
+    const user = await User.findById(userShiftModel.userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
     const newConfirmationForm = new ConfirmationModel({
       completed: form.completed,
       bagelsPickedUp: form.numPickedUp,
       bagelsDelivered: form.numDelivered,
       minutes: form.time,
       comments: form.comments,
+      routeName: route.routeName + " - " + route.locationDescription,
+      volunteerName: user.firstName + " " + user.lastName,
+      shiftDate: stringToDate(date),
     })
     const savedConfirmation = await newConfirmationForm.save();
     const dateKey = date.slice(0, 10);
-    
+
     if (form.completed) {
       await updateUserShiftStatus(userShift, "Complete");
     }

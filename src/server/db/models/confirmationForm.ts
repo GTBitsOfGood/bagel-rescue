@@ -8,6 +8,9 @@ interface Confirmation extends Document{
   hours: number;
   minutes: number;
   comments: string;
+  routeName: string;
+  volunteerName: string;
+  shiftDate: string;
   createdAt?: Date;
 }
 
@@ -18,6 +21,9 @@ const ConfirmationSchema: Schema = new Schema(
     bagelsDelivered: { type: Number, required: true, min: 0 },
     minutes: { type: Number, required: true, min: 0 },
     comments: { type: String, default: "" },
+    routeName: { type: String, required: true },
+    volunteerName: { type: String, required: true },
+    shiftDate: { type: Date, required: true },
   },
   {
     timestamps: { createdAt: true, updatedAt: false },
