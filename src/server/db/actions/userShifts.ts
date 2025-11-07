@@ -1012,11 +1012,23 @@ export async function updateUserShiftsRoute(shiftId: string, newRouteId: string)
 }
 
 export async function getUserShift(shiftId: string | Types.ObjectId): Promise<UserShift | null> {
-  // await requireAdmin();
+  await dbConnect();
+  await requireUser();
+
+  const userId = await getCurrentUserId();
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new Error("User not found");
+  }
+
   try {
-    await dbConnect();
     const objectId = typeof shiftId === "string" ? new mongoose.Types.ObjectId(shiftId) : shiftId;
     const data = await UserShiftModel.findById(objectId);
+    
+    if (data?.userId.toString() !== userId && !user.isAdmin) {
+      throw new Error("You do not have access to this user shift");
+    }
+
     return data;
   } catch (error) {
     const err = error as Error;

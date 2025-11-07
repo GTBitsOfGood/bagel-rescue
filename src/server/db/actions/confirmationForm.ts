@@ -51,6 +51,7 @@ export async function postConfirmationForm(date: string, userShift: string, form
       routeName: route.routeName + " - " + route.locationDescription,
       volunteerName: user.firstName + " " + user.lastName,
       shiftDate: stringToDate(date),
+      userId: userShiftModel.userId
     })
     const savedConfirmation = await newConfirmationForm.save();
     const dateKey = date.slice(0, 10);
@@ -81,11 +82,21 @@ export async function postConfirmationForm(date: string, userShift: string, form
 
 
 export async function getConfirmationForm(formId: string | Types.ObjectId): Promise<Confirmation | null> {
-  // await requireAdmin();
+  await dbConnect();
+  await requireUser();
+
+  const userId = await getCurrentUserId();
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new Error("User not found");
+  }
+
   try {
-    await dbConnect();
     const objectId = typeof formId === "string" ? new mongoose.Types.ObjectId(formId) : formId;
     const data = await ConfirmationModel.findById(objectId).lean();
+    if (data?.userId.toString() !== userId && !user.isAdmin) {
+      throw new Error("You do not have access to this confirmation form");
+    }
     return JSON.parse(JSON.stringify(data));
   } catch (error) {
     const err = error as Error;

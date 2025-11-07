@@ -1,4 +1,4 @@
-import mongoose, { Schema, Model } from "mongoose";
+import mongoose, { Schema, Model, Types } from "mongoose";
 
 interface Confirmation extends Document{
   _id?: string;
@@ -10,6 +10,7 @@ interface Confirmation extends Document{
   comments: string;
   routeName: string;
   volunteerName: string;
+  userId: Types.ObjectId;
   shiftDate: string;
   createdAt?: Date;
 }
@@ -23,6 +24,7 @@ const ConfirmationSchema: Schema = new Schema(
     comments: { type: String, default: "" },
     routeName: { type: String, required: true },
     volunteerName: { type: String, required: true },
+    userId: { type: Types.ObjectId, ref: "User", required: true },
     shiftDate: { type: Date, required: true },
   },
   {
