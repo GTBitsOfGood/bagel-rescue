@@ -98,7 +98,8 @@ const shiftSchema: Schema = new Schema({
   },
   confirmationForm: {
     type: Map,
-    of: ObjectId
+    of: ObjectId,
+    ref: "ConfirmationForm"
   },
   canceledShifts: {
     type: [Date],

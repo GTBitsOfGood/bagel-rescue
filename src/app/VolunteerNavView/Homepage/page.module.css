@@ -24,6 +24,7 @@
   padding: 2rem 2rem 1.5rem 2rem;
   background-color: white;
   border-bottom: 1px solid #E5E7EB;
+  gap:1rem;
 }
 
 .backButton {
@@ -189,13 +190,15 @@
 
 /* Status Badges */
 .statusBadge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
   padding: 0.45rem 0.85rem;
   border-radius: 9999px;
   font-size: 0.875rem;
   font-weight: 500;
   min-width: 100px;
-  text-align: center;
 }
 
 .completeStatus {
@@ -416,4 +419,64 @@
 
 .tableRow:last-child {
   border-bottom: none;
+}
+
+.formContainer {
+  display: flex;
+  align-items: center;     /* optional: centers items vertically */
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin: 1rem 2rem 0 2rem;
+  min-height: 100vh;
+  background-color: white;
+  display: flex;
+  flex-direction: column; /* stacks items vertically */
+  gap: 1rem;
+}
+
+.formHeader {
+  font-weight: 700;
+  font-style: Bold;
+  font-size: 24px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  color: #072B68;
+}
+.formQuestion {
+  font-weight: 500;
+  font-style: Bold;
+  font-size: 16px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  color: #072B68;
+}
+
+.formBody {
+  display: flex;           /* enables gap */
+  flex-direction: column;  /* stack items vertically */
+  gap: 1rem;               /* space between each child */
+  font-weight: 500;
+  color: #072B68;
+}
+
+.submitButton {
+  width: 150px;
+  margin: 60px auto 0 auto;
+  height: 51;
+  border-radius: 12px;
+  opacity: 1;
+  gap: 8px;
+  padding-top: 12px;
+  padding-right: 24px;
+  padding-bottom: 12px;
+  padding-left: 24px;
+  background-color: #0F7AFF;
+  color: white;
+}
+
+.inputOutline {
+  width: 100px;
+  border: 1px solid #D3D8DE;
+  border-radius: 4px;
+  box-sizing: border-box;
 }

@@ -224,7 +224,6 @@ const MyShiftsPage: React.FC = () => {
         let shiftsData;
         let shifts: UserShiftData[];
         
-        // Production mode with Firebase auth
         if (viewMode === "Day") {
           const { startDate, endDate } = getDayRange(currentDate);
           shiftsData = await getCurrentUserShiftsByDateRange(

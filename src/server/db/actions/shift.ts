@@ -22,11 +22,12 @@ export async function createShift(shiftObject: string): Promise<string | null> {
   }
 }
 
-export async function getShift(shiftId: Types.ObjectId): Promise<Shift | null> {
-  await requireAdmin();
+export async function getShift(shiftId: string | Types.ObjectId): Promise<Shift | null> {
+  // await requireAdmin();
   try {
     await dbConnect();
-    const data = await ShiftModel.findById(shiftId);
+    const objectId = typeof shiftId === "string" ? new mongoose.Types.ObjectId(shiftId) : shiftId;
+    const data = await ShiftModel.findById(objectId);
     return data;
   } catch (error) {
     const err = error as Error;
@@ -506,6 +507,7 @@ export async function getShiftsByWeek(
         routeName: "$route.routeName",
         routeId: "$route._id",
         locationDescription: "$route.locationDescription",
+        confirmationForm: 1,
         comments: 1,
         volunteers: {
           $map: {
@@ -577,6 +579,31 @@ export async function updateShift(shiftId: string, shiftUpdatePayload: string): 
   }
 }
 
+
+export async function updateShiftConfirmation(
+  shiftId: string,
+  dateKey: string,
+  confirmationId: string): Promise<boolean> {
+  try {
+    await dbConnect();
+
+    const result = await ShiftModel.findByIdAndUpdate(
+      shiftId,
+      { $set: { [`confirmationForm.${dateKey}`]: confirmationId } },
+      { new: true, upsert: false }
+    );
+
+    if (!result) {
+      console.error("Shift not found");
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+  
 export async function getShiftsByDay(
   targetDate: Date
 ): Promise<string | null> {
@@ -657,6 +684,7 @@ export async function getShiftsByDay(
           capacity: 1,
           currSignedUp: 1,
           additionalInfo: 1,
+          confirmationForm: 1,
           status: 1,
           routeName: "$route.routeName",
           routeId: "$route._id",

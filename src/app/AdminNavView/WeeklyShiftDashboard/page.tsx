@@ -24,8 +24,8 @@ import { getAllLocationsById } from "@/server/db/actions/location";
 import { Location } from "@/server/db/models/location";
 import { IRoute } from "@/server/db/models/Route";
 import { findDayInRange, getWeekRange } from "@/lib/dateRangeHandler";
+import { dateToString, normalizeDate } from "@/lib/dateHandler";
 import styles from "@/app/VolunteerNavView/Homepage/page.module.css";
-import { dateToString } from "@/lib/dateHandler";
 
 // Filter Icon Component
 const FilterIcon = () => (
@@ -208,12 +208,10 @@ function WeeklyShiftDashboard() {
                 .map((day: string, dateIndex: number) => {
                     const shiftDate = findDayInRange(
                         day,
-                        startOfWeek,
-                        endOfWeek
+                        normalizeDate(startOfWeek),
+                        normalizeDate(endOfWeek)
                     );
                     if (!shiftDate) return null;
-
-                    console.log(shift.canceledShifts);
 
                     if (
                         shift.canceledShifts
@@ -238,6 +236,16 @@ function WeeklyShiftDashboard() {
                             locationDescription={
                                 shift["locationDescription"] || ""
                             }
+                            confirmationForm={
+                                Object.keys(shift.confirmationForm).includes(
+                                    dateToString(shiftDate)
+                                )
+                                    ? shift.confirmationForm[
+                                            dateToString(shiftDate)
+                                        ]
+                                    : null
+                            }
+                            returnRoute={"/AdminNavView/WeeklyShiftDashboard"}
                             recurrenceDates={shift["recurrenceDates"] || []}
                             shiftDate={shiftDate.toLocaleDateString("en-US", {
                                 month: "short",

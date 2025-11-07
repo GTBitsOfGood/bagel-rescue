@@ -1,19 +1,20 @@
 "use server";
 
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import dbConnect from "../dbConnect";
 import { UserShiftModel, UserShift } from "../models/userShift";
 import RouteModel, { IRoute } from "../models/Route";
 import { ObjectId } from "mongodb";
 import User from "../models/User";
 import { requireUser, requireAdmin } from "../auth/auth";
-import { ShiftModel } from "../models/shift";
+import { Shift, ShiftModel } from "../models/shift";
 import { getAllLocationsById } from "./location";
 import { cookies } from "next/headers";
 import { adminAuth } from "../firebase/admin/firebaseAdmin";
 import { getDaysInRange } from '@/lib/dayHandler';
 import { ShaCertificate } from "firebase-admin/project-management";
 import { combineDateAndTime, dateToString } from "@/lib/dateHandler";
+import { getShift } from "./shift";
 
 export type UserRoute = {
   name: string;
@@ -26,7 +27,7 @@ export type UserShiftData = {
   area: string;
   startTime: Date;
   endTime: Date;
-  status: "Complete" | "Incomplete";
+  confirmationForms: { [date: string] : string};
   occurrenceDate?: Date;
   canceledShifts?: string[];
   recurrenceDates?: string[];
@@ -43,7 +44,7 @@ export type DetailedShiftData = {
   shiftEndDate: Date;
   startTime: Date;
   endTime: Date;
-  status: "Complete" | "Incomplete";
+  confirmationForm: {[date: string] : string};
   routeInfo: {
     routeName: string;
     locationDescription: string;
@@ -145,7 +146,6 @@ export async function getUserShiftsByDateRange(
   limit: number = 10
 ): Promise<PaginatedResult> {
   await requireUser();
-
   await dbConnect();
 
   try {
@@ -221,25 +221,38 @@ export async function getUserShiftsByDateRange(
       }
     });
 
-    // Transform the data for the frontend
-    const transformedShifts = userShifts.map(shift => {
-      const route = routeMap.get(shift.routeId.toString()) || {
-        routeName: "Unknown Route",
-        locationDescription: ""
-      };
-      
-      return {
-        id: shift._id.toString(),
-        routeName: route.routeName,
-        area: route.locationDescription,
-        startTime: new Date(shift.shiftDate),
-        endTime: new Date(shift.shiftEndDate),
-        status: shift.status || "Incomplete",
-        canceledShifts: shift.canceledShifts,
-        recurrenceDates: shift.recurrenceDates,
-        hasComment: Object.keys(shiftCommentsMap.get(shift.shiftId.toString()))
-      };
-    });
+
+    const transformedShifts = (await Promise.all(
+      userShifts.map(async (usershift) => {
+        const route = routeMap.get(usershift.routeId.toString()) || {
+          routeName: "Unknown Route",
+          locationDescription: ""
+        };
+
+        const shift = (await getShift(usershift.shiftId.toString()))?.toObject();
+        if (!shift) {
+          return null;
+        }
+
+        const confirmationForms: { [date: string]: string; } = {};
+        shift?.confirmationForm.forEach((objectId: any, dateKey: any) => {
+          confirmationForms[dateKey] = objectId.toString();
+        });
+
+        
+        return {
+          id: usershift._id.toString(),
+          routeName: route.routeName,
+          area: route.locationDescription,
+          startTime: new Date(usershift.shiftDate),
+          endTime: new Date(usershift.shiftEndDate),
+          confirmationForms: confirmationForms,
+          canceledShifts: usershift.canceledShifts,
+          recurrenceDates: usershift.recurrenceDates,
+          hasComment: Object.keys(shiftCommentsMap.get(usershift.shiftId.toString()))
+        };
+      })
+    )).filter((shift) => shift !== null);
     
     return {
       shifts: transformedShifts,
@@ -309,7 +322,7 @@ export async function getDetailedShiftInfo(userShiftId: string): Promise<Detaile
     }
 
     // Get the original Shift details for recurrence rule
-    const shift = await ShiftModel.findById(userShift.shiftId).lean();
+    const shift = (await getShift(userShift.shiftId))?.toObject();
     
     // Get location names
     let locationNames: string[] = [];
@@ -327,6 +340,11 @@ export async function getDetailedShiftInfo(userShiftId: string): Promise<Detaile
       }
     }
 
+    const confirmationForms: { [date: string]: string; } = {};
+    shift?.confirmationForm.forEach((objectId: any, dateKey: any) => {
+      confirmationForms[dateKey] = objectId.toString();
+    });
+
     return {
       id: userShift._id.toString(),
       routeName: route.routeName || "Unknown Route",
@@ -337,7 +355,7 @@ export async function getDetailedShiftInfo(userShiftId: string): Promise<Detaile
       shiftEndDate: new Date(shift?.shiftEndDate || new Date()),
       startTime: new Date(userShift.shiftDate),
       endTime: new Date(userShift.shiftEndDate),
-      status: userShift.status || "Incomplete",
+      confirmationForm: confirmationForms,
       routeInfo: {
         routeName: route.routeName || "Unknown Route",
         locationDescription: route.locationDescription || "",
@@ -362,7 +380,7 @@ export async function getDetailedOpenShiftInfo(shiftId: string): Promise<Detaile
   await dbConnect();
 
   try {
-    const shift = await ShiftModel.findById(shiftId).lean();
+    const shift = (await getShift(shiftId))?.toObject();
     if (!shift) {
       throw new Error("Shift not found");
     }
@@ -387,6 +405,11 @@ export async function getDetailedOpenShiftInfo(shiftId: string): Promise<Detaile
       }
     }
 
+    const confirmationForms: { [date: string]: string; } = {};
+    shift?.confirmationForm.forEach((objectId: any, dateKey: any) => {
+      confirmationForms[dateKey] = objectId.toString();
+    });
+
     return {
       id: shift._id.toString(),
       routeName: route.routeName || "Unknown Route",
@@ -397,7 +420,7 @@ export async function getDetailedOpenShiftInfo(shiftId: string): Promise<Detaile
       shiftEndDate: new Date(shift.shiftEndDate || new Date()),
       startTime: new Date(shift.shiftStartDate || new Date()),
       endTime: new Date(shift.shiftEndDate || new Date()),
-      status: "Incomplete",
+      confirmationForm: confirmationForms,
       routeInfo: {
         routeName: route.routeName || "Unknown Route",
         locationDescription: route.locationDescription || "",
@@ -599,6 +622,7 @@ export async function getOpenShifts(
         area: route.locationDescription,
         startTime: new Date(shift.shiftStartTime),
         endTime: new Date(shift.shiftEndTime),
+        confirmationForms: {},
         status: "Incomplete" as const // open shifts are not yet completed
       };
     });
@@ -984,5 +1008,30 @@ export async function updateUserShiftsRoute(shiftId: string, newRouteId: string)
   } catch (error) {
     const err = error as Error;
     throw new Error(`Error updating userShifts route: ${err.message}`);
+  }
+}
+
+export async function getUserShift(shiftId: string | Types.ObjectId): Promise<UserShift | null> {
+  await dbConnect();
+  await requireUser();
+
+  const userId = await getCurrentUserId();
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  try {
+    const objectId = typeof shiftId === "string" ? new mongoose.Types.ObjectId(shiftId) : shiftId;
+    const data = await UserShiftModel.findById(objectId);
+    
+    if (data?.userId.toString() !== userId && !user.isAdmin) {
+      throw new Error("You do not have access to this user shift");
+    }
+
+    return data;
+  } catch (error) {
+    const err = error as Error;
+    throw new Error(`Error has occurred when getting user shift: ${err.message}`);
   }
 }
