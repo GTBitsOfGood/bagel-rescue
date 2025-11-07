@@ -26,6 +26,7 @@ interface ShiftCardProps {
     recurrenceDates: string[];
     shiftDate: string;
     confirmationForm: string;
+    returnRoute: string;
     onOpenSidebar: () => void;
     onDeleteShift: (shift: Shift) => void;
 }
@@ -52,6 +53,7 @@ export default function ShiftCard({
     recurrenceDates,
     shiftDate,
     confirmationForm,
+    returnRoute,
     onOpenSidebar,
     onDeleteShift,
 }: ShiftCardProps) {
@@ -155,7 +157,7 @@ export default function ShiftCard({
                                                 confirmationFormId:
                                                     confirmationForm,
                                                 returnRoute:
-                                                    "/AdminNavView/WeeklyShiftDashboard",
+                                                    returnRoute,
                                             }
                                         )}`
                                     )

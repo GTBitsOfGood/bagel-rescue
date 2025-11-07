@@ -245,6 +245,7 @@ function WeeklyShiftDashboard() {
                                         ]
                                     : null
                             }
+                            returnRoute={"/AdminNavView/WeeklyShiftDashboard"}
                             recurrenceDates={shift["recurrenceDates"] || []}
                             shiftDate={shiftDate.toLocaleDateString("en-US", {
                                 month: "short",

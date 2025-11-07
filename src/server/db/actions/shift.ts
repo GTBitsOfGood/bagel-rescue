@@ -684,6 +684,7 @@ export async function getShiftsByDay(
           capacity: 1,
           currSignedUp: 1,
           additionalInfo: 1,
+          confirmationForm: 1,
           status: 1,
           routeName: "$route.routeName",
           routeId: "$route._id",
