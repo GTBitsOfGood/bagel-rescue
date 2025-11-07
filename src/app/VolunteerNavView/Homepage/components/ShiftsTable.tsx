@@ -100,6 +100,7 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({
           onShiftUpdated={onShiftUpdated}
           viewingDate={viewingDate}
           userShifts={userShifts}
+          handlePostShift={handlePostShift}
         />
       )}
 

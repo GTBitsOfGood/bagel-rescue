@@ -44,7 +44,7 @@ export type DetailedShiftData = {
   shiftEndDate: Date;
   startTime: Date;
   endTime: Date;
-  status: "Complete" | "Incomplete";
+  confirmationForm: {[date: string] : string};
   routeInfo: {
     routeName: string;
     locationDescription: string;
@@ -233,6 +233,7 @@ export async function getUserShiftsByDateRange(
         if (!shift) {
           return null;
         }
+
         const confirmationForms: { [date: string]: string; } = {};
         shift?.confirmationForm.forEach((objectId: any, dateKey: any) => {
           confirmationForms[dateKey] = objectId.toString();
@@ -321,7 +322,7 @@ export async function getDetailedShiftInfo(userShiftId: string): Promise<Detaile
     }
 
     // Get the original Shift details for recurrence rule
-    const shift = await ShiftModel.findById(userShift.shiftId).lean();
+    const shift = (await getShift(userShift.shiftId))?.toObject();
     
     // Get location names
     let locationNames: string[] = [];
@@ -339,6 +340,11 @@ export async function getDetailedShiftInfo(userShiftId: string): Promise<Detaile
       }
     }
 
+    const confirmationForms: { [date: string]: string; } = {};
+    shift?.confirmationForm.forEach((objectId: any, dateKey: any) => {
+      confirmationForms[dateKey] = objectId.toString();
+    });
+
     return {
       id: userShift._id.toString(),
       routeName: route.routeName || "Unknown Route",
@@ -349,7 +355,7 @@ export async function getDetailedShiftInfo(userShiftId: string): Promise<Detaile
       shiftEndDate: new Date(shift?.shiftEndDate || new Date()),
       startTime: new Date(userShift.shiftDate),
       endTime: new Date(userShift.shiftEndDate),
-      status: userShift.status || "Incomplete",
+      confirmationForm: confirmationForms,
       routeInfo: {
         routeName: route.routeName || "Unknown Route",
         locationDescription: route.locationDescription || "",
@@ -374,7 +380,7 @@ export async function getDetailedOpenShiftInfo(shiftId: string): Promise<Detaile
   await dbConnect();
 
   try {
-    const shift = await ShiftModel.findById(shiftId).lean();
+    const shift = (await getShift(shiftId))?.toObject();
     if (!shift) {
       throw new Error("Shift not found");
     }
@@ -399,6 +405,11 @@ export async function getDetailedOpenShiftInfo(shiftId: string): Promise<Detaile
       }
     }
 
+    const confirmationForms: { [date: string]: string; } = {};
+    shift?.confirmationForm.forEach((objectId: any, dateKey: any) => {
+      confirmationForms[dateKey] = objectId.toString();
+    });
+
     return {
       id: shift._id.toString(),
       routeName: route.routeName || "Unknown Route",
@@ -409,7 +420,7 @@ export async function getDetailedOpenShiftInfo(shiftId: string): Promise<Detaile
       shiftEndDate: new Date(shift.shiftEndDate || new Date()),
       startTime: new Date(shift.shiftStartDate || new Date()),
       endTime: new Date(shift.shiftEndDate || new Date()),
-      status: "Incomplete",
+      confirmationForm: confirmationForms,
       routeInfo: {
         routeName: route.routeName || "Unknown Route",
         locationDescription: route.locationDescription || "",

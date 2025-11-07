@@ -24,6 +24,7 @@ interface ShiftDetailsSidebarProps {
   onShiftUpdated?: () => void; // refresh shift lists
   viewingDate: Date;
   userShifts?: UserShiftData[];
+  handlePostShift: (shift: UserShiftData, e:any) => void
 }
 
 const dayMap: { [key: string]: string } = {
@@ -93,7 +94,8 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({
   isOpenShift = false,
   onShiftUpdated ,
   viewingDate,
-  userShifts = []
+  userShifts = [],
+  handlePostShift,
 }) => {
   const [detailedShift, setDetailedShift] = useState<DetailedShiftData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -154,7 +156,8 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({
                          detailedShift?.createdByUserId && 
                          currentUserId &&
                          detailedShift.createdByUserId === currentUserId;
-
+  
+  const hasConfirmationForm = ((shiftData as DetailedShiftData).confirmationForm && (shiftData as DetailedShiftData).confirmationForm[dateToString(date)])
 
   const handleRequestSubConfirm = async () => {
     if (!detailedShift) return;
@@ -375,13 +378,24 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({
                 <div>
                   <h3 className="font-semibold text-[#072B68] mb-2">Status</h3>
                   <span
-                    className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                      shiftData.status === "Complete"
+                    className={`inline-block px-5 py-3 rounded-full text-sm font-medium ${
+                      hasConfirmationForm
                         ? "bg-green-100 text-green-800"
                         : "bg-orange-100 text-orange-800"
                     }`}
+                    onClick={(e: any) => {
+                      if (hasConfirmationForm) {
+                        return;
+                      }
+                      handlePostShift(selectedShift, e);
+                    }}
                   >
-                    {detailedShift!.status}
+                    {hasConfirmationForm ? "Complete" : "Incomplete"}
+                    {!hasConfirmationForm && (
+                      <svg width="16" height="16" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg" className="inline-block align-middle pl-1">
+                        <path d="M8.5 2.5H2.5C1.96957 2.5 1.46086 2.71071 1.08579 3.08579C0.710714 3.46086 0.5 3.96957 0.5 4.5V14.5C0.5 15.0304 0.710714 15.5391 1.08579 15.9142C1.46086 16.2893 1.96957 16.5 2.5 16.5H12.5C13.0304 16.5 13.5391 16.2893 13.9142 15.9142C14.2893 15.5391 14.5 15.0304 14.5 14.5V8.5M7.5 9.5L16.5 0.5M16.5 0.5H11.5M16.5 0.5V5.5" stroke="#59431B" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    )}
                   </span>
                 </div>          
               </div>
