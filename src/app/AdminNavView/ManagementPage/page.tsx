@@ -1,15 +1,21 @@
-'use client'
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faChevronDown } from '@fortawesome/free-solid-svg-icons';
-import AdminSidebar from '../../../components/AdminSidebar';
-import ManagementBar from '../../components/ManagementBar';
+import React, { useState, useEffect } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faSearch,
+  faArrowUpShortWide,
+  faChevronDown,
+} from "@fortawesome/free-solid-svg-icons";
+import AdminSidebar from "../../../components/AdminSidebar";
+import ManagementBar from "../../components/ManagementBar";
+import handleSendEmail from "./sendEmail";
 import {IUser} from '@/server/db/models/User';
 import { getVolunteerManagementData } from '@/server/db/actions/User';
+import { set } from "mongoose";
 
 function ManagementPage() {
-  const [search, setSearch] = useState<string>('');
+  const [search, setSearch] = useState<string>("");
   const [volunteers, setVolunteers] = useState<IUser[]>([]);
 
   useEffect(() => {
@@ -43,6 +49,10 @@ function ManagementPage() {
         <ManagementBar />
         <div className='bg-[#ECF2F9] flex flex-col pl-9 pr-9 gap-6 min-h-screen'>
           <div className='flex justify-between text-[#6C7D93] mt-6'>
+            <div className="px-5 py-[.6rem] rounded-xl space-x-2 border bg-white">
+              <FontAwesomeIcon icon={faArrowUpShortWide} />
+              <span>Sort by</span>
+            </div>
             <div className='flex min-w-96 border px-5 py-[.6rem] justify-start gap-2 rounded-[2.5rem] bg-white'>
               <FontAwesomeIcon icon={faSearch} className='mt-1' />
               <input 
@@ -78,18 +88,18 @@ function ManagementPage() {
                   <p className='w-[10rem] flex justify-start items-center text-start'>{volunteer.firstName} {volunteer.lastName}</p>
                   <div className='w-[17rem] flex flex-row justify-start items-center gap-1'>
                     {volunteer?.locations?.slice(0, 3).map((location, i) => (
-                      <div key={i} className='text-sm bg-[#F2F2F2] rounded-lg px-2 py-[0.2rem]'>
+                      <div key={i} className='text-[0.75rem] bg-[#F2F2F2] rounded-lg px-2 py-[0.2rem]'>
                         {location}
                       </div>
                     ))}
                     {(volunteer.locations) && volunteer.locations.length > 3 && (
-                      <div className='text-sm bg-[#F2F2F2] rounded-lg px-2 py-[0.2rem]'>
+                      <div className='text-[0.75rem] bg-[#F2F2F2] rounded-lg px-2 py-[0.2rem]'>
                         ...
                       </div>
                     )}
                   </div>
                   <div className='w-[14.5rem]'>
-                    <div className={`w-[9rem] flex justify-center items-center text-sm rounded-lg px-2 py-[0.2rem] 
+                    <div className={`w-[9rem] flex justify-center items-center text-[0.75rem] rounded-lg px-2 py-[0.2rem]
                       ${volunteer.status === 'ACTIVE' 
                         ? 'bg-[#C8FFE3] text-green-900' 
                         : volunteer.status === 'SEND_INVITE' 
@@ -97,8 +107,54 @@ function ManagementPage() {
                         : volunteer.status === 'INVITE_SENT'
                         ? 'bg-[#FBFFC8] text-[#3D4200]'
                         : ''
-                      }`}>
+                      }`}
+                      onClick={() => {
+                        if (volunteer.status === 'SEND_INVITE' && volunteer._id !== undefined) {
+                          try {
+                            handleSendEmail(volunteer._id.toString()).then((res) => {
+                              if (!res) {
+                                alert("Failed to send email!");
+                                return;
+                              }
+
+                              alert("Email sent successfully!");
+                              setVolunteers(volunteers.map((v) => {
+                                if (v._id === volunteer._id) {
+                                  return {
+                                    ...v,
+                                    status: 'INVITE_SENT',
+                                  };
+                                }
+                                return v;
+                              }))
+                            })
+                          } catch (error) {
+                            console.error('Error sending email:', error);
+                          }
+                          
+                        }
+                      }}>
                         {formatStatus(volunteer.status ?? "")}
+                        {volunteer.status ===
+                            "SEND_INVITE" && (
+                            <div className="pl-2">
+                              <svg
+                                  width="10"
+                                  height="10"
+                                  viewBox="0 0 17 17"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="inline-block align-middle gap-1"
+                              >
+                                  <path
+                                      d="M8.5 2.5H2.5C1.96957 2.5 1.46086 2.71071 1.08579 3.08579C0.710714 3.46086 0.5 3.96957 0.5 4.5V14.5C0.5 15.0304 0.710714 15.5391 1.08579 15.9142C1.46086 16.2893 1.96957 16.5 2.5 16.5H12.5C13.0304 16.5 13.5391 16.2893 13.9142 15.9142C14.2893 15.5391 14.5 15.0304 14.5 14.5V8.5M7.5 9.5L16.5 0.5M16.5 0.5H11.5M16.5 0.5V5.5"
+                                      stroke="#59431B"
+                                      stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                  />
+                              </svg>
+                            </div>
+                        )}
                     </div>
                   </div>
                   <p className='w-[7rem] flex justify-start items-center'>

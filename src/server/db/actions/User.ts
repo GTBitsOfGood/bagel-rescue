@@ -34,23 +34,25 @@ async function createUser(
 }
 
 async function getUser(
-  id: mongoose.Types.ObjectId,
+  id: string,
   session?: ClientSession
 ): Promise<IUser | null> {
   await requireUser();
   await dbConnect();
 
+  const userId = new mongoose.Types.ObjectId(id);
+
   const document = await User.findById(
-    id,
+    userId,
     { __v: 0 },
     {
       session: session,
     }
-  );
+  ).lean<IUser>();
   if (!document) {
-    throw new Error("User with that id " + id.toString() + " does not exist");
+    throw new Error("User with that id " + id + " does not exist");
   }
-  return document;
+  return JSON.parse(JSON.stringify(document));
 }
 
 async function getUserByEmail(
@@ -73,20 +75,44 @@ async function getUserByEmail(
   return JSON.parse(JSON.stringify(document));
 }
 
+async function getUserByActivationToken(
+  token: string,
+  session?: ClientSession
+): Promise<IUser | null> {
+  // await requireUser();
+  await dbConnect();
+
+  const document = await User.findOne(
+    { activationToken: token },
+    { __v: 0 },
+    {
+      session: session,
+    }
+  ).lean<IUser>();
+  if (!document) {
+    throw new Error(
+      "User with that activation token " + token + " does not exist"
+    );
+  }
+  return JSON.parse(JSON.stringify(document));
+}
+
 async function updateUser(
-  id: mongoose.Types.ObjectId,
+  id: string,
   updated: UpdateQuery<IUser>,
   session?: ClientSession
 ): Promise<IUser | null> {
-  await requireUser();
+  // await requireUser();
   await dbConnect();
 
-  const document = await User.findByIdAndUpdate(id, updated, {
+  const userId = new mongoose.Types.ObjectId(id);
+
+  const document = await User.findByIdAndUpdate(userId, updated, {
     projection: { __v: 0 },
     session: session,
   });
   if (!document) {
-    throw new Error("User with that id " + id.toString() + " does not exist");
+    throw new Error("User with that id " + id + " does not exist");
   }
   return document;
 }
@@ -99,30 +125,30 @@ async function getUsersPerShift(
   await dbConnect();
   try {
     const documents = await UserShiftModel.aggregate([
-    {
-      $match: { shiftId: new mongoose.Types.ObjectId(shiftId) } // filter by the specific shift
-    },
-    {
-      $lookup: {
-        from: "users",           // collection to join
-        localField: "userId",    // field from usershifts
-        foreignField: "_id",     // field from users
-        as: "userInfo"           // output field
-      }
-    },
-    {
-      $unwind: "$userInfo" // flatten the user array
-    },
-    {
-      $replaceRoot: { newRoot: "$userInfo" } // return just user objects
-    }
-  ]);
-  return documents; 
-} catch (error) {
+      {
+        $match: { shiftId: new mongoose.Types.ObjectId(shiftId) }, // filter by the specific shift
+      },
+      {
+        $lookup: {
+          from: "users", // collection to join
+          localField: "userId", // field from usershifts
+          foreignField: "_id", // field from users
+          as: "userInfo", // output field
+        },
+      },
+      {
+        $unwind: "$userInfo", // flatten the user array
+      },
+      {
+        $replaceRoot: { newRoot: "$userInfo" }, // return just user objects
+      },
+    ]);
+    return documents;
+  } catch (error) {
     console.error("Error fetching users per shift:", error);
     throw new Error("Failed to fetch users per shift");
   }
-} 
+}
 
 async function getUserStats(
   id: mongoose.Types.ObjectId,
@@ -206,6 +232,7 @@ export {
   createUser,
   getUser,
   getUserByEmail,
+  getUserByActivationToken,
   updateUser,
   getUserStats,
   getAllUserStats,
