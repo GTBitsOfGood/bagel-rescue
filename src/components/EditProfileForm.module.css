@@ -110,11 +110,6 @@
     justify-content: space-between;
   }
 
-  .flip {
-    display: inline-block;
-    transform: scaleX(-1);
-  }
-
   .save {
     display: flex;
     flex-direction: row;
