@@ -5,7 +5,7 @@ import {
   } from "firebase/auth";
   //import Cookies from "js-cookie"; // For setting cookies
   import { auth } from "../firebase";
-  import { getUserByEmail } from "./User";
+  import { getUserByEmail, updateUser } from "./User";
   // Login with Email and Password
   export const loginWithCredentials = async (email: string, password: string) => {
     return await signInWithEmailAndPassword(auth, email, password)
@@ -23,6 +23,12 @@ import {
           body: JSON.stringify({ token }),
         });
 
+        const mongoose = await import('mongoose');
+        if (mongoUser && mongoUser._id && mongoUser.newEmail && auth.currentUser && auth.currentUser.email !== mongoUser.email) {
+          await updateUser(new mongoose.Types.ObjectId(mongoUser._id.toString()), {
+            email: mongoUser.newEmail,
+          });
+        }
         
         const response = await res.json()
         return response

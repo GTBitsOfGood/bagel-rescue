@@ -67,7 +67,19 @@ async function getUserByEmail(
     }
   ).lean();
   if (!document) {
-    throw new Error("User with that email " + email + " does not exist");
+    const doc = await User.findOne(
+      { newEmail: email },
+      { __v: 0 },
+      {
+        session: session,
+      }
+    ).lean();
+
+    if (!doc) {
+      throw new Error("User with that email " + email + " does not exist");
+    }
+
+    return JSON.parse(JSON.stringify(doc));
   }
   return JSON.parse(JSON.stringify(document));
 }
@@ -80,7 +92,7 @@ async function updateUser(
   await requireUser();
   await dbConnect();
 
-  const document = await User.findByIdAndUpdate(id, updated, {
+  const document = await User.findByIdAndUpdate(id, { $set: updated }, {
     projection: { __v: 0 },
     session: session,
   });

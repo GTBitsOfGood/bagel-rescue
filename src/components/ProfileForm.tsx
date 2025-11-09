@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { auth } from '../server/db/firebase';
 import { signOut } from 'firebase/auth';
 import { getUserByEmail } from '../server/db/actions/User';
+import { PiPencil } from "react-icons/pi";
 
 const ProfileForm: React.FC = () => {
   const router = useRouter();
@@ -102,7 +103,7 @@ const ProfileForm: React.FC = () => {
             <p className={styles.role}>{userData.role}</p>
           </div>
           <button className={styles.savebutton} onClick={() => router.push(`${pathname}/Edit`)}>
-            <span className={styles.flip}>&#9998;</span> Edit Profile
+            <PiPencil /> Edit Profile
           </button>
         </div>
         <hr className={styles.line}></hr>

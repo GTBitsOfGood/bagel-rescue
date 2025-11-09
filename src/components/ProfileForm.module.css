@@ -99,6 +99,10 @@
   }
   
   .savebutton {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
     background-color: #016ff3;
     color: white;
     padding: 1rem;
@@ -110,11 +114,6 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-  }
-
-  .flip {
-    display: inline-block;
-    transform: scaleX(-1);
   }
 
   .checkboxes {
