@@ -150,18 +150,18 @@ export default function ShiftCard({
                         {confirmationForm && (
                             <div
                                 className="shift-card-shift-form"
-                                onClick={() =>
+                                onClick={(e) => {
+                                    e.stopPropagation();
                                     router.push(
                                         `/AdminNavView/ViewConfirmationForm?${new URLSearchParams(
                                             {
                                                 confirmationFormId:
                                                     confirmationForm,
-                                                returnRoute:
-                                                    returnRoute,
+                                                returnRoute: returnRoute,
                                             }
                                         )}`
-                                    )
-                                }
+                                    );
+                                }}
                             >
                                 Shift Form
                                 <svg

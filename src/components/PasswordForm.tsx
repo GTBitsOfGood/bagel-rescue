@@ -86,11 +86,6 @@ const PasswordForm: React.FC = () => {
         headers: { "Content-Type": "application/json" },
       })
 
-      await fetch("/api/logout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
       router.push('/Login');
     } catch (error) {
       console.error('Error signing out:', error);

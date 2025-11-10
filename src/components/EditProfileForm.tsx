@@ -74,11 +74,6 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup }) => {
         headers: { "Content-Type": "application/json" },
       })
 
-      await fetch("/api/logout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
       router.push('/Login');
     } catch (error) {
       console.error('Error signing out:', error);
@@ -276,7 +271,10 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup }) => {
                 <div className={styles.locationBox} key={loc}>
                   <label>{loc}</label>
                   <button className={styles.buttonX} 
-                    onClick={() => removeLocation(loc)}>
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeLocation(loc);
+                    }}>
                     &#10005;
                   </button>
                 </div>
