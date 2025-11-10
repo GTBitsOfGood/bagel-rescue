@@ -5,7 +5,6 @@
     border-radius: 12px;
     flex: 1;
     overflow-y: auto;
-    max-width: 1200px;
   }
   
   .sidebar {
