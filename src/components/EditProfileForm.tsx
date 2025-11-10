@@ -159,7 +159,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup }) => {
           updated.newEmail = userData.email;
         }
 
-        await updateUser(new mongoose.Types.ObjectId(mongoUser._id.toString()), updated);
+        await updateUser(mongoUser._id.toString(), updated);
       }
     } catch (error) {
       console.error('Error editing user data:', error);

@@ -63,7 +63,6 @@ function WeeklyShiftDashboard() {
                     endDate
                 );
                 const weeklyShiftData = JSON.parse(weeklyShiftResponse || "[]");
-                console.log("Weekly Shift Data: ", weeklyShiftData);
                 setWeeklyShiftData(weeklyShiftData);
             } catch (error) {
                 console.error("Error fetching shifts:", error);

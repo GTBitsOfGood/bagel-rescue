@@ -76,13 +76,11 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({
 
   useEffect(() => {
     const fetchDetailedShift = async () => {
-      console.log("Selected shift: ", selectedShift);
       if (!selectedShift) return;
       
       setLoading(true);
       try {
         const detailed = await getDetailedShiftInfo(selectedShift.id);
-        console.log("detailed: ", detailed);
         setDetailedShift(detailed);
       } catch (error) {
         console.error("Error fetching detailed shift info:", error);

@@ -15,24 +15,25 @@ import {
   
         // Fetch the token and set it in the cookies
         const token = await user.getIdToken();
-        const mongoUser = await getUserByEmail(email);
         
         const res = await fetch("/api/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ token }),
+          credentials: "include",
         });
 
-        const mongoose = await import('mongoose');
+        const response = await res.json()
+
+        const mongoUser = await getUserByEmail(email);
+
         if (mongoUser && mongoUser._id && mongoUser.newEmail && auth.currentUser && auth.currentUser.email !== mongoUser.email) {
-          await updateUser(new mongoose.Types.ObjectId(mongoUser._id.toString()), {
+          await updateUser(mongoUser._id.toString(), {
             email: mongoUser.newEmail,
           });
         }
-        
-        const response = await res.json()
+
         return response
-        // return { success: true, isAdmin: mongoUser?.isAdmin};// No need to return admin status here
       })
       .catch((error) => {
         let errorMsg = "";

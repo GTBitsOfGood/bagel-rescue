@@ -5,6 +5,8 @@ import { ClientSession, UpdateQuery } from "mongoose";
 import User, { IUser } from "../models/User";
 import dbConnect from "../dbConnect";
 import { requireUser } from "../auth/auth";
+import { adminAuth } from "../firebase/admin/firebaseAdmin";
+import { cookies } from "next/headers";
 
 export type UserStats = {
   bagelsDelivered: number;
@@ -85,21 +87,25 @@ async function getUserByEmail(
 }
 
 async function updateUser(
-  id: mongoose.Types.ObjectId,
+  id: string,
   updated: UpdateQuery<IUser>,
   session?: ClientSession
-): Promise<IUser | null> {
+) {
   await requireUser();
   await dbConnect();
 
-  const document = await User.findByIdAndUpdate(id, { $set: updated }, {
+  const userId = await getCurrentUserId();
+  if (userId !== id) {
+    throw new Error("You are not authorized to update this user");
+  }
+
+  const document = await User.findByIdAndUpdate(new mongoose.Types.ObjectId(id), { $set: updated }, {
     projection: { __v: 0 },
     session: session,
   });
   if (!document) {
-    throw new Error("User with that id " + id.toString() + " does not exist");
+    throw new Error("User with that id " + id + " does not exist");
   }
-  return document;
 }
 
 async function getUserStats(
@@ -157,6 +163,48 @@ async function getAllUsers(): Promise<string> {
   }
 }
 
+/**
+ * Gets the current user ID from Firebase session
+ *
+ * @returns The current user's MongoDB ID or null if not authenticated
+ */
+async function getCurrentUserId(): Promise<string | null> {
+  try {
+    // Get the auth token from cookies
+    const cookieStore = cookies();
+    const authToken = cookieStore.get("authToken");
+    
+    if (!authToken) {
+      console.warn("No auth token found in cookies");
+      return null;
+    }
+
+    // Verify the token using Firebase Admin
+    const decodedToken = await adminAuth.verifyIdToken(authToken.value);
+    const userEmail = decodedToken.email;
+
+    if (!userEmail) {
+      console.warn("No email found in decoded token");
+      return null;
+    }
+
+    // Connect to database and find the user by email
+    await dbConnect();
+    const mongoUser = await getUserByEmail(userEmail);
+
+    if (!mongoUser || !('_id' in mongoUser)) {
+      console.warn(`No MongoDB user found for email: ${userEmail}`);
+      return null;
+    }
+
+    // Return the MongoDB user ID as a string
+    return (mongoUser._id!).toString();
+  } catch (error) {
+    console.error("Error getting current user ID:", error);
+    return null;
+  }
+}
+
 export {
   createUser,
   getUser,
@@ -166,4 +214,5 @@ export {
   getAllUserStats,
   getTotalBagelsDelivered,
   getAllUsers,
+  getCurrentUserId,
 };

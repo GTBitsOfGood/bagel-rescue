@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { adminAuth } from "@/server/db/firebase/admin/firebaseAdmin";
-import { getUserByEmail } from "@/server/db/actions/User";
+import { getUserByEmail, updateUser } from "@/server/db/actions/User";
 
 export async function POST(req: Request) {
   const { token } = await req.json();
@@ -18,6 +18,7 @@ export async function POST(req: Request) {
   cookies().set("authToken", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 24 * 7,
   });

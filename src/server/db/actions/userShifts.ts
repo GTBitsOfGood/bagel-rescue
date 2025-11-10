@@ -5,13 +5,11 @@ import dbConnect from "../dbConnect";
 import { UserShiftModel, UserShift } from "../models/userShift";
 import RouteModel, { IRoute } from "../models/Route";
 import { ObjectId } from "mongodb";
-import User from "../models/User";
 import { requireUser } from "../auth/auth";
 import { ShiftModel } from "../models/shift";
 import { getAllLocationsById } from "./location";
-import { cookies } from "next/headers";
-import { adminAuth } from "../firebase/admin/firebaseAdmin";
 import { getDaysInRange } from '@/lib/dayHandler';
+import { getCurrentUserId } from "./User";
 
 export type UserRoute = {
   name: string;
@@ -59,48 +57,6 @@ export type PaginatedResult = {
     totalPages: number;
   };
 };
-
-/**
- * Gets the current user ID from Firebase session
- *
- * @returns The current user's MongoDB ID or null if not authenticated
- */
-async function getCurrentUserId(): Promise<string | null> {
-  try {
-    // Get the auth token from cookies
-    const cookieStore = cookies();
-    const authToken = cookieStore.get("authToken");
-    
-    if (!authToken) {
-      console.warn("No auth token found in cookies");
-      return null;
-    }
-
-    // Verify the token using Firebase Admin
-    const decodedToken = await adminAuth.verifyIdToken(authToken.value);
-    const userEmail = decodedToken.email;
-
-    if (!userEmail) {
-      console.warn("No email found in decoded token");
-      return null;
-    }
-
-    // Connect to database and find the user by email
-    await dbConnect();
-    const mongoUser = await User.findOne({ email: userEmail }).lean();
-
-    if (!mongoUser || !('_id' in mongoUser)) {
-      console.warn(`No MongoDB user found for email: ${userEmail}`);
-      return null;
-    }
-
-    // Return the MongoDB user ID as a string
-    return (mongoUser._id as mongoose.Types.ObjectId).toString();
-  } catch (error) {
-    console.error("Error getting current user ID:", error);
-    return null;
-  }
-}
 
 /**
  * Gets all shifts assigned to a user
@@ -236,8 +192,6 @@ export async function getUserShiftsByDateRange(
       .lean();
 
     userShifts.sort((a, b) => new Date(a.shiftDate).getTime() - new Date(b.shiftDate).getTime());
-
-    console.log(userShifts);
     
     // Get total count for pagination
     const total = await UserShiftModel.countDocuments({
@@ -351,16 +305,13 @@ export async function getDetailedShiftInfo(userShiftId: string): Promise<Detaile
 
     // Get the original Shift details for recurrence rule
     const shift = await ShiftModel.findById(userShift.shiftId).lean();
-    console.log("Shift: ", shift);
     
     // Get location names
     let locationNames: string[] = [];
     if (route.locations && route.locations.length > 0) {
-      console.log("Locations: ", route.locations);
       try {
         const locationIds = route.locations.map(loc => loc.location.toString());
         const locationsData = await getAllLocationsById(locationIds);
-        console.log("Location Data: ", locationsData);
         if (locationsData) {
           const parsedLocations = JSON.parse(locationsData);
           locationNames = parsedLocations.map((loc: any) => (loc.locationName + " - " + loc.area) || "Unknown Location");
