@@ -4,9 +4,10 @@ import mongoose from "mongoose";
 import { ClientSession, UpdateQuery } from "mongoose";
 import User, { IUser } from "../models/User";
 import dbConnect from "../dbConnect";
-import { requireUser } from "../auth/auth";
 import { adminAuth } from "../firebase/admin/firebaseAdmin";
 import { cookies } from "next/headers";
+import { requireAdmin, requireUser } from "../auth/auth";
+import { UserShiftModel } from "../models/userShift";
 
 export type UserStats = {
   bagelsDelivered: number;
@@ -35,23 +36,25 @@ async function createUser(
 }
 
 async function getUser(
-  id: mongoose.Types.ObjectId,
+  id: string,
   session?: ClientSession
 ): Promise<IUser | null> {
   await requireUser();
   await dbConnect();
 
+  const userId = new mongoose.Types.ObjectId(id);
+
   const document = await User.findById(
-    id,
+    userId,
     { __v: 0 },
     {
       session: session,
     }
-  );
+  ).lean<IUser>();
   if (!document) {
-    throw new Error("User with that id " + id.toString() + " does not exist");
+    throw new Error("User with that id " + id + " does not exist");
   }
-  return document;
+  return JSON.parse(JSON.stringify(document));
 }
 
 async function getUserByEmail(
@@ -86,6 +89,28 @@ async function getUserByEmail(
   return JSON.parse(JSON.stringify(document));
 }
 
+async function getUserByActivationToken(
+  token: string,
+  session?: ClientSession
+): Promise<IUser | null> {
+  // await requireUser();
+  await dbConnect();
+
+  const document = await User.findOne(
+    { activationToken: token },
+    { __v: 0 },
+    {
+      session: session,
+    }
+  ).lean<IUser>();
+  if (!document) {
+    throw new Error(
+      "User with that activation token " + token + " does not exist"
+    );
+  }
+  return JSON.parse(JSON.stringify(document));
+}
+
 async function updateUser(
   id: string,
   updated: UpdateQuery<IUser>,
@@ -105,6 +130,39 @@ async function updateUser(
   });
   if (!document) {
     throw new Error("User with that id " + id + " does not exist");
+  }
+}
+
+async function getUsersPerShift(
+  shiftId: string,
+  session?: ClientSession
+): Promise<IUser[]> {
+  await requireUser();
+  await dbConnect();
+  try {
+    const documents = await UserShiftModel.aggregate([
+      {
+        $match: { shiftId: new mongoose.Types.ObjectId(shiftId) }, // filter by the specific shift
+      },
+      {
+        $lookup: {
+          from: "users", // collection to join
+          localField: "userId", // field from usershifts
+          foreignField: "_id", // field from users
+          as: "userInfo", // output field
+        },
+      },
+      {
+        $unwind: "$userInfo", // flatten the user array
+      },
+      {
+        $replaceRoot: { newRoot: "$userInfo" }, // return just user objects
+      },
+    ]);
+    return documents;
+  } catch (error) {
+    console.error("Error fetching users per shift:", error);
+    throw new Error("Failed to fetch users per shift");
   }
 }
 
@@ -205,14 +263,40 @@ async function getCurrentUserId(): Promise<string | null> {
   }
 }
 
+async function getVolunteerManagementData(): Promise<string> {
+  try {
+    await dbConnect();
+    await requireAdmin();
+
+    const volunteers = await User.find(
+      { isAdmin: false },
+      {
+        firstName: 1,
+        lastName: 1,
+        status: 1,
+        locations: 1,
+        monthlyShifts: 1,
+      }
+    ).lean();
+
+    return JSON.stringify(volunteers);
+  } catch (error) {
+    console.error("Error fetching volunteer management data:", error);
+    return JSON.stringify([]);
+  }
+}
+
 export {
   createUser,
   getUser,
   getUserByEmail,
+  getUserByActivationToken,
   updateUser,
   getUserStats,
   getAllUserStats,
   getTotalBagelsDelivered,
   getAllUsers,
   getCurrentUserId,
+  getUsersPerShift,
+  getVolunteerManagementData
 };
