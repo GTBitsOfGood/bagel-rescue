@@ -51,6 +51,7 @@ function DailyShiftDashboardPage() {
     const AddDays = (e: number) => {
         const newDate = new Date(date);
         if (newDate.getDate() - new Date().getDate() !== 7 || e === -1) {
+            setDailyShiftData([])
             newDate.setDate(newDate.getDate() + e);
             setDate(newDate);
         }
