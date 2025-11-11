@@ -1,35 +1,45 @@
 import mongoose, { Schema, Model, Document } from "mongoose";
+const { ObjectId } = Schema.Types;
+
 
 interface UserShift extends Document {
+  _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
   shiftId: mongoose.Types.ObjectId;
   routeId: mongoose.Types.ObjectId;
   recurrenceDates: string[];
   shiftDate: Date;
   shiftEndDate: Date;
+  canceledShifts: string[];
+
   status: "Complete" | "Incomplete";
 }
 
 const UserShiftSchema: Schema<UserShift> = new Schema(
   {
     userId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: ObjectId,
       ref: "User",
       required: true,
     },
     shiftId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: ObjectId,
       ref: "Shift",
       required: true,
     },
     routeId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: ObjectId,
       ref: "Route",
       required: true,
     },
     recurrenceDates: {
       type: [String],
       required: true,
+    },
+    canceledShifts: {
+      type: [String],
+      required: true,
+      default: [],
     },
     shiftDate: {
       type: Date,

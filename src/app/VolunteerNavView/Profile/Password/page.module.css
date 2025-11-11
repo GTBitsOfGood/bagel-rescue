@@ -1,0 +1,61 @@
+.container {
+    display: flex;
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+
+  .layout {
+    display: flex;
+    flex-direction: column;
+    flex: auto;
+  }
+  
+  .mainContent {
+    padding-left: 2rem;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #E5E7EB;
+    flex-wrap: wrap;
+  }
+
+  .sidebar {
+    width: 250px;
+    height: 100vh;
+  }
+
+  .header {
+    display: flex;
+    flex-direction: column; 
+    align-items: flex-start; 
+    gap: 0.5rem;
+    margin-top: .7rem;
+  }
+  
+  .backButton {
+    background: none;
+    border: none;
+    font-size: 1rem;
+    color: #64748B; 
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px; 
+  }
+  
+  .pageTitle {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 800; 
+    color: #072B68;
+  }
+
+  .backDrop {
+    background-color: #ECF2F9;
+    padding: 2rem;
+    height: 100%;
+    overflow: hidden; 
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+  }

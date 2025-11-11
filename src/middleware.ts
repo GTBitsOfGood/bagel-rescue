@@ -3,10 +3,11 @@ export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
   const token = await req.cookies.get("authToken")?.value;
 
-   if (
+  if (
     pathname.startsWith("/Login") ||
     pathname.startsWith("/public") ||
-    pathname.startsWith("/signup")
+    pathname.startsWith("/signup") ||
+    pathname.startsWith("/activate")
   ) {
     return NextResponse.next();
   }

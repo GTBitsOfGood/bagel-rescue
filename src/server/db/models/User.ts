@@ -24,7 +24,9 @@ export interface IUser {
   prefersNormalRoutes?: boolean;
   prefersSubOnly?: boolean;
   openToAny?: boolean;
-
+  newEmail?: string;
+  activationToken?: string;
+  firebaseUid?: string;
   monthlyShifts?: {
     [date: string]: {
       shiftTime: number;
@@ -33,9 +35,7 @@ export interface IUser {
       totalShifts: number;
     };
   };
-  createdAt?: Date; 
-
-
+  createdAt?: Date;
 
   // Old Schema
   // _id?: ObjectId;
@@ -56,7 +56,7 @@ export interface IUser {
   monthlyShiftAmount?: number;
   yearlyShiftAmount?: number;
   lastMonthlyReset?: Date;
-  // createdAt?: Date; 
+  // createdAt?: Date;
 }
 
 const shiftCompletedSchema = new Schema({
@@ -133,6 +133,13 @@ const userSchema = new Schema({
     type: Boolean,
     default: false,
   },
+  newEmail: {
+    type: String,
+    match: [
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      "Invalid email format",
+    ],
+  },
   monthlyShifts: {
     type: Map,
     of: {
@@ -145,7 +152,7 @@ const userSchema = new Schema({
   },
   createdAt: {
     type: Date,
-    deafault: Date.now, 
+    deafault: Date.now,
   },
 
   // Old Schema
@@ -222,9 +229,19 @@ const userSchema = new Schema({
     type: Date,
     default: new Date(),
   },
+  activationToken: {
+    type: String,
+    sparse: true,
+  },
+  firebaseUid: {
+    type: String,
+    sparse: true,
+    unique: true,
+    index: true,
+  },
   // createdAt: {
   //   type: Date,
-  //   deafault: Date.now, 
+  //   deafault: Date.now,
   // }
 });
 
