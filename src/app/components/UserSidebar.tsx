@@ -12,6 +12,15 @@ interface UserSidebarProps {
 
 type UserDetails = (Omit<IUser, "_id"> & { _id?: string }) | null;
 
+type MonthlyShiftDatum = {
+  dateKey: string;
+  monthLabel: string;
+  shiftTime: number;
+  bagelsDelivered: number;
+  bagelsReceived: number;
+  totalShifts: number;
+};
+
 const statusLabels: Record<NonNullable<IUser["status"]>, string> = {
   SEND_INVITE: "Invite Not Sent",
   INVITE_SENT: "Invite Sent",
@@ -22,6 +31,115 @@ const statusClassName: Record<NonNullable<IUser["status"]>, string> = {
   SEND_INVITE: "statusInvite",
   INVITE_SENT: "statusSent",
   ACTIVE: "statusActive",
+};
+
+const monthFormatter = new Intl.DateTimeFormat("en-US", { month: "short" });
+
+const SAMPLE_MONTHLY_DATA: MonthlyShiftDatum[] = [
+  {
+    dateKey: "2023-08-01T00:00:00.000Z",
+    monthLabel: "Aug",
+    shiftTime: 18,
+    bagelsDelivered: 120,
+    bagelsReceived: 98,
+    totalShifts: 9,
+  },
+  {
+    dateKey: "2023-09-01T00:00:00.000Z",
+    monthLabel: "Sep",
+    shiftTime: 12,
+    bagelsDelivered: 96,
+    bagelsReceived: 80,
+    totalShifts: 6,
+  },
+  {
+    dateKey: "2023-10-01T00:00:00.000Z",
+    monthLabel: "Oct",
+    shiftTime: 22,
+    bagelsDelivered: 144,
+    bagelsReceived: 110,
+    totalShifts: 11,
+  },
+  {
+    dateKey: "2023-11-01T00:00:00.000Z",
+    monthLabel: "Nov",
+    shiftTime: 28,
+    bagelsDelivered: 180,
+    bagelsReceived: 140,
+    totalShifts: 14,
+  },
+  {
+    dateKey: "2023-12-01T00:00:00.000Z",
+    monthLabel: "Dec",
+    shiftTime: 16,
+    bagelsDelivered: 110,
+    bagelsReceived: 96,
+    totalShifts: 8,
+  },
+  {
+    dateKey: "2024-01-01T00:00:00.000Z",
+    monthLabel: "Jan",
+    shiftTime: 12,
+    bagelsDelivered: 90,
+    bagelsReceived: 70,
+    totalShifts: 6,
+  },
+  {
+    dateKey: "2024-02-01T00:00:00.000Z",
+    monthLabel: "Feb",
+    shiftTime: 20,
+    bagelsDelivered: 150,
+    bagelsReceived: 118,
+    totalShifts: 10,
+  },
+  {
+    dateKey: "2024-03-01T00:00:00.000Z",
+    monthLabel: "Mar",
+    shiftTime: 14,
+    bagelsDelivered: 120,
+    bagelsReceived: 98,
+    totalShifts: 7,
+  },
+];
+
+const mapMonthlyShifts = (
+  monthlyShifts?: IUser["monthlyShifts"]
+): MonthlyShiftDatum[] => {
+  if (!monthlyShifts) {
+    return [];
+  }
+
+  const entries =
+    monthlyShifts instanceof Map
+      ? Array.from(monthlyShifts.entries())
+      : Object.entries(monthlyShifts);
+
+  return entries
+    .map(([key, value]) => {
+      if (!value) {
+        return null;
+      }
+
+      const parsedDate = new Date(key);
+      const monthLabel = Number.isNaN(parsedDate.getTime())
+        ? key.slice(0, 3)
+        : monthFormatter.format(parsedDate);
+
+      return {
+        dateKey: key,
+        monthLabel,
+        shiftTime: value.shiftTime ?? 0,
+        bagelsDelivered: value.bagelsDelivered ?? 0,
+        bagelsReceived: value.bagelsReceived ?? 0,
+        totalShifts: value.totalShifts ?? 0,
+      };
+    })
+    .filter((datum): datum is MonthlyShiftDatum => Boolean(datum))
+    .sort((a, b) => {
+      const first = new Date(a.dateKey).getTime();
+      const second = new Date(b.dateKey).getTime();
+      return first - second;
+    });
 };
 
 const formatDate = (value?: Date | string) => {
@@ -57,6 +175,22 @@ const formatPhone = (phone?: string | null) => {
   return phone;
 };
 
+const convertUserToDetails = (userData: IUser | null): UserDetails => {
+  if (!userData) {
+    return null;
+  }
+
+  const { _id, ...rest } = userData;
+  const normalizedId =
+    typeof _id === "string"
+      ? _id
+      : _id
+      ? (_id as unknown as { toString(): string }).toString()
+      : undefined;
+
+  return { ...rest, _id: normalizedId };
+};
+
 const UserSidebar = ({ userId, onClose }: UserSidebarProps) => {
   const [user, setUser] = useState<UserDetails>(null);
   const [loading, setLoading] = useState(false);
@@ -87,7 +221,7 @@ const UserSidebar = ({ userId, onClose }: UserSidebarProps) => {
           return;
         }
 
-        setUser(result);
+        setUser(convertUserToDetails(result));
       } catch (err) {
         if (!isMounted) {
           return;
@@ -166,6 +300,50 @@ const UserSidebar = ({ userId, onClose }: UserSidebarProps) => {
     [user]
   );
 
+  const monthlyDataFromUser = useMemo(
+    () => mapMonthlyShifts(user?.monthlyShifts),
+    [user?.monthlyShifts]
+  );
+
+  const usingSampleData = monthlyDataFromUser.length === 0;
+  const monthlyChartData = usingSampleData
+    ? SAMPLE_MONTHLY_DATA
+    : monthlyDataFromUser;
+
+  const volunteerHoursTotal = useMemo(
+    () => monthlyChartData.reduce((sum, datum) => sum + datum.shiftTime, 0),
+    [monthlyChartData]
+  );
+
+  const maxVolunteerHours = Math.max(
+    ...monthlyChartData.map((datum) => datum.shiftTime),
+    1
+  );
+  const avgVolunteerHours =
+    volunteerHoursTotal / (monthlyChartData.length || 1);
+
+  const maxMonthlyShifts = Math.max(
+    ...monthlyChartData.map((datum) => datum.totalShifts),
+    1
+  );
+
+  const chartLinePoints = useMemo(() => {
+    if (monthlyChartData.length === 0) {
+      return "";
+    }
+
+    return monthlyChartData
+      .map((datum, index) => {
+        const x =
+          monthlyChartData.length === 1
+            ? 50
+            : (index / (monthlyChartData.length - 1)) * 100;
+        const y = 100 - (datum.totalShifts / maxMonthlyShifts) * 100;
+        return `${x},${y}`;
+      })
+      .join(" ");
+  }, [maxMonthlyShifts, monthlyChartData]);
+
   return (
     <div className={styles.sidebar}>
       <div className={styles.header}>
@@ -219,8 +397,70 @@ const UserSidebar = ({ userId, onClose }: UserSidebarProps) => {
 
         {!loading && !error && user ? (
           <>
+            <section className={`${styles.section} ${styles.overviewSection}`}>
+              <div className={`${styles.infoCard} ${styles.overviewCard}`}>
+                <div className={styles.overviewHeader}>
+                  <div>
+                    <span className={styles.infoLabel}>Locations</span>
+                    {user.locations && user.locations.length > 0 ? (
+                      <div className={styles.chipList}>
+                        {user.locations.map((location) => (
+                          <span className={styles.chip} key={location}>
+                            {location}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className={styles.supportText}>
+                        This volunteer has not selected preferred locations yet.
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <span className={styles.infoLabel}>Status</span>
+                    {statusLabel ? (
+                      <span
+                        className={`${styles.statusChip} ${statusBadgeClass}`}
+                      >
+                        {statusLabel}
+                      </span>
+                    ) : (
+                      <span className={styles.infoValue}>Not available</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className={styles.metricsRow}>
+                  <div className={styles.metricBlock}>
+                    <span className={styles.metricLabel}>Shifts</span>
+                    <span className={styles.metricValue}>
+                      {user.totalShifts ?? 0}
+                    </span>
+                  </div>
+                  <div className={styles.metricBlock}>
+                    <span className={styles.metricLabel}>Volunteer time</span>
+                    <span className={styles.metricValue}>
+                      {Math.round(volunteerHoursTotal)} hrs
+                    </span>
+                  </div>
+                  <div className={styles.metricBlock}>
+                    <span className={styles.metricLabel}>Phone number</span>
+                    <span className={styles.metricValue}>
+                      {formatPhone(user.phoneNumber)}
+                    </span>
+                  </div>
+                  <div className={styles.metricBlock}>
+                    <span className={styles.metricLabel}>Email</span>
+                    <span className={styles.metricValue}>
+                      {user.email || "Not provided"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
             <section className={styles.section}>
-              <h3 className={styles.sectionTitle}>At a glance</h3>
+              <h3 className={styles.sectionTitle}>Impact overview</h3>
               <div className={styles.statGrid}>
                 <div className={styles.statCard}>
                   <span className={styles.statLabel}>Bagels Delivered</span>
@@ -250,31 +490,7 @@ const UserSidebar = ({ userId, onClose }: UserSidebarProps) => {
             </section>
 
             <section className={styles.section}>
-              <h3 className={styles.sectionTitle}>Contact</h3>
-              <div className={styles.infoCard}>
-                <div className={styles.infoRow}>
-                  <span className={styles.infoLabel}>Email</span>
-                  <span className={styles.infoValue}>
-                    {user.email || "Not provided"}
-                  </span>
-                </div>
-                <div className={styles.infoRow}>
-                  <span className={styles.infoLabel}>Phone</span>
-                  <span className={styles.infoValue}>
-                    {formatPhone(user.phoneNumber)}
-                  </span>
-                </div>
-                <div className={styles.infoRow}>
-                  <span className={styles.infoLabel}>Created</span>
-                  <span className={styles.infoValue}>
-                    {formatDate(user.createdAt)}
-                  </span>
-                </div>
-              </div>
-            </section>
-
-            <section className={styles.section}>
-              <h3 className={styles.sectionTitle}>Route Preferences</h3>
+              <h3 className={styles.sectionTitle}>Route preferences</h3>
               <div className={styles.infoCard}>
                 {preferences.some((item) => item.active) ? (
                   <div className={styles.chipList}>
@@ -295,26 +511,7 @@ const UserSidebar = ({ userId, onClose }: UserSidebarProps) => {
             </section>
 
             <section className={styles.section}>
-              <h3 className={styles.sectionTitle}>Preferred Locations</h3>
-              <div className={styles.infoCard}>
-                {user.locations && user.locations.length > 0 ? (
-                  <div className={styles.chipList}>
-                    {user.locations.map((location) => (
-                      <span className={styles.chip} key={location}>
-                        {location}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <p className={styles.supportText}>
-                    This volunteer has not selected preferred locations yet.
-                  </p>
-                )}
-              </div>
-            </section>
-
-            <section className={styles.section}>
-              <h3 className={styles.sectionTitle}>Account Details</h3>
+              <h3 className={styles.sectionTitle}>Account details</h3>
               <div className={styles.infoCard}>
                 <div className={styles.infoRow}>
                   <span className={styles.infoLabel}>Username</span>
@@ -327,6 +524,104 @@ const UserSidebar = ({ userId, onClose }: UserSidebarProps) => {
                   <span className={styles.infoValue}>
                     {user.isAdmin ? "Admin" : "Volunteer"}
                   </span>
+                </div>
+                <div className={styles.infoRow}>
+                  <span className={styles.infoLabel}>Created</span>
+                  <span className={styles.infoValue}>
+                    {formatDate(user.createdAt)}
+                  </span>
+                </div>
+              </div>
+            </section>
+
+            <section className={styles.section}>
+              <div className={styles.chartCard}>
+                <div className={styles.chartHeader}>
+                  <div>
+                    <h3 className={styles.sectionTitle}>
+                      Monthly volunteer time
+                    </h3>
+                    <span className={styles.chartSubtitle}>Hours per month</span>
+                  </div>
+                  <div className={styles.chartLegend}>
+                    <span className={styles.legendDot} /> Volunteer time
+                    <span
+                      className={`${styles.legendDot} ${styles.legendDashed}`}
+                    />
+                    Avg. {Math.round(avgVolunteerHours)} hrs
+                  </div>
+                </div>
+                <div className={styles.barChart}>
+                  <div
+                    className={styles.averageLine}
+                    style={{
+                      bottom: `${(avgVolunteerHours / maxVolunteerHours) * 100}%`,
+                    }}
+                  />
+                  {monthlyChartData.map((datum) => (
+                    <div className={styles.barGroup} key={datum.dateKey}>
+                      <div
+                        className={styles.bar}
+                        style={{
+                          height: `${(datum.shiftTime / maxVolunteerHours) * 100}%`,
+                        }}
+                      />
+                      <span className={styles.barLabel}>{datum.monthLabel}</span>
+                    </div>
+                  ))}
+                </div>
+                {usingSampleData ? (
+                  <p className={styles.sampleDataNote}>
+                    Showing sample data until this volunteer logs monthly shifts.
+                  </p>
+                ) : null}
+              </div>
+            </section>
+
+            <section className={styles.section}>
+              <div className={styles.chartCard}>
+                <div className={styles.chartHeader}>
+                  <div>
+                    <h3 className={styles.sectionTitle}>Monthly shifts</h3>
+                    <span className={styles.chartSubtitle}>Shifts per month</span>
+                  </div>
+                </div>
+                <div className={styles.lineChart}>
+                  <svg
+                    className={styles.lineChartSvg}
+                    viewBox="0 0 100 100"
+                    preserveAspectRatio="none"
+                  >
+                    <polyline
+                      className={styles.lineChartPath}
+                      points={chartLinePoints}
+                      pathLength={100}
+                    />
+                    {monthlyChartData.map((datum, index) => {
+                      const x =
+                        monthlyChartData.length === 1
+                          ? 50
+                          : (index / (monthlyChartData.length - 1)) * 100;
+                      const y =
+                        100 - (datum.totalShifts / maxMonthlyShifts) * 100;
+                      return (
+                        <circle
+                          key={`${datum.dateKey}-point`}
+                          className={styles.lineChartDot}
+                          cx={x}
+                          cy={y}
+                          r={1.4}
+                        />
+                      );
+                    })}
+                  </svg>
+                  <div className={styles.lineChartLabels}>
+                    {monthlyChartData.map((datum) => (
+                      <span key={`${datum.dateKey}-label`}>
+                        {datum.monthLabel}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
             </section>

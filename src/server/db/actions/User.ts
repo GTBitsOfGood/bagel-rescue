@@ -39,7 +39,7 @@ async function getUser(
   id: string,
   session?: ClientSession
 ): Promise<IUser | null> {
-  await requireUser();
+  await requireAdmin();
   await dbConnect();
 
   const userId = new mongoose.Types.ObjectId(id);
@@ -61,7 +61,7 @@ async function getUserById(
   id: string,
   session?: ClientSession
 ): Promise<IUser | null> {
-  await requireUser();
+  await requireAdmin();
   await dbConnect();
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
