@@ -1,0 +1,266 @@
+.container {
+    display: flex;
+    background-color: #FFFFFF;
+    padding: 2rem;
+    border-radius: 12px;
+    flex: 1;
+    overflow-y: auto;
+  }
+  
+  .sidebar {
+    width: 20%;           
+    min-width: 0;    
+    max-width: 20%;
+    padding-right: 2rem;
+    border-right: 1px solid #E5E7EB;
+  }
+  
+  .menu {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .menuItem {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    color: #64748B;
+    cursor: pointer;
+    transition: color 0.3s;
+  }
+  
+  .menuItem:hover {
+    color: #1D4ED8; 
+  }
+  
+  .active {
+    font-weight: bold;
+    color: #072B68;
+  }
+  
+  .signOut {
+    color: #EF4444;
+  }
+  
+  .formContainer {
+    flex: 1;
+    padding-left: 4rem;
+  }
+  
+  .name {
+    font-size: 1.50rem;
+    padding-bottom: 0.25rem;
+    font-weight: 800;
+    color: #1E3A8A; 
+    margin: 0;
+  }
+  
+  .role {
+    margin-bottom: 2rem;
+    font-weight: 400;
+    font-size: 1.50rem;
+    color: #072B68;
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+  
+  .field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .fieldLabel {
+    margin-bottom: 0.9rem;
+    font-weight: 500;
+    font-size: 1rem;
+    color: #1E3A8A; 
+  }
+  
+  .fieldInput {
+    padding: 0.75rem;
+    background-color: white;
+    border: 1px solid #0F7AFF; 
+    border-radius: 8px;
+    color: black;
+    font-size: 1rem;
+  }
+  
+  .button {
+    background-color: #0F7AFF;
+    color: white;
+    padding: 1rem;
+    height: fit-content;
+    border-radius: 8px;
+  }
+
+  .top {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .save {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .cancel {
+    padding: 1rem;
+    margin-right: 1rem;
+    height: fit-content;
+    color: #0F7AFF;
+  }
+
+  .line {
+    padding-bottom: 2rem;
+  }
+
+  .checkboxes {
+    display: flex;
+    gap: 2rem;
+    
+  }
+
+  .checkbox {
+    width: 16px;
+    height: 16px;
+    margin-right: 10px;
+  }
+
+  .checkboxLabel {
+    color: #072B68;
+    display: flex;
+    align-items: center;
+  }
+
+  .locationBox {
+    border: 1px solid #0F7AFF;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    border-radius: 8px;
+  }
+
+  .buttonX {
+    color: red;
+    margin-left: 0.5rem;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 20px;
+  }
+
+  .locationContainer {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0.75rem;
+    background-color: white;
+    border: 1px solid #0F7AFF; 
+    border-radius: 8px;
+    color: black;
+    font-size: 1rem;
+    gap: 1rem;
+  }
+
+  .locationDropdown {
+    padding: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    max-height: 150px;
+    border: 1px solid #0F7AFF;
+    border-radius: 8px;
+  }
+
+  .locationLabel {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    font-size: 15px;
+    color: #072B68; 
+  }
+
+  .locationList {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: scroll;
+    border-radius: 8px;
+  }
+
+  .locationSelect {
+    border-radius: 8px;
+    padding-left: 1rem;
+    width: 100%;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    font-weight: bold;
+    color: #1E3A8A; 
+    text-align: left;
+  }
+
+  .locationSelect:hover {
+    background-color: #E5F0FA;
+  }
+  
+  .popupBack {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .popup {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 6px;
+  }
+
+  .passwordStatement {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 1rem;
+  }
+
+  .passwordBox {
+    border: 1px solid #0F7AFF;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    width: 100%;
+  }
+
+  .popupButtons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+
+  .cancelChanges {
+    color: #016ff3;
+    font-size: small;
+  }
+
+  .saveChanges {
+    background-color: #016ff3;
+    color: white;
+    font-size: small;
+    padding: 0.5rem;
+    border-radius: 3px;
+  }

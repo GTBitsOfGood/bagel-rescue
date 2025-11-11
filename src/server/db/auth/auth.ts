@@ -22,12 +22,9 @@ export async function requireAdmin() {
   const token = cookieStore.get("authToken")?.value;
   if (!token) throw new Error("Unauthorized");
 
-  console.log("Authorized??");
-
   try {
     const decodedToken = await adminAuth.verifyIdToken(token);
     const user = await getUserByEmail(decodedToken.email || "");
-    console.log("user: ", user);
     if (!user || !user.isAdmin) {
       throw new Error("Unauthorized");
     }
@@ -39,7 +36,6 @@ export async function requireAdmin() {
     if (error instanceof Error && error.message.includes("Admin access required")) {
       throw error;
     }
-    console.log("Error: ", error);
     throw new Error("Forbidden");
   }
 }

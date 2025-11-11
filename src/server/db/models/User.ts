@@ -24,9 +24,9 @@ export interface IUser {
   prefersNormalRoutes?: boolean;
   prefersSubOnly?: boolean;
   openToAny?: boolean;
+  newEmail?: string;
   activationToken?: string;
   firebaseUid?: string;
-
   monthlyShifts?: {
     [date: string]: {
       shiftTime: number;
@@ -132,6 +132,13 @@ const userSchema = new Schema({
   openToAny: {
     type: Boolean,
     default: false,
+  },
+  newEmail: {
+    type: String,
+    match: [
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      "Invalid email format",
+    ],
   },
   monthlyShifts: {
     type: Map,

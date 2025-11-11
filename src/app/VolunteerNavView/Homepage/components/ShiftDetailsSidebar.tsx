@@ -134,8 +134,6 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({
           detailed = await getDetailedShiftInfo(selectedShift.id);
         }
 
-        console.log("Detailed: ", detailed);
-
         setDetailedShift(detailed);
       } catch (error) {
         console.error("Error fetching detailed shift info:", error);

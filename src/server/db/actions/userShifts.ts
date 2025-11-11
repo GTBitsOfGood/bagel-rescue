@@ -9,12 +9,11 @@ import User from "../models/User";
 import { requireUser, requireAdmin } from "../auth/auth";
 import { Shift, ShiftModel } from "../models/shift";
 import { getAllLocationsById } from "./location";
-import { cookies } from "next/headers";
-import { adminAuth } from "../firebase/admin/firebaseAdmin";
 import { getDaysInRange } from '@/lib/dayHandler';
-import { ShaCertificate } from "firebase-admin/project-management";
 import { combineDateAndTime, dateToString } from "@/lib/dateHandler";
 import { getShift } from "./shift";
+import { cookies } from "next/headers";
+import { adminAuth } from "../firebase/admin/firebaseAdmin";
 
 export type UserRoute = {
   name: string;

@@ -165,7 +165,6 @@ export default function LoginScreen() {
                         await setPersistence(auth, persistenceType);
 
                         const res = await loginWithCredentials(email, password);
-                        console.log(res);
                         if (res.success) {
                           if ("isAdmin" in res) {
                             router.push(
