@@ -215,7 +215,7 @@ function LocationCreationPage() {
                                 </select>
                             </div>
                             <div className="field-container">
-                                <p className="field-title">Delivery Amount<span className="text-red-500">*</span></p>
+                                <p className="field-title">Delivery Amount</p>
                                 <input
                                     className="field-input"
                                     type="number"
