@@ -39,7 +39,7 @@ async function getUser(
   id: string,
   session?: ClientSession
 ): Promise<IUser | null> {
-  await requireUser();
+  await requireAdmin();
   await dbConnect();
 
   const userId = new mongoose.Types.ObjectId(id);
@@ -54,6 +54,32 @@ async function getUser(
   if (!document) {
     throw new Error("User with that id " + id + " does not exist");
   }
+  return JSON.parse(JSON.stringify(document));
+}
+
+async function getUserById(
+  id: string,
+  session?: ClientSession
+): Promise<IUser | null> {
+  await requireAdmin();
+  await dbConnect();
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new Error("Invalid user id provided");
+  }
+
+  const document = await User.findById(
+    new mongoose.Types.ObjectId(id),
+    { __v: 0 },
+    {
+      session: session,
+    }
+  ).lean();
+
+  if (!document) {
+    throw new Error("User with that id " + id + " does not exist");
+  }
+
   return JSON.parse(JSON.stringify(document));
 }
 
@@ -289,6 +315,7 @@ async function getVolunteerManagementData(): Promise<string> {
 export {
   createUser,
   getUser,
+  getUserById,
   getUserByEmail,
   getUserByActivationToken,
   updateUser,
