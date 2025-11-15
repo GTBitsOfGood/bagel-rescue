@@ -61,7 +61,6 @@ function LocationCreationPage() {
             area: area,
         };
 
-        console.log(stateName.length);
         createLocation(JSON.stringify(location))
             .then(() => {
                 alert("Location created successfully!");
@@ -123,7 +122,7 @@ function LocationCreationPage() {
                     <div className="location-creation-form">
                         <div className="location-info">
                             <div className="field-container">
-                                <p className="field-title">Location Name</p>
+                                <p className="field-title">Location Name<span className="text-red-500">*</span></p>
                                 <input
                                     className="field-input"
                                     type="text"
@@ -132,7 +131,7 @@ function LocationCreationPage() {
                                 />
                             </div>
                             <div className="field-container">
-                                <p className="field-title">Street Address</p>
+                                <p className="field-title">Street Address<span className="text-red-500">*</span></p>
                                 <input
                                     className="field-input"
                                     type="text"
@@ -143,7 +142,7 @@ function LocationCreationPage() {
                                 />
                             </div>
                             <div className="field-container">
-                                <p className="field-title">Area</p>
+                                <p className="field-title">Area<span className="text-red-500">*</span></p>
                                 <select
                                     className="field-input"
                                     name="Select Area"
@@ -157,7 +156,7 @@ function LocationCreationPage() {
                             </div>
                             <div className="inline-field-container">
                                 <div className="field-container">
-                                    <p className="field-title">City</p>
+                                    <p className="field-title">City<span className="text-red-500">*</span></p>
                                     <input
                                         className="field-input"
                                         type="text"
@@ -168,7 +167,7 @@ function LocationCreationPage() {
                                     />
                                 </div>
                                 <div className="field-container">
-                                    <p className="field-title">State</p>
+                                    <p className="field-title">State<span className="text-red-500">*</span></p>
                                     <input
                                         className="field-input"
                                         type="text"
@@ -180,7 +179,7 @@ function LocationCreationPage() {
                                 </div>
                             </div>
                             <div className="field-container">
-                                <p className="field-title">Zip Code</p>
+                                <p className="field-title">Zip Code<span className="text-red-500">*</span></p>
                                 <input
                                     className="field-input"
                                     type="text"
@@ -195,6 +194,7 @@ function LocationCreationPage() {
                             <div className="field-container">
                                 <p className="field-title">
                                     Drop Off or Pick Up?
+                                    <span className="text-red-500">*</span>
                                 </p>
                                 <select
                                     className="field-input"
@@ -219,7 +219,7 @@ function LocationCreationPage() {
                                     className="field-input"
                                     type="number"
                                     min="0"
-                                    placeholder="Add a Delivery Amount"
+                                    placeholder="Amount of Bags"
                                     onChange={(e) =>
                                         setDeliveryAmount(
                                             Number(e.target.value)

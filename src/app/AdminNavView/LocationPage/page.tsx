@@ -31,6 +31,7 @@ function LocationDashboardPage() {
     null
   );
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
+  const [searchValue, setSearchValue] = useState("");
 
   const router = useRouter();
 
@@ -39,6 +40,9 @@ function LocationDashboardPage() {
       try {
         const response = await getAllLocations();
         const data = JSON.parse(response || "[]");
+        data.sort((a: Location, b: Location) =>
+          a.locationName.localeCompare(b.locationName)
+        );
         setLocations(data || []);
       } catch (error) {
         if (handleAuthError(error, router)) {
@@ -49,7 +53,7 @@ function LocationDashboardPage() {
       }
     };
     fetchLocations();
-  }, [sortOption]);
+  }, []);
 
   const handleDeleteLocation = async (locationId: string) => {
     const deleted = await deleteLocation(locationId);
@@ -96,6 +100,14 @@ function LocationDashboardPage() {
     setIsModalOpen(true);
   };
 
+  const searchLocations = [...locations].filter(location =>
+    location.locationName.toUpperCase().includes(searchValue.toUpperCase())
+  ).sort((a: Location, b: Location) =>
+    a.locationName.localeCompare(b.locationName)
+  );
+
+  const shownLocations = searchValue.length === 0 ? locations : searchLocations
+
   return (
     <div className="flex">
       <AdminSidebar />
@@ -130,6 +142,8 @@ function LocationDashboardPage() {
                   type="text"
                   placeholder="Search for location"
                   className={styles.searchInput}
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
                 />
               </div>
               <div className={styles.filterControls}>
@@ -148,7 +162,7 @@ function LocationDashboardPage() {
                   className={styles.filterButton}
                   onClick={handleSortChange}
                 >
-                  Filter
+                  Sort
                 </button>
               </div>
             </div>
@@ -168,7 +182,7 @@ function LocationDashboardPage() {
                 <div className={styles.columnHeader}></div>
               </div>
               <div className={styles.locationList}>
-                {locations.map((location, index) => (
+                {shownLocations.map((location, index) => (
                   <div
                     key={index}
                     className={styles.locationCard}
