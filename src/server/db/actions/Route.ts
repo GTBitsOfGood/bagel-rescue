@@ -5,6 +5,7 @@ import RouteModel, { ILocation, IRoute } from "../models/Route";
 import dbConnect from "../dbConnect";
 import { requireUser, requireAdmin } from "../auth/auth";
 import { UserShiftModel } from "../models/userShift";
+import { ShiftModel } from "../models/shift";
 
 export async function getRoute(id: string): Promise<IRoute | null> {
   await requireAdmin();
@@ -145,5 +146,34 @@ export async function getRoutesByShiftId(shiftId: string): Promise<IRoute[]> {
   } catch (error) {
     console.error("Error fetching route by shift ID:", error);
     throw new Error("Failed to fetch route by shift ID");
+  }
+}
+
+export async function deleteRoute(
+  id: string
+): Promise<{ success: boolean; message?: string }> {
+  try {
+    await requireAdmin();
+    await dbConnect();
+
+    const shiftCount = await ShiftModel.countDocuments({
+      routeId: new ObjectId(id),
+    });
+
+    if (shiftCount > 0) {
+      return {
+        success: false,
+        message: `Cannot delete route: ${shiftCount} shift(s) currently use this route.`,
+      };
+    }
+
+    const deleted = await RouteModel.findByIdAndDelete(id);
+    return {
+      success: Boolean(deleted),
+      message: deleted ? undefined : "Route not found.",
+    };
+  } catch (error) {
+    const err = error as Error;
+    return { success: false, message: `Failed to delete route: ${err.message}` };
   }
 }
