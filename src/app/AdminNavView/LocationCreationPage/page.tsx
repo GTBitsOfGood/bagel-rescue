@@ -61,7 +61,6 @@ function LocationCreationPage() {
             area: area,
         };
 
-        console.log(stateName.length);
         createLocation(JSON.stringify(location))
             .then(() => {
                 alert("Location created successfully!");
