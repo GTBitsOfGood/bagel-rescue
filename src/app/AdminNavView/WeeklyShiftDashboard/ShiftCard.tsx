@@ -88,6 +88,13 @@ export default function ShiftCard({
         }
     };
 
+    const addOneDay = (date: Date) => {
+        const newDate = new Date(date);
+        newDate.setDate(newDate.getDate() + 1);
+        return newDate;
+    };
+
+
     // Format volunteer names for display
     useEffect(() => {
         if (!volunteers || volunteers.length === 0) {
@@ -224,8 +231,8 @@ export default function ShiftCard({
                     </span>
                     <span className="shift-card-time">{timeRange}</span>
                     <span className="shift-card-period">
-                        {startDateObj.toLocaleDateString("en-US")} -{" "}
-                        {endDateObj.toLocaleDateString("en-US")}
+                        {addOneDay(startDateObj).toLocaleDateString("en-US")} - 
+                        {addOneDay(endDateObj).toLocaleDateString("en-US")}
                     </span>
                     <span className="shift-card-next-shift">{shiftDate}</span>
                 </div>
