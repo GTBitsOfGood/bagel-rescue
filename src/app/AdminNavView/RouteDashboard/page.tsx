@@ -13,7 +13,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 
-import { getAllRoutes } from "@/server/db/actions/Route";
+import { deleteRoute, getAllRoutes } from "@/server/db/actions/Route";
 import { IRoute } from "@/server/db/models/Route";
 import AdminSidebar from "../../../components/AdminSidebar";
 import styles from "./page.module.css";
@@ -30,6 +30,7 @@ export default function RouteDashboardPage() {
   const [duplicatingRouteId, setDuplicatingRouteId] = useState<string | null>(
     null
   );
+  const [deletingRouteId, setDeletingRouteId] = useState<string | null>(null);
   const modalRefs = React.useRef<Map<number, HTMLDivElement | null>>(new Map());
   const router = useRouter();
 
@@ -101,6 +102,41 @@ export default function RouteDashboardPage() {
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSortOption(event.target.value);
+  };
+
+  const handleDeleteRoute = async (route: IRoute) => {
+    const routeId = route._id?.toString();
+    if (!routeId) {
+      alert("Unable to delete: invalid route identifier.");
+      return;
+    }
+
+    const confirmDelete = window.confirm(
+      `Delete route "${route.routeName}"? This action cannot be undone.`
+    );
+    if (!confirmDelete) {
+      return;
+    }
+
+    setDeletingRouteId(routeId);
+    try {
+      const result = await deleteRoute(routeId);
+      if (!result?.success) {
+        alert(result?.message || "Failed to delete route.");
+        return;
+      }
+
+      setRoutes((prev) =>
+        prev.filter((item) => item._id?.toString() !== routeId)
+      );
+      alert("Route deleted successfully.");
+    } catch (error) {
+      console.error("Error deleting route:", error);
+      alert("An unexpected error occurred while deleting this route.");
+    } finally {
+      setDeletingRouteId(null);
+      setOpenModalIndex(null);
+    }
   };
 
   const getFilteredRoutes = () => {
@@ -228,7 +264,12 @@ export default function RouteDashboardPage() {
                               }}
                               className={styles.contextMenu}
                             >
-                              <button onClick={() => handleDuplicate(route)}>
+                              <button
+                                onClick={() => handleDuplicate(route)}
+                                disabled={
+                                  duplicatingRouteId === route._id?.toString()
+                                }
+                              >
                                 {duplicatingRouteId === route._id.toString() ? (
                                   <>
                                     <FontAwesomeIcon icon={faSpinner} spin />
@@ -241,9 +282,24 @@ export default function RouteDashboardPage() {
                                   </>
                                 )}
                               </button>
-                              <button className={styles.modalDeleteRoute}>
-                                <FontAwesomeIcon icon={faTrashCan} />
-                                Delete Route
+                              <button
+                                className={styles.modalDeleteRoute}
+                                onClick={() => handleDeleteRoute(route)}
+                                disabled={
+                                  deletingRouteId === route._id?.toString()
+                                }
+                              >
+                                {deletingRouteId === route._id?.toString() ? (
+                                  <>
+                                    <FontAwesomeIcon icon={faSpinner} spin />
+                                    Deleting...
+                                  </>
+                                ) : (
+                                  <>
+                                    <FontAwesomeIcon icon={faTrashCan} />
+                                    Delete Route
+                                  </>
+                                )}
                               </button>
                             </div>
                           )}
