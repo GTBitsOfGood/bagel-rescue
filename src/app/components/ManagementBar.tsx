@@ -1,7 +1,12 @@
 "use client";
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faTrash, faTimes } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPlus,
+  faTrash,
+  faTimes,
+  faSpinner,
+} from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 import { sendVolunteerSignupEmails } from "@/server/db/actions/email";
 import { handleAuthError } from "@/lib/authErrorHandler";
@@ -11,30 +16,34 @@ function ManagementBar() {
   const [emails, setEmails] = useState<string[]>([]);
   const [currentEmail, setCurrentEmail] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  
+  const [adding, setAdding] = useState(false);
+
   async function inviteVolunteer() {
     if (!currentEmail) {
       alert("Please enter at least one email address.");
       return;
     }
-    
+
     // Split by comma and trim whitespace
-    const emailList = currentEmail.split(',').map(email => email.trim()).filter(email => email);
-    
+    const emailList = currentEmail
+      .split(",")
+      .map((email) => email.trim())
+      .filter((email) => email);
+
     // Basic email validation for each email
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    const invalidEmails = emailList.filter(email => !emailRegex.test(email));
-    
+    const invalidEmails = emailList.filter((email) => !emailRegex.test(email));
+
     if (invalidEmails.length > 0) {
-      alert(`The following emails are invalid: ${invalidEmails.join(', ')}`);
+      alert(`The following emails are invalid: ${invalidEmails.join(", ")}`);
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       const response = await sendVolunteerSignupEmails(emailList);
-      
+
       if (await response) {
         // Add to the list of sent invitations
         setEmails([...emails, ...emailList]);
@@ -48,21 +57,35 @@ function ManagementBar() {
       console.error("Error sending invitation:", error);
       alert("An error occurred while sending the invitation(s).");
     }
-    
+
     setLoading(false);
   }
-  
+
   return (
     <>
       <div className="flex flex-row justify-between p-9 border-b-[1px] border-b-[#D3D8DE]">
-        <span className="text-[#072B68] mt-2 font-[700] text-4xl">Volunteer Management</span>
+        <span className="text-[#072B68] mt-2 font-[700] text-4xl">
+          Volunteer Management
+        </span>
         <div className="flex gap-6">
-          <div 
-            className="bg-[#0F7AFF] text-[#FFFFFF] font-[700] p-[.8rem] px-5 gap-2 rounded-xl hover:bg-[#005bb5] cursor-pointer"
-            onClick={() => router.push('/AdminNavView/ManagementPage/AddNewVolunteer')}
+          <div
+            className="bg-[#0F7AFF] flex items-center text-[#FFFFFF] font-[700] p-[.8rem] px-5 gap-2 rounded-xl hover:bg-[#005bb5] cursor-pointer"
+            onClick={() => {
+              setAdding(true);
+              router.push("/AdminNavView/ManagementPage/AddNewVolunteer");
+            }}
           >
-            <FontAwesomeIcon icon={faPlus} className="mr-3" />
-            <span>Add New Volunteer</span>
+            {adding ? (
+              <>
+                <FontAwesomeIcon icon={faSpinner} width={16} height={16} spin />
+                <span>Adding...</span>
+              </>
+            ) : (
+              <>
+                <FontAwesomeIcon icon={faPlus} width={16} height={16} />
+                <span>Add New Volunteer</span>
+              </>
+            )}
           </div>
         </div>
       </div>

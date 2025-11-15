@@ -2,13 +2,14 @@
 
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { 
-  faAngleLeft, 
-  faMagnifyingGlass, 
+import {
+  faAngleLeft,
+  faMagnifyingGlass,
   faPlus,
   faEllipsisH,
   faTrashCan,
-  faCopy 
+  faCopy,
+  faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 
@@ -18,18 +19,30 @@ import AdminSidebar from "../../../components/AdminSidebar";
 import styles from "./page.module.css";
 import "./stylesheet.css";
 import { handleAuthError } from "@/lib/authErrorHandler";
+import { useLoadingProgress } from "@/lib/useLoadingProgress";
+import LoadingBar from "@/app/components/LoadingBar";
 
 export default function RouteDashboardPage() {
   const [routes, setRoutes] = useState<IRoute[]>([]);
-  const [sortOption, setSortOption] = useState<string>('alphabetically');
+  const [sortOption, setSortOption] = useState<string>("alphabetically");
   const [searchText, setSearchText] = useState<string>("");
   const [openModalIndex, setOpenModalIndex] = useState<number | null>(null);
+  const [duplicatingRouteId, setDuplicatingRouteId] = useState<string | null>(
+    null
+  );
   const modalRefs = React.useRef<Map<number, HTMLDivElement | null>>(new Map());
   const router = useRouter();
+
+  const [routesLoading, setRoutesLoading] = useState(true);
+  const { loadingProgress, showContent: showRoutes } =
+    useLoadingProgress(routesLoading);
+
+  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     const fetchRoutes = async () => {
       try {
+        setRoutesLoading(true);
         const response = await getAllRoutes();
         const data = JSON.parse(response || "[]");
         setRoutes(data || []);
@@ -39,6 +52,8 @@ export default function RouteDashboardPage() {
         }
         console.error("Error fetching routes:", error);
         setRoutes([]);
+      } finally {
+        setRoutesLoading(false);
       }
     };
     fetchRoutes();
@@ -61,22 +76,22 @@ export default function RouteDashboardPage() {
     };
   }, [openModalIndex]);
 
-
   const handleSortChange = () => {
     const sortedRoutes = [...routes];
-    if (sortOption === 'alphabetically') {
-      sortedRoutes.sort((a: IRoute, b: IRoute) => 
+    if (sortOption === "alphabetically") {
+      sortedRoutes.sort((a: IRoute, b: IRoute) =>
         a.routeName.localeCompare(b.routeName)
       );
-    } else if (sortOption === 'byArea') {
-      sortedRoutes.sort((a: IRoute, b: IRoute) => 
+    } else if (sortOption === "byArea") {
+      sortedRoutes.sort((a: IRoute, b: IRoute) =>
         a.locationDescription.localeCompare(b.locationDescription)
       );
     }
     setRoutes(sortedRoutes);
   };
 
-  const handleDuplicate = (route : IRoute) => {
+  const handleDuplicate = (route: IRoute) => {
+    setDuplicatingRouteId(route._id.toString());
     router.push(`/AdminNavView/RouteCreationPage?duplicate=${route._id}`);
   };
 
@@ -89,9 +104,12 @@ export default function RouteDashboardPage() {
   };
 
   const getFilteredRoutes = () => {
-    return routes.filter(route => 
-      route.routeName.toLowerCase().includes(searchText.toLowerCase()) ||
-      route.locationDescription.toLowerCase().includes(searchText.toLowerCase())
+    return routes.filter(
+      (route) =>
+        route.routeName.toLowerCase().includes(searchText.toLowerCase()) ||
+        route.locationDescription
+          .toLowerCase()
+          .includes(searchText.toLowerCase())
     );
   };
 
@@ -100,21 +118,49 @@ export default function RouteDashboardPage() {
       <AdminSidebar />
       <div className="flex flex-col flex-1">
         <div className="route-dash-header">
-            <p className="header-text">Routes</p>
-            <button 
-              className={styles.newRouteButton} 
-              onClick={() => router.push("/AdminNavView/RouteCreationPage")}
-            >
-              <FontAwesomeIcon icon={faPlus} className="mr-2" />
-              New Route
-            </button>
+          <p className="header-text">Routes</p>
+          <button
+            className={styles.newRouteButton}
+            onClick={() => {
+              setAdding(true);
+              router.push("/AdminNavView/RouteCreationPage");
+            }}
+          >
+            {adding ? (
+              <>
+                <FontAwesomeIcon
+                  icon={faSpinner}
+                  className="mr-2"
+                  width={16}
+                  height={16}
+                  spin
+                />
+                Adding...
+              </>
+            ) : (
+              <>
+                <FontAwesomeIcon
+                  icon={faPlus}
+                  className="mr-2"
+                  width={16}
+                  height={16}
+                />
+                New Route
+              </>
+            )}
+          </button>
         </div>
         <hr className="route-dash-separator" />
         <div className="route-dash-container">
           <div className={styles.container}>
             <div className={styles.searchAndSort}>
               <div className={styles.searchInputContainer}>
-                <FontAwesomeIcon icon={faMagnifyingGlass} className={styles.searchIcon} />
+                <FontAwesomeIcon
+                  icon={faMagnifyingGlass}
+                  className={styles.searchIcon}
+                  width={16}
+                  height={16}
+                />
                 <input
                   type="text"
                   placeholder="Search for route"
@@ -124,16 +170,16 @@ export default function RouteDashboardPage() {
               </div>
               <div className={styles.filterControls}>
                 <h1>Sorted:</h1>
-                <select 
+                <select
                   className={styles.sortSelect}
-                  value={sortOption} 
+                  value={sortOption}
                   onChange={handleFilterChange}
                 >
                   <option value="alphabetically">Alphabetically</option>
                   <option value="byArea">By Area</option>
                 </select>
-                <button 
-                  className={styles.filterButton} 
+                <button
+                  className={styles.filterButton}
                   onClick={handleSortChange}
                 >
                   Filter
@@ -145,56 +191,68 @@ export default function RouteDashboardPage() {
                 <div className={styles.columnHeader}>Route Name</div>
                 <div className={styles.columnHeader}>Area</div>
                 <div className={styles.columnHeader}>Number of Stops</div>
-                <div className={styles.columnHeader}>Additional Information</div>
+                <div className={styles.columnHeader}>
+                  Additional Information
+                </div>
                 <div className={styles.columnHeader}></div>
               </div>
-              <div className={styles.routeList}>
-                {getFilteredRoutes().map((route, index) => (
-                  <div key={index} className={styles.routeCard}>
-                    <div className={styles.routeDetails}>
-                      <div className={styles.routeInfo}>
-                        <strong>{route.routeName}</strong>
-                      </div>
-                      <div className={styles.routeInfo}>
-                        {route.locationDescription}
-                      </div>
-                      <div className={styles.routeInfo}>
-                        {route.locations.length}
-                      </div>
-                      <div className={styles.routeInfo}>
-                        {route.additionalInfo}
-                      </div>
-                      <div className={styles.modal}>
-                        <FontAwesomeIcon 
-                          icon={faEllipsisH}
-                          className={styles.moreOptionsButton}
-                          onClick={() => toggleModal(index)}
-                        />
-                        {openModalIndex === index && (
-                          <div 
-                            ref={(el: HTMLDivElement | null) => {
-                              modalRefs.current.set(index, el);
-                            }}
-                            className={styles.contextMenu}>
-                              <button 
-                                onClick={() => handleDuplicate(route)}
-                              >
-                                <FontAwesomeIcon icon={faCopy}/>
-                                Duplicate Route
+              {!showRoutes ? (
+                <LoadingBar progress={loadingProgress} />
+              ) : (
+                <div className={styles.routeList}>
+                  {getFilteredRoutes().map((route, index) => (
+                    <div key={index} className={styles.routeCard}>
+                      <div className={styles.routeDetails}>
+                        <div className={styles.routeInfo}>
+                          <strong>{route.routeName}</strong>
+                        </div>
+                        <div className={styles.routeInfo}>
+                          {route.locationDescription}
+                        </div>
+                        <div className={styles.routeInfo}>
+                          {route.locations.length}
+                        </div>
+                        <div className={styles.routeInfo}>
+                          {route.additionalInfo}
+                        </div>
+                        <div className={styles.modal}>
+                          <FontAwesomeIcon
+                            icon={faEllipsisH}
+                            className={styles.moreOptionsButton}
+                            onClick={() => toggleModal(index)}
+                          />
+                          {openModalIndex === index && (
+                            <div
+                              ref={(el: HTMLDivElement | null) => {
+                                modalRefs.current.set(index, el);
+                              }}
+                              className={styles.contextMenu}
+                            >
+                              <button onClick={() => handleDuplicate(route)}>
+                                {duplicatingRouteId === route._id.toString() ? (
+                                  <>
+                                    <FontAwesomeIcon icon={faSpinner} spin />
+                                    Duplicating...
+                                  </>
+                                ) : (
+                                  <>
+                                    <FontAwesomeIcon icon={faCopy} />
+                                    Duplicate Route
+                                  </>
+                                )}
                               </button>
-                              <button 
-                                className = {styles.modalDeleteRoute}
-                              >
-                                <FontAwesomeIcon icon={faTrashCan}/>
+                              <button className={styles.modalDeleteRoute}>
+                                <FontAwesomeIcon icon={faTrashCan} />
                                 Delete Route
                               </button>
-                          </div>
-                        )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

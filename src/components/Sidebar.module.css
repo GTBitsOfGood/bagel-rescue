@@ -1,7 +1,6 @@
 .sidebar {
     position: sticky;
     top: 0;
-  
     height: 100vh;
     background-color: #fff;
     display: flex;
@@ -46,7 +45,6 @@
     font-size: 1rem;
     font-weight: 400;
     color:#808080;
-
   }
 
   .navHeader {
@@ -76,6 +74,11 @@
   
   .icon {
     font-size: 1.5rem;
+    width: 24px;
+    height: 24px;
+  }
+  .icon :global(svg) {
+    vertical-align: top;
   }
   
   .navText {

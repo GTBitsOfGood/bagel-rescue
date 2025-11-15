@@ -2,7 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import {
+  faMagnifyingGlass,
+  faSpinner,
+} from "@fortawesome/free-solid-svg-icons";
 import styles from "./page.module.css";
 import {
   faAngleDown,
@@ -21,23 +24,29 @@ import AdminSidebar from "../../../components/AdminSidebar";
 import { useRouter } from "next/navigation";
 import { handleAuthError } from "@/lib/authErrorHandler";
 import ThreeDotModal from "@/app/components/ThreeDotModal";
-import { ObjectId } from "mongoose";
+import LoadingBar from "@/app/components/LoadingBar";
+import { useLoadingProgress } from "@/lib/useLoadingProgress";
 
 function LocationDashboardPage() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [sortOption, setSortOption] = useState<string>("alphabetically");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [activeLocationId, setActiveLocationId] = useState<string | null>(
-    null
-  );
+  const [activeLocationId, setActiveLocationId] = useState<string | null>(null);
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
   const [searchValue, setSearchValue] = useState("");
+
+  const [locationsLoading, setLocationsLoading] = useState(true);
+  const { loadingProgress, showContent: showLocations } =
+    useLoadingProgress(locationsLoading);
+
+  const [adding, setAdding] = useState(false);
 
   const router = useRouter();
 
   useEffect(() => {
     const fetchLocations = async () => {
       try {
+        setLocationsLoading(true);
         const response = await getAllLocations();
         const data = JSON.parse(response || "[]");
         data.sort((a: Location, b: Location) =>
@@ -50,6 +59,8 @@ function LocationDashboardPage() {
         }
         console.error("Error fetching locations:", error);
         setLocations([]);
+      } finally {
+        setLocationsLoading(false);
       }
     };
     fetchLocations();
@@ -83,9 +94,7 @@ function LocationDashboardPage() {
     setLocations(sortedLocations);
   };
 
-  const handleFilterChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
+  const handleFilterChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSortOption(event.target.value);
   };
 
@@ -100,13 +109,15 @@ function LocationDashboardPage() {
     setIsModalOpen(true);
   };
 
-  const searchLocations = [...locations].filter(location =>
-    location.locationName.toUpperCase().includes(searchValue.toUpperCase())
-  ).sort((a: Location, b: Location) =>
-    a.locationName.localeCompare(b.locationName)
-  );
+  const searchLocations = [...locations]
+    .filter((location) =>
+      location.locationName.toUpperCase().includes(searchValue.toUpperCase())
+    )
+    .sort((a: Location, b: Location) =>
+      a.locationName.localeCompare(b.locationName)
+    );
 
-  const shownLocations = searchValue.length === 0 ? locations : searchLocations
+  const shownLocations = searchValue.length === 0 ? locations : searchLocations;
 
   return (
     <div className="flex">
@@ -117,14 +128,33 @@ function LocationDashboardPage() {
           <div className="flex flex-row justify-between text-center align-middle">
             <button
               className={styles.newLocationButton}
-              onClick={() =>
-                router.push(
-                  "/AdminNavView/LocationCreationPage"
-                )
-              }
+              onClick={() => {
+                setAdding(true);
+                router.push("/AdminNavView/LocationCreationPage");
+              }}
             >
-              <FontAwesomeIcon icon={faPlus} className="mr-2" />
-              New Location
+              {adding ? (
+                <>
+                  <FontAwesomeIcon
+                    icon={faSpinner}
+                    width={16}
+                    height={16}
+                    className="mr-2"
+                    spin
+                  />
+                  <span>Adding...</span>
+                </>
+              ) : (
+                <>
+                  <FontAwesomeIcon
+                    icon={faPlus}
+                    className="mr-2"
+                    width={16}
+                    height={16}
+                  />
+                  <span>New Location</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -153,9 +183,7 @@ function LocationDashboardPage() {
                   value={sortOption}
                   onChange={handleFilterChange}
                 >
-                  <option value="alphabetically">
-                    Alphabetically
-                  </option>
+                  <option value="alphabetically">Alphabetically</option>
                   <option value="byType">By Type</option>
                 </select>
                 <button
@@ -168,118 +196,81 @@ function LocationDashboardPage() {
             </div>
             <div className={styles.tableContainer}>
               <div className={styles.tableHeader}>
-                <div className={styles.columnHeader}>
-                  Location and Contact
-                </div>
-                <div className={styles.columnHeader}>
-                  Address
-                </div>
+                <div className={styles.columnHeader}>Location and Contact</div>
+                <div className={styles.columnHeader}>Address</div>
                 <div className={styles.columnHeader}>Type</div>
                 <div className={styles.columnHeader}>Bags</div>
-                <div className={styles.columnHeader}>
-                  Additional notes
-                </div>
+                <div className={styles.columnHeader}>Additional notes</div>
                 <div className={styles.columnHeader}></div>
               </div>
-              <div className={styles.locationList}>
-                {shownLocations.map((location, index) => (
-                  <div
-                    key={index}
-                    className={styles.locationCard}
-                  >
-                    <div className={styles.locationDetails}>
-                      <div
-                        className={styles.locationInfo}
-                      >
-                        <strong>
-                          {location.locationName}
-                        </strong>
-                        <div>{location.contact}</div>
-                      </div>
-                      <div
-                        className={styles.locationInfo}
-                      >
-                        {location.address.street +
-                          ", " +
-                          location.address.city +
-                          ", " +
-                          location.address.state +
-                          " " +
-                          location.address.zipCode}
-                      </div>
-                      <div
-                        className={`${
-                          styles.locationInfo
-                        } ${
-                          location.type === "Pick-Up"
-                            ? styles.pickUp
-                            : styles.dropOff
-                        }`}
-                      >
-                        {location.type}
-                      </div>
-                      <div
-                        className={styles.locationInfo}
-                      >
-                        {location.bags}
-                      </div>
-                      <div
-                        className={styles.locationInfo}
-                      >
-                        {location.notes}
-                      </div>
-                      <div
-                        className={
-                          styles.locationEllipsis
-                        }
-                      >
-                        <button
-                          className={
-                            styles.threeDotButton
-                          }
-                          onClick={(e) =>
-                            handleThreeDotClick(
-                              e,
-                              location._id?.toString() ||
-                                ""
-                            )
-                          }
+              {!showLocations ? (
+                <LoadingBar progress={loadingProgress} />
+              ) : (
+                <div className={styles.locationList}>
+                  {shownLocations.map((location, index) => (
+                    <div key={index} className={styles.locationCard}>
+                      <div className={styles.locationDetails}>
+                        <div className={styles.locationInfo}>
+                          <strong>{location.locationName}</strong>
+                          <div>{location.contact}</div>
+                        </div>
+                        <div className={styles.locationInfo}>
+                          {location.address.street +
+                            ", " +
+                            location.address.city +
+                            ", " +
+                            location.address.state +
+                            " " +
+                            location.address.zipCode}
+                        </div>
+                        <div
+                          className={`${styles.locationInfo} ${
+                            location.type === "Pick-Up"
+                              ? styles.pickUp
+                              : styles.dropOff
+                          }`}
                         >
-                          <FontAwesomeIcon
-                            icon={faEllipsis}
-                          />
-                        </button>
-                        {activeLocationId ===
-                          location._id?.toString() && (
-                          <ThreeDotModal
-                            isOpen={isModalOpen}
-                            onClose={() => {
-                              setIsModalOpen(
-                                false
-                              );
-                              setActiveLocationId(
-                                null
-                              );
-                            }}
-                            onDelete={() => {
-                              handleDeleteLocation(
-                                location._id?.toString()!
-                              );
-                              setIsModalOpen(
-                                false
-                              );
-                              setActiveLocationId(
-                                null
-                              );
-                            }}
-                            position={modalPosition}
-                          />
-                        )}
+                          {location.type}
+                        </div>
+                        <div className={styles.locationInfo}>
+                          {location.bags}
+                        </div>
+                        <div className={styles.locationInfo}>
+                          {location.notes}
+                        </div>
+                        <div className={styles.locationEllipsis}>
+                          <button
+                            className={styles.threeDotButton}
+                            onClick={(e) =>
+                              handleThreeDotClick(
+                                e,
+                                location._id?.toString() || ""
+                              )
+                            }
+                          >
+                            <FontAwesomeIcon icon={faEllipsis} />
+                          </button>
+                          {activeLocationId === location._id?.toString() && (
+                            <ThreeDotModal
+                              isOpen={isModalOpen}
+                              onClose={() => {
+                                setIsModalOpen(false);
+                                setActiveLocationId(null);
+                              }}
+                              onDelete={() => {
+                                handleDeleteLocation(location._id?.toString()!);
+                                setIsModalOpen(false);
+                                setActiveLocationId(null);
+                              }}
+                              position={modalPosition}
+                            />
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

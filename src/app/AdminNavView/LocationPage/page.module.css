@@ -28,6 +28,8 @@
   padding: 10px 15px;
   border-radius: 8px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
 .searchAndSort {

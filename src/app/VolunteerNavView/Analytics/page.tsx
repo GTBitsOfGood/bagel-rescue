@@ -13,6 +13,8 @@ import {
   UserRoute,
 } from "@/server/db/actions/userShifts";
 import { handleAuthError } from "@/lib/authErrorHandler";
+import { useLoadingProgress } from "@/lib/useLoadingProgress";
+import LoadingBar from "@/app/components/LoadingBar";
 // import { auth } from "@/server/db/firebase"; // Import Firebase auth
 // import { onAuthStateChanged } from "firebase/auth";
 
@@ -35,6 +37,8 @@ function AnalyticsPage() {
   });
   const [lastUpdated, setLastUpdated] = useState<string>("mm-dd-yy hh:mm:ss");
   const [loading, setLoading] = useState<boolean>(true);
+  const { loadingProgress, showContent: showAnalytics } =
+    useLoadingProgress(loading);
   const [error, setError] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [firebaseReady, setFirebaseReady] = useState<boolean>(false);
@@ -96,7 +100,6 @@ function AnalyticsPage() {
               "No routes found with getCurrentUserUniqueRoutes, trying with user ID"
             );
             userRoutes = await getUserUniqueRoutes(userData._id.toString());
-          
           } else if (!userRoutes || userRoutes.length === 0) {
             console.log("No routes found and no valid user ID available");
             userRoutes = [];
@@ -151,9 +154,9 @@ function AnalyticsPage() {
           </p>
         </div>
 
-        {loading ? (
-          <div className="loading-container">
-            <p>Loading analytics data...</p>
+        {!showAnalytics ? (
+          <div className="loading-container pt-8">
+            <LoadingBar progress={loadingProgress} />
           </div>
         ) : error ? (
           <div className="error-container">

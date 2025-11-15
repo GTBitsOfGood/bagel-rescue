@@ -5,6 +5,7 @@ import {
   faAngleLeft,
   faAngleRight,
   faPlus,
+  faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 import { getWeekRange } from "@/lib/dateRangeHandler";
@@ -14,15 +15,20 @@ interface WeeklyDashboardHeaderProps {
   AddDays: (days: number) => void;
 }
 
-const WeeklyDashboardHeader: React.FC<WeeklyDashboardHeaderProps> = ({ date, AddDays }) => {
+const WeeklyDashboardHeader: React.FC<WeeklyDashboardHeaderProps> = ({
+  date,
+  AddDays,
+}) => {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
+  const [adding, setAdding] = useState(false);
+
   const handleTimeFrameChange = (newTimeFrame: string) => {
-    if (newTimeFrame === 'Day') {
-      router.push('/AdminNavView/DailyShiftDashboard');
+    if (newTimeFrame === "Day") {
+      router.push("/AdminNavView/DailyShiftDashboard");
     } else {
-      router.push('/AdminNavView/WeeklyShiftDashboard');
+      router.push("/AdminNavView/WeeklyShiftDashboard");
     }
   };
 
@@ -35,7 +41,7 @@ const WeeklyDashboardHeader: React.FC<WeeklyDashboardHeaderProps> = ({ date, Add
     const endMonth = end.toLocaleDateString("en-us", { month: "short" });
     const endDay = end.getDate();
     const year = end.getFullYear();
-    
+
     if (startMonth === endMonth) {
       return `${startMonth} ${startDay} - ${endDay}, ${year}`;
     } else {
@@ -51,29 +57,41 @@ const WeeklyDashboardHeader: React.FC<WeeklyDashboardHeaderProps> = ({ date, Add
       <div className="flex gap-6">
         <div className="flex justify-between gap-4">
           <div className="flex border justify-between p-[.8rem] px-4 rounded-xl gap-5">
-            <button title="adddays" onClick={() => debouncedAddDays(-7)}>
+            <button
+              title="adddays"
+              onClick={() => debouncedAddDays(-7)}
+              className="flex items-center"
+            >
               <FontAwesomeIcon
                 icon={faAngleLeft}
-                className="mt-1 cursor-pointer"
+                className="cursor-pointer"
+                width={16}
+                height={16}
               />
             </button>
             <span className="font-[700]">
               {formatWeekRange(startOfWeek, endOfWeek)}
             </span>
-            <button title="adddays" onClick={() => debouncedAddDays(7)}>
+            <button
+              title="adddays"
+              onClick={() => debouncedAddDays(7)}
+              className="flex items-center"
+            >
               <FontAwesomeIcon
                 icon={faAngleRight}
-                className="mt-1 cursor-pointer"
+                className="cursor-pointer"
+                width={16}
+                height={16}
               />
             </button>
           </div>
           <div className="flex border justify-between p-[.8rem] px-4 rounded-xl relative">
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="mr-6 flex items-center"
+              className="flex items-center gap-2"
             >
               Week
-              <FontAwesomeIcon icon={faAngleDown} className="ml-2 mt-1" />
+              <FontAwesomeIcon icon={faAngleDown} height={16} width={16} />
             </button>
             {dropdownOpen && (
               <div className="absolute top-full mt-2 bg-white border rounded shadow-lg">
@@ -99,12 +117,24 @@ const WeeklyDashboardHeader: React.FC<WeeklyDashboardHeaderProps> = ({ date, Add
             )}
           </div>
         </div>
-        <div 
-          className="bg-[#0F7AFF] text-[#FFFFFF] font-[700] p-[.8rem] px-5 gap-2 rounded-xl hover:bg-[#005bb5] cursor-pointer"
-          onClick={() => router.push('/AdminNavView/NewShiftPage')}
+        <div
+          className="bg-[#0F7AFF] text-[#FFFFFF] font-[700] p-[.8rem] px-5 gap-2 rounded-xl hover:bg-[#005bb5] cursor-pointer flex items-center"
+          onClick={() => {
+            setAdding(true);
+            router.push("/AdminNavView/NewShiftPage");
+          }}
         >
-          <FontAwesomeIcon icon={faPlus} className="mr-3" />
-          <span>New Shift</span>
+          {adding ? (
+            <>
+              <FontAwesomeIcon icon={faSpinner} width={16} height={16} spin />
+              <span>Adding...</span>
+            </>
+          ) : (
+            <>
+              <FontAwesomeIcon icon={faPlus} width={16} height={16} />
+              <span>New Shift</span>
+            </>
+          )}
         </div>
       </div>
     </div>

@@ -9,6 +9,7 @@ import {
   faGripVertical,
   faAngleLeft,
   faXmark,
+  faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 
@@ -20,7 +21,7 @@ import AdminSidebar from "../../../components/AdminSidebar";
 
 function RouteCreationPage() {
   const [routeName, setRouteName] = useState<string>("");
-  const [routeArea, setRouteArea] = useState<{[key: string]: number}>({});
+  const [routeArea, setRouteArea] = useState<{ [key: string]: number }>({});
   const [additionalInfo, setAdditionalInfo] = useState<string>("");
   const [searchText, setSearchText] = useState<string>("");
   const [isAddingLocation, setIsAddingLocation] = useState<boolean>(false);
@@ -32,7 +33,8 @@ function RouteCreationPage() {
   const [locationsIsPickUp, setLocationsIsPickUp] = useState<
     Map<string, boolean>
   >(new Map());
-   const [prefilled, setPrefilled] = useState(false);
+  const [prefilled, setPrefilled] = useState(false);
+  const [completing, setCompleting] = useState(false);
 
   const router = useRouter();
 
@@ -51,67 +53,68 @@ function RouteCreationPage() {
     fetchLocations();
   }, []);
 
+  useEffect(() => {
+    if (!duplicateId || !locationsLoaded || prefilled) return;
+    const fetchRouteToDuplicate = async () => {
+      try {
+        const route = await getRoute(duplicateId);
+        if (!route) return;
 
-useEffect(() => {
-  if (!duplicateId || !locationsLoaded || prefilled) return;
-  const fetchRouteToDuplicate = async () => {
-    try {
-      const route = await getRoute(duplicateId);
-      if (!route) return;
+        // prefill fields
+        setRouteName((route.routeName ?? "") + " Copy");
+        setAdditionalInfo(route.additionalInfo ?? "");
 
-      // prefill fields
-      setRouteName((route.routeName ?? "") + " Copy");
-      setAdditionalInfo(route.additionalInfo ?? "");
+        const idToLocation = new Map<string, Location>();
+        searchLocations.forEach((loc: any) =>
+          idToLocation.set(String(loc._id), loc)
+        );
 
-      const idToLocation = new Map<string, Location>();
-      searchLocations.forEach((loc: any) =>
-        idToLocation.set(String(loc._id), loc)
-      );
+        const orderedLocations: Location[] = route.locations.map(
+          (rloc: any) => {
+            const id = String(rloc.location);
+            const found = idToLocation.get(id);
+            const locationObj: Location = found
+              ? { ...found }
+              : {
+                  _id: id,
+                  locationName: `Unknown (${id.slice(0, 6)})`,
+                  notes: "",
+                  contact: "",
+                  address: { street: "", city: "", state: "", zipCode: 0 },
+                  area: "",
+                  type: "Pick-Up",
+                  bags: 0,
+                };
+            locationObj.bags = rloc.bags ?? 0;
+            routeArea[locationObj.area] =
+              (routeArea[locationObj.area] ?? 0) + 1;
+            return locationObj;
+          }
+        );
 
-      const orderedLocations: Location[] = route.locations.map((rloc: any) => {
-        const id = String(rloc.location);
-        const found = idToLocation.get(id);
-        const locationObj: Location = found
-          ? { ...found }
-          : {
-              _id: id,
-              locationName: `Unknown (${id.slice(0, 6)})`,
-              notes: "",
-              contact: "",
-              address: { street: "", city: "", state: "", zipCode: 0 },
-              area: "",
-              type: "Pick-Up",
-              bags: 0,
-            };
-        locationObj.bags = rloc.bags ?? 0;
-        routeArea[locationObj.area] = (routeArea[locationObj.area] ?? 0) + 1;
-        return locationObj;
-      });
+        setLocations(orderedLocations);
 
-      setLocations(orderedLocations);
+        const isPickUpMap = new Map<string, boolean>();
+        orderedLocations.forEach((loc, i) => {
+          const id = String(loc._id);
+          const type = route.locations[i]?.type === "pickup";
+          isPickUpMap.set(id, type);
+        });
+        setLocationsIsPickUp(isPickUpMap);
 
-      const isPickUpMap = new Map<string, boolean>();
-      orderedLocations.forEach((loc, i) => {
-        const id = String(loc._id);
-        const type = route.locations[i]?.type === "pickup";
-        isPickUpMap.set(id, type);
-      });
-      setLocationsIsPickUp(isPickUpMap);
+        const usedIds = new Set(orderedLocations.map((l) => String(l._id)));
+        setSearchLocations((prev) =>
+          prev.filter((l) => !usedIds.has(String(l._id)))
+        );
 
-      const usedIds = new Set(orderedLocations.map((l) => String(l._id)));
-      setSearchLocations((prev) =>
-        prev.filter((l) => !usedIds.has(String(l._id)))
-      );
+        setPrefilled(true);
+      } catch (err) {
+        console.error("Failed to fetch duplicate route", err);
+      }
+    };
 
-      setPrefilled(true);
-    } catch (err) {
-      console.error("Failed to fetch duplicate route", err);
-    }
-  };
-
-  fetchRouteToDuplicate();
-}, [duplicateId, locationsLoaded, prefilled, searchLocations]);
-
+    fetchRouteToDuplicate();
+  }, [duplicateId, locationsLoaded, prefilled, searchLocations]);
 
   function changeIsPickUp(locationId: string): void {
     const newIsPickUp = new Map(locationsIsPickUp);
@@ -159,6 +162,7 @@ useEffect(() => {
   }
 
   function completeRoute(): void {
+    setCompleting(true);
     const locs: ILocation[] = locations.map((item) => ({
       location: new mongoose.Types.ObjectId(item["_id"]!),
       type: locationsIsPickUp.get(String(item["_id"])) ? "pickup" : "dropoff",
@@ -178,7 +182,8 @@ useEffect(() => {
         alert("Route created successfully!");
         router.push("/AdminNavView/DailyShiftDashboard");
       })
-      .catch(() => alert("Failed to create route."));
+      .catch(() => alert("Failed to create route."))
+      .finally(() => setCompleting(false));
   }
 
   function locationCards() {
@@ -212,11 +217,7 @@ useEffect(() => {
                 const idStr = String(location._id);
                 const isPickUp = locationsIsPickUp.get(idStr) ?? true;
                 return (
-                  <Draggable
-                    key={idStr}
-                    draggableId={idStr}
-                    index={ind}
-                  >
+                  <Draggable key={idStr} draggableId={idStr} index={ind}>
                     {(provided) => (
                       <div
                         key={idStr}
@@ -240,9 +241,7 @@ useEffect(() => {
                             className="location-pick-drop"
                             onClick={() => changeIsPickUp(idStr)}
                             style={{
-                              backgroundColor: isPickUp
-                                ? "#a4f4b6"
-                                : "#f4c6a4",
+                              backgroundColor: isPickUp ? "#a4f4b6" : "#f4c6a4",
                             }}
                           >
                             {isPickUp ? "Pick Up" : "Drop Off"}
@@ -344,7 +343,20 @@ useEffect(() => {
                     : "default",
               }}
             >
-              Complete Route
+              {completing ? (
+                <>
+                  <FontAwesomeIcon
+                    icon={faSpinner}
+                    spin
+                    height={16}
+                    width={16}
+                    className="mr-3"
+                  ></FontAwesomeIcon>
+                  <span>Completing...</span>
+                </>
+              ) : (
+                <span>Complete Route</span>
+              )}
             </button>
           </div>
           <hr className="separator" />

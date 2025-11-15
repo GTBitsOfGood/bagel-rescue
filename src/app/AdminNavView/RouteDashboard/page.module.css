@@ -11,7 +11,8 @@
     border-radius: 8px;
     cursor: pointer;
     max-height: 44px;
-    
+    display: flex;
+    align-items: center;
   }
   
   .modal {
@@ -129,9 +130,9 @@
     border: 1px solid #0F7AFF;
     border-radius: 12px;
     gap: 6px;
-    padding: 15px 15px 9px 15px;
+    padding: 9px 15px 9px 15px;
     width: 11em;
-    height: 5em;
+    /* height: 5em; */
     right: 0;
     z-index: 10;
   }

@@ -21,7 +21,8 @@ export type DateNavigationProps = {
 export type ShiftsTableProps = {
   shifts: UserShiftData[];
   date: Date;
-  loading: boolean;
+  showShifts: boolean;
+  loadingProgress: number;
   error: string | null;
   isOpenShifts?: boolean;
   onShiftUpdated?: () => void;
