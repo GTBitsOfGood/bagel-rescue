@@ -8,6 +8,8 @@ import { FiHome, FiUser } from "react-icons/fi";
 import { TbBrandGoogleAnalytics } from "react-icons/tb";
 import { auth } from '../server/db/firebase';
 import { getUserByEmail } from '../server/db/actions/User';
+import Image from 'next/image';
+import bagelsLogo from '../app/Login/bagels.png';
 
 interface NavItem {
   name: string;
@@ -63,7 +65,7 @@ const Sidebar: React.FC = () => {
     >
       <Link href="/VolunteerNavView/Homepage">
         <div className={styles.navHeader}>
-          <div className={styles.navIcon}>🥯</div>
+          <Image src={bagelsLogo} className={styles.navIcon} alt="Bagels Logo" />
           <div className={styles.navHeaderText}>Bagel Rescue</div>
           <div className={styles.navTitleText}>Volunteer Portal</div>
         </div>
@@ -83,6 +85,7 @@ const Sidebar: React.FC = () => {
           </Link>
         ))}
       </nav>
+      <hr className={styles.line} />
       <Link href="/VolunteerNavView/Profile">
         <div className={styles.profile}>
           <div className={styles.avatar}></div>

@@ -6,7 +6,8 @@
     background-color: #fff;
     display: flex;
     flex-direction: column;
-    padding: 1rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
     transition: width 0.3s ease;
     border-right: 1px solid #D3D8DE;
   }
@@ -30,10 +31,13 @@
   
   .nav {
     flex: 1;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
   
   .navIcon {
-    font-size: 3rem;
+    width: 5rem;
+    height: 5rem;
   }
 
   .navHeaderText {
@@ -51,8 +55,10 @@
 
   .navHeader {
     text-align: left;
-    margin-bottom: 1rem;
+    margin-bottom: 2rem;
     font-weight: bold;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 
   .navItem {
@@ -71,7 +77,8 @@
   }
   
   .active {
-    background-color: #ffffff;
+    background-color: #ECF2F9;
+    color: #0F7AFF;
   }
   
   .icon {
@@ -88,8 +95,9 @@
     display: flex;
     align-items: center;
     padding: 1rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
     margin-top: auto; 
-    background-color: #e5e7eb;
     border-radius: 0.5rem;
     transition: all 0.3s ease;
   }
@@ -99,6 +107,7 @@
     height: 40px;
     background-color: #0F7AFF;
     border-radius: 8px;
+    flex-shrink: 0;
   }
   
   .profileInfo {
@@ -116,4 +125,7 @@
     color: #000;
   }
   
+  .line {
+    padding-bottom: 1rem;
+  }
   
