@@ -40,6 +40,9 @@ function LocationDashboardPage() {
       try {
         const response = await getAllLocations();
         const data = JSON.parse(response || "[]");
+        data.sort((a: Location, b: Location) =>
+          a.locationName.localeCompare(b.locationName)
+        );
         setLocations(data || []);
       } catch (error) {
         if (handleAuthError(error, router)) {
