@@ -71,6 +71,7 @@ function WeeklyShiftDashboard() {
     const AddDays = (e: number) => {
         const newDate = new Date(date);
         // For weekly view, we move by 7 days (1 week) at a time
+        setWeeklyShiftData([])
         newDate.setDate(newDate.getDate() + e);
         setDate(newDate);
     };
