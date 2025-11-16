@@ -26,20 +26,28 @@ export async function POST(req: Request) {
     }
 
     // Check if user exists in database (whitelisted)
-    let user = await getUserByEmail(email);
-    
-    if (!user) {
-      return NextResponse.json(
-        { 
-          success: false,
-          error: "Email not whitelisted. Please contact an admin to add your email." 
-        },
-        { status: 403 }
-      );
+    let user;
+    try {
+      user = await getUserByEmail(email);
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("User with that email")) {
+        return NextResponse.json(
+          { 
+            success: false,
+            error: "Email not whitelisted. Please contact an admin to add your email." 
+          },
+          { status: 403 }
+        );
+      } else {
+        console.error("Error getting user by email:", error);
+        return NextResponse.json(
+          { error: "Error getting user by email" },
+          { status: 500 }
+        );
+      }
     }
 
-    // Check if user account is activated
-    if (!user.isAdmin && user.status !== "ACTIVE") {
+    if (!user?.isAdmin && user?.status !== "ACTIVE") {
       return NextResponse.json(
         {
           success: false,
@@ -49,19 +57,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // If user exists but doesn't have firebaseUid, update it
-    if (!user.firebaseUid) {
-      const updatedUser = await createUser({
-        ...user,
-        firebaseUid: decoded.uid,
-        email: email,
-        firstName: user.firstName || decoded.name?.split(' ')[0] || '',
-        lastName: user.lastName || decoded.name?.split(' ').slice(1).join(' ') || '',
-      } as IUser);
-      user = updatedUser;
-    }
-
-    // Set the auth token in cookies
     cookies().set("authToken", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -70,7 +65,7 @@ export async function POST(req: Request) {
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
 
-    const role = user.isAdmin ? "admin" : "volunteer";
+    const role = user.isAdmin;
 
     return NextResponse.json({ 
       success: true, 

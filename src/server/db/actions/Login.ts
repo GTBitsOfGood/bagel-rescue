@@ -3,6 +3,7 @@ import {
     GoogleAuthProvider,
     signInWithPopup,
     signInWithCustomToken,
+    signOut
 } from "firebase/auth";
 //import Cookies from "js-cookie"; // For setting cookies
 import { auth } from "../firebase";
@@ -68,15 +69,18 @@ export const loginWithCredentials = async (email: string, password: string) => {
 
 // Login with Google
 export const loginWithGoogle = async () => {
-    console.log("0.5")
-    return await signInWithPopup(auth, new GoogleAuthProvider())
+    const provider = new GoogleAuthProvider();
+    // Force account picker to show on each attempt
+    provider.setCustomParameters({
+        prompt: 'select_account'
+    });
+    
+    return await signInWithPopup(auth, provider)
         .then(async (res) => {
+            console.log(3)
             const user = res.user;
-            console.log("1")
 
-            // Fetch the token and send it to server for validation
             const token = await user.getIdToken();
-            console.log("2")
 
             // Send token to server for authentication and whitelisting check
             const serverRes = await fetch("/api/google-login", {
@@ -85,15 +89,20 @@ export const loginWithGoogle = async () => {
                 body: JSON.stringify({ token, email: user.email }),
                 credentials: "include",
             });
-            console.log("3")
 
             const response = await serverRes.json();
-            console.log("4")
+            console.log(response)
 
             if (!serverRes.ok) {
+                // Clear Firebase session on server error to prevent cached errors
+                try {
+                    await signOut(auth);
+                    console.log("Cleared Firebase session after server error");
+                } catch (signOutError) {
+                    console.log("No session to clear after server error");
+                }
                 return { success: false, error: response.error || "Authentication failed" };
             }
-            console.log("5")
 
             // Check if the user is new
             const isNewUser =
@@ -102,8 +111,13 @@ export const loginWithGoogle = async () => {
             
             return { success: true, isNewUser, user: response.user };
         })
-        .catch((error) => {
-            console.error("Error during Google login:", error); // Debug log for errors
+        .catch(async (error) => {
+            console.error("Error during Google login:", error);
+            try {
+                await signOut(auth);
+            } catch (signOutError) {
+                console.log("No session to clear after failed login");
+            }
             const errorMsg = "Something went wrong, please try again.";
             return { success: false, error: errorMsg };
         });
