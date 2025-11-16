@@ -95,9 +95,9 @@ export const loginWithGoogle = async () => {
                 // Clear Firebase session on server error to prevent cached errors
                 try {
                     await signOut(auth);
-                    console.log("Cleared Firebase session after server error");
                 } catch (signOutError) {
-                    console.log("No session to clear after server error");
+                    // Failed to clear session
+                }
                 }
                 return { success: false, error: response.error || "Authentication failed" };
             }
