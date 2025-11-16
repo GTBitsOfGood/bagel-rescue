@@ -77,7 +77,6 @@ export const loginWithGoogle = async () => {
     
     return await signInWithPopup(auth, provider)
         .then(async (res) => {
-            console.log(3)
             const user = res.user;
 
             const token = await user.getIdToken();
@@ -91,7 +90,6 @@ export const loginWithGoogle = async () => {
             });
 
             const response = await serverRes.json();
-            console.log(response)
 
             if (!serverRes.ok) {
                 // Clear Firebase session on server error to prevent cached errors
