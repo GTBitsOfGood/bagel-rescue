@@ -10,7 +10,7 @@ export function handleAuthError(error: any, router: AppRouterInstance): boolean 
   if (error instanceof Error) {
     const message = error.message.toLowerCase();
     if (message.includes('unauthorized') || message.includes('forbidden') || message.includes('admin access required')) {
-      router.push('/login');
+      router.push('/Login');
       return true;
     }
   }
