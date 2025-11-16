@@ -68,18 +68,39 @@ export const loginWithCredentials = async (email: string, password: string) => {
 
 // Login with Google
 export const loginWithGoogle = async () => {
+    console.log("0.5")
     return await signInWithPopup(auth, new GoogleAuthProvider())
         .then(async (res) => {
             const user = res.user;
+            console.log("1")
 
-            // Fetch the token and set it in the cookies
+            // Fetch the token and send it to server for validation
             const token = await user.getIdToken();
+            console.log("2")
+
+            // Send token to server for authentication and whitelisting check
+            const serverRes = await fetch("/api/google-login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token, email: user.email }),
+                credentials: "include",
+            });
+            console.log("3")
+
+            const response = await serverRes.json();
+            console.log("4")
+
+            if (!serverRes.ok) {
+                return { success: false, error: response.error || "Authentication failed" };
+            }
+            console.log("5")
 
             // Check if the user is new
             const isNewUser =
                 res.user.metadata.creationTime ===
                 res.user.metadata.lastSignInTime;
-            return { success: true, isNewUser };
+            
+            return { success: true, isNewUser, user: response.user };
         })
         .catch((error) => {
             console.error("Error during Google login:", error); // Debug log for errors
