@@ -93,12 +93,7 @@ export const loginWithGoogle = async () => {
 
             if (!serverRes.ok) {
                 // Clear Firebase session on server error to prevent cached errors
-                try {
-                    await signOut(auth);
-                } catch (signOutError) {
-                    // Failed to clear session
-                }
-                }
+                await signOut(auth);
                 return { success: false, error: response.error || "Authentication failed" };
             }
 
@@ -111,11 +106,7 @@ export const loginWithGoogle = async () => {
         })
         .catch(async (error) => {
             console.error("Error during Google login:", error);
-            try {
-                await signOut(auth);
-            } catch (signOutError) {
-                    // Failed to clear session
-            }
+            await signOut(auth);
             const errorMsg = "Something went wrong, please try again.";
             return { success: false, error: errorMsg };
         });
