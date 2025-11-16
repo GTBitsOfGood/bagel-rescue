@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import { ClientSession, UpdateQuery } from "mongoose";
 import User, { IUser } from "../models/User";
 import dbConnect from "../dbConnect";
+import { adminAuth } from "../firebase/admin/firebaseAdmin";
 import { cookies } from "next/headers";
 import { requireAdmin, requireUser } from "../auth/auth";
 import { UserShiftModel } from "../models/userShift";

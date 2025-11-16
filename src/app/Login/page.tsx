@@ -114,7 +114,6 @@ export default function LoginScreen() {
                 </div>
                 <Button type="Google" text="Sign in with Google"
                 onClick={async () => {
-                  console.log("0")
                   const res = await loginWithGoogle();
                   if (res.success) {
                     router.push(
