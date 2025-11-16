@@ -116,7 +116,7 @@ export default function LoginScreen() {
                 onClick={async () => {
                   const res = await loginWithGoogle();
                   if (res.success) {
-                    if ("user" in res && res.user.isAdmin) {
+                    if ("user" in res && res.user && res.user.isAdmin) {
                         router.push(
                           "/AdminNavView/WeeklyShiftDashboard"
                         );
