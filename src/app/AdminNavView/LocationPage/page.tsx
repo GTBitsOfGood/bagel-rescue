@@ -45,7 +45,7 @@ function LocationDashboardPage() {
         );
         setLocations(data || []);
       } catch (error) {
-        if (handleAuthError(error, router)) {
+        if (handleAuthError(error, router, true)) {
           return; // Auth error handled, user redirected
         }
         console.error("Error fetching locations:", error);

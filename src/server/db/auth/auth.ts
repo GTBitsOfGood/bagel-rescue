@@ -25,17 +25,21 @@ export async function requireAdmin() {
   try {
     const decodedToken = await adminAuth.verifyIdToken(token);
     const user = await getUserByEmail(decodedToken.email || "");
-    if (!user || !user.isAdmin) {
+    console.log(decodedToken)
+    console.log(user)
+    if (!user) {
       throw new Error("Unauthorized");
+    } else if (!user.isAdmin) {
+      throw new Error("Admin access required");
     }
     
     return decodedToken;
   } catch (error) {
-    cookieStore.delete("authToken");
-
     if (error instanceof Error && error.message.includes("Admin access required")) {
       throw error;
+    } else {
+      cookieStore.delete("authToken");
+      throw new Error("Forbidden");
     }
-    throw new Error("Forbidden");
   }
 }
