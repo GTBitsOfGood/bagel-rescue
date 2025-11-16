@@ -6,15 +6,88 @@ import { RRule } from "rrule";
 import dbConnect from "../dbConnect";
 import { RecurrenceModel, Shift, ShiftModel } from "../models/shift";
 import { UserShiftModel } from "../models/userShift";
-import { requireAdmin } from "../auth/auth";
+import { requireAdmin, requireUser } from "../auth/auth";
 import { Types } from "mongoose";
 import { normalizeDate } from "@/lib/dateHandler";
+import { getCurrentUserId } from "./userShifts";
+import User from "../models/User";
+
+// Validation helper for shift data
+function validateShiftData(data: any): void {
+  if (!data || typeof data !== "object") {
+    throw new Error("Invalid shift data: must be an object");
+  }
+
+  // Validate required fields
+  if (!data.routeId) {
+    throw new Error("Invalid shift data: routeId is required");
+  }
+
+  // Validate ObjectId format
+  if (!mongoose.Types.ObjectId.isValid(data.routeId)) {
+    throw new Error("Invalid shift data: routeId must be a valid ObjectId");
+  }
+
+  // Validate status if provided
+  if (data.status && !["assigned", "open"].includes(data.status)) {
+    throw new Error("Invalid shift data: status must be 'assigned' or 'open'");
+  }
+
+  // Validate dates
+  if (data.shiftStartDate && isNaN(new Date(data.shiftStartDate).getTime())) {
+    throw new Error("Invalid shift data: shiftStartDate must be a valid date");
+  }
+  if (data.shiftEndDate && isNaN(new Date(data.shiftEndDate).getTime())) {
+    throw new Error("Invalid shift data: shiftEndDate must be a valid date");
+  }
+  if (data.shiftStartTime && isNaN(new Date(data.shiftStartTime).getTime())) {
+    throw new Error("Invalid shift data: shiftStartTime must be a valid date");
+  }
+  if (data.shiftEndTime && isNaN(new Date(data.shiftEndTime).getTime())) {
+    throw new Error("Invalid shift data: shiftEndTime must be a valid date");
+  }
+
+  // Validate capacity
+  if (data.capacity !== undefined && (typeof data.capacity !== "number" || data.capacity < 0)) {
+    throw new Error("Invalid shift data: capacity must be a non-negative number");
+  }
+
+  // Validate currSignedUp
+  if (data.currSignedUp !== undefined && (typeof data.currSignedUp !== "number" || data.currSignedUp < 0)) {
+    throw new Error("Invalid shift data: currSignedUp must be a non-negative number");
+  }
+
+  // Validate recurrenceDates if provided
+  if (data.recurrenceDates && !Array.isArray(data.recurrenceDates)) {
+    throw new Error("Invalid shift data: recurrenceDates must be an array");
+  }
+
+  // Validate recurrenceRule if provided
+  if (data.recurrenceRule && typeof data.recurrenceRule === "string" && data.recurrenceRule !== "") {
+    try {
+      RRule.fromString(data.recurrenceRule);
+    } catch (e) {
+      throw new Error("Invalid shift data: recurrenceRule must be a valid RRule string");
+    }
+  }
+}
 
 export async function createShift(shiftObject: string): Promise<string | null> {
   await requireAdmin();
   try {
     await dbConnect();
-    const newShift = new ShiftModel(JSON.parse(shiftObject || "{}"));
+    
+    // Parse and validate the shift data
+    let parsedData;
+    try {
+      parsedData = JSON.parse(shiftObject || "{}");
+    } catch (e) {
+      throw new Error("Invalid JSON format for shift data");
+    }
+    
+    validateShiftData(parsedData);
+    
+    const newShift = new ShiftModel(parsedData);
     return JSON.stringify(await newShift.save());
   } catch (error) {
     const err = error as Error;
@@ -23,11 +96,47 @@ export async function createShift(shiftObject: string): Promise<string | null> {
 }
 
 export async function getShift(shiftId: string | Types.ObjectId): Promise<Shift | null> {
-  // await requireAdmin();
+  await requireUser();
   try {
     await dbConnect();
+    
+    // Validate ObjectId format
     const objectId = typeof shiftId === "string" ? new mongoose.Types.ObjectId(shiftId) : shiftId;
+    if (!mongoose.Types.ObjectId.isValid(objectId.toString())) {
+      throw new Error("Invalid shift ID format");
+    }
+    
     const data = await ShiftModel.findById(objectId);
+    if (!data) {
+      return null;
+    }
+    
+    // Get current user to check permissions
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    
+    // If user is admin, allow access
+    if (user.isAdmin) {
+      return data;
+    }
+    
+    // For non-admins, only allow access if user is assigned to this shift
+    const userShift = await UserShiftModel.findOne({
+      userId: new mongoose.Types.ObjectId(userId),
+      shiftId: objectId
+    });
+    
+    if (!userShift) {
+      throw new Error("You do not have permission to access this shift");
+    }
+    
     return data;
   } catch (error) {
     const err = error as Error;
@@ -56,15 +165,35 @@ export async function updateComment(data: string): Promise<any> {
   try {
     await dbConnect();
 
-    const parsed = JSON.parse(data);
-    const { shiftId, date, comment } = parsed;
-
-    const allShifts = await ShiftModel.find();
+    // Parse and validate input
+    let parsed;
+    try {
+      parsed = JSON.parse(data);
+    } catch (e) {
+      throw new Error("Invalid JSON format for comment data");
+    }
     
-    const foundShift = allShifts.find(s => s._id.toString() === shiftId);
+    const { shiftId, date, comment } = parsed;
+    
+    if (!shiftId) {
+      throw new Error("shiftId is required");
+    }
+    
+    if (!mongoose.Types.ObjectId.isValid(shiftId)) {
+      throw new Error("Invalid shiftId format");
+    }
+    
+    if (!date || typeof date !== "string") {
+      throw new Error("date must be a valid string");
+    }
+    
+    if (comment !== undefined && typeof comment !== "string") {
+      throw new Error("comment must be a string");
+    }
+
+    const foundShift = await ShiftModel.findById(shiftId);
     
     if (!foundShift) {
-      const sampleIds = allShifts.slice(0, 10).map(s => s._id.toString());
       throw new Error(`Shift not found with ID: ${shiftId}`);
     }
     
@@ -547,24 +676,69 @@ export async function updateShift(shiftId: string, shiftUpdatePayload: string): 
   try {
     await dbConnect();
     
-    const updateData = JSON.parse(shiftUpdatePayload);
+    // Validate shiftId
+    if (!shiftId || !mongoose.Types.ObjectId.isValid(shiftId)) {
+      throw new Error("Invalid shiftId format");
+    }
+    
+    // Parse and validate update data
+    let updateData;
+    try {
+      updateData = JSON.parse(shiftUpdatePayload);
+    } catch (e) {
+      throw new Error("Invalid JSON format for shift update data");
+    }
+    
+    // Validate ObjectId if routeId is provided
+    if (updateData.routeId && !mongoose.Types.ObjectId.isValid(updateData.routeId)) {
+      throw new Error("Invalid routeId format");
+    }
+    
+    // Validate dates if provided
+    if (updateData.shiftStartDate && isNaN(new Date(updateData.shiftStartDate).getTime())) {
+      throw new Error("Invalid shiftStartDate");
+    }
+    if (updateData.shiftEndDate && isNaN(new Date(updateData.shiftEndDate).getTime())) {
+      throw new Error("Invalid shiftEndDate");
+    }
+    if (updateData.shiftStartTime && isNaN(new Date(updateData.shiftStartTime).getTime())) {
+      throw new Error("Invalid shiftStartTime");
+    }
+    if (updateData.shiftEndTime && isNaN(new Date(updateData.shiftEndTime).getTime())) {
+      throw new Error("Invalid shiftEndTime");
+    }
+    
+    // Validate currSignedUp if provided
+    if (updateData.currSignedUp !== undefined && (typeof updateData.currSignedUp !== "number" || updateData.currSignedUp < 0)) {
+      throw new Error("currSignedUp must be a non-negative number");
+    }
+    
+    // Validate recurrenceDates if provided
+    if (updateData.recurrenceDates !== undefined && !Array.isArray(updateData.recurrenceDates)) {
+      throw new Error("recurrenceDates must be an array");
+    }
+    
+    // Validate timeSpecific if provided
+    if (updateData.timeSpecific !== undefined && typeof updateData.timeSpecific !== "boolean") {
+      throw new Error("timeSpecific must be a boolean");
+    }
+    
+    // Build update object with only provided fields
+    const updateFields: any = {};
+    if (updateData.routeId !== undefined) updateFields.routeId = updateData.routeId;
+    if (updateData.shiftStartTime !== undefined) updateFields.shiftStartTime = updateData.shiftStartTime;
+    if (updateData.shiftEndTime !== undefined) updateFields.shiftEndTime = updateData.shiftEndTime;
+    if (updateData.shiftStartDate !== undefined) updateFields.shiftStartDate = updateData.shiftStartDate;
+    if (updateData.shiftEndDate !== undefined) updateFields.shiftEndDate = updateData.shiftEndDate;
+    if (updateData.recurrenceDates !== undefined) updateFields.recurrenceDates = updateData.recurrenceDates;
+    if (updateData.timeSpecific !== undefined) updateFields.timeSpecific = updateData.timeSpecific;
+    if (updateData.additionalInfo !== undefined) updateFields.additionalInfo = updateData.additionalInfo;
+    if (updateData.currSignedUp !== undefined) updateFields.currSignedUp = updateData.currSignedUp;
     
     // Find and update the shift
     const updatedShift = await ShiftModel.findByIdAndUpdate(
       shiftId,
-      {
-        $set: {
-          routeId: updateData.routeId,
-          shiftStartTime: updateData.shiftStartTime,
-          shiftEndTime: updateData.shiftEndTime,
-          shiftStartDate: updateData.shiftStartDate,
-          shiftEndDate: updateData.shiftEndDate,
-          recurrenceDates: updateData.recurrenceDates,
-          timeSpecific: updateData.timeSpecific,
-          additionalInfo: updateData.additionalInfo,
-          currSignedUp: updateData.currSignedUp
-        }
-      },
+      { $set: updateFields },
       { new: true } // Return the updated document
     );
 
@@ -584,8 +758,33 @@ export async function updateShiftConfirmation(
   shiftId: string,
   dateKey: string,
   confirmationId: string): Promise<boolean> {
+  await requireUser();
   try {
     await dbConnect();
+    
+    // Validate inputs
+    if (!shiftId || !mongoose.Types.ObjectId.isValid(shiftId)) {
+      throw new Error("Invalid shiftId format");
+    }
+    
+    if (!dateKey || typeof dateKey !== "string") {
+      throw new Error("dateKey must be a valid string");
+    }
+    
+    if (!confirmationId || !mongoose.Types.ObjectId.isValid(confirmationId)) {
+      throw new Error("Invalid confirmationId format");
+    }
+
+    // Get current user and verify authorization
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
 
     const result = await ShiftModel.findByIdAndUpdate(
       shiftId,
@@ -594,13 +793,13 @@ export async function updateShiftConfirmation(
     );
 
     if (!result) {
-      console.error("Shift not found");
-      return false;
+      throw new Error("Shift not found");
     }
 
     return true;
   } catch (error) {
-    return false;
+    const err = error as Error;
+    throw new Error(`Error updating shift confirmation: ${err.message}`);
   }
 }
   

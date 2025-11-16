@@ -25,10 +25,50 @@ export async function postConfirmationForm(date: string, userShift: string, form
   try {
     await requireUser();
     await dbConnect();
+    
+    // Validate inputs
+    if (!date || typeof date !== "string") {
+      throw new Error("date must be a valid string");
+    }
+    if (!userShift || !mongoose.Types.ObjectId.isValid(userShift)) {
+      throw new Error("Invalid userShift ID format");
+    }
+    
+    // Validate form data
+    if (typeof form.completed !== "boolean") {
+      throw new Error("form.completed must be a boolean");
+    }
+    if (typeof form.numPickedUp !== "number" || form.numPickedUp < 0) {
+      throw new Error("form.numPickedUp must be a non-negative number");
+    }
+    if (typeof form.numDelivered !== "number" || form.numDelivered < 0) {
+      throw new Error("form.numDelivered must be a non-negative number");
+    }
+    if (typeof form.time !== "number" || form.time < 0) {
+      throw new Error("form.time must be a non-negative number");
+    }
+    if (form.comments !== undefined && typeof form.comments !== "string") {
+      throw new Error("form.comments must be a string");
+    }
 
     // Check whether user has access to this userShift
+    const currentUserId = await getCurrentUserId();
+    if (!currentUserId) {
+      throw new Error("User not authenticated");
+    }
+    
     const userShiftModel = await UserShiftModel.findById(userShift);
-    if (!userShiftModel || userShiftModel.userId.toString() !== (await getCurrentUserId())) {
+    if (!userShiftModel) {
+      throw new Error("User shift not found");
+    }
+    
+    const currentUser = await User.findById(currentUserId);
+    if (!currentUser) {
+      throw new Error("Current user not found");
+    }
+    
+    // Only allow users to submit forms for their own shifts, or admins to submit for any shift
+    if (userShiftModel.userId.toString() !== currentUserId && !currentUser.isAdmin) {
       throw new Error("You do not have access to this user shift");
     }
 
@@ -85,21 +125,36 @@ export async function getConfirmationForm(formId: string | Types.ObjectId): Prom
   await dbConnect();
   await requireUser();
 
-  const userId = await getCurrentUserId();
-  const user = await User.findById(userId);
-  if (!user) {
-    throw new Error("User not found");
-  }
-
   try {
+    // Validate input
     const objectId = typeof formId === "string" ? new mongoose.Types.ObjectId(formId) : formId;
+    if (!mongoose.Types.ObjectId.isValid(objectId.toString())) {
+      throw new Error("Invalid formId format");
+    }
+    
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
     const data = await ConfirmationModel.findById(objectId).lean();
-    if (data?.userId.toString() !== userId && !user.isAdmin) {
+    if (!data) {
+      throw new Error("Confirmation form not found");
+    }
+    
+    // Only allow users to view their own forms, or admins to view any form
+    if (data.userId.toString() !== userId && !user.isAdmin) {
       throw new Error("You do not have access to this confirmation form");
     }
+    
     return JSON.parse(JSON.stringify(data));
   } catch (error) {
     const err = error as Error;
-    throw new Error(`Error has occurred when getting shift: ${err.message}`);
+    throw new Error(`Error has occurred when getting confirmation form: ${err.message}`);
   }
 }
