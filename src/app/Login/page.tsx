@@ -129,7 +129,7 @@ export default function LoginScreen() {
                       setErrorBannerMsg(res.error || "Google sign-in failed");
                     }
                   }
-                }}
+                }
                 ></Button>
                 <div className="flex justify-between mb-7 sm:mb-7">
                   <div className="flex justify-start">
