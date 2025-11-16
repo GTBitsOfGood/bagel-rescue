@@ -114,7 +114,7 @@ export const loginWithGoogle = async () => {
             try {
                 await signOut(auth);
             } catch (signOutError) {
-                console.log("No session to clear after failed login");
+                    // Failed to clear session
             }
             const errorMsg = "Something went wrong, please try again.";
             return { success: false, error: errorMsg };
