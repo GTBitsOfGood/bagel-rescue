@@ -116,11 +116,18 @@ export default function LoginScreen() {
                 onClick={async () => {
                   const res = await loginWithGoogle();
                   if (res.success) {
-                    router.push(
-                        "/VolunteerNavView/Homepage"
-                    );
-                  } else {
-                    setErrorBannerMsg(res.error || "Google sign-in failed");
+                    if ("user" in res && res.user.isAdmin) {
+                        router.push(
+                          "/AdminNavView/WeeklyShiftDashboard"
+                        );
+                      } else {
+                        router.push(
+                          "/VolunteerNavView/Homepage"
+                        );
+                      }
+                    } else {
+                      setErrorBannerMsg(res.error || "Google sign-in failed");
+                    }
                   }
                 }}
                 ></Button>
