@@ -12,34 +12,36 @@ export async function requireUser() {
     return await adminAuth.verifyIdToken(token);
   } catch {
     cookieStore.delete("authToken");
-
     throw new Error("Forbidden");
   }
 }
 
 export async function requireAdmin() {
-  const cookieStore = cookies()
+  const cookieStore = cookies();
   const token = cookieStore.get("authToken")?.value;
-  if (!token) throw new Error("Unauthorized");
+  
+  if (!token) {
+    throw new Error("Unauthorized");
+  }
 
   try {
     const decodedToken = await adminAuth.verifyIdToken(token);
     const user = await getUserByEmail(decodedToken.email || "");
-    console.log(decodedToken)
-    console.log(user)
+    
     if (!user) {
       throw new Error("Unauthorized");
-    } else if (!user.isAdmin) {
+    }
+    
+    if (!user.isAdmin) {
       throw new Error("Admin access required");
     }
     
     return decodedToken;
   } catch (error) {
-    if (error instanceof Error && error.message.includes("Admin access required")) {
-      throw error;
-    } else {
+    if (error instanceof Error && 
+        !error.message.includes("Admin access required")) {
       cookieStore.delete("authToken");
-      throw new Error("Forbidden");
     }
+    throw error;
   }
 }

@@ -17,19 +17,8 @@ export async function middleware(req: NextRequest) {
   }
 
   if (!token) {
-    console.log("NO TOKEN")
     return NextResponse.redirect(new URL("/Login", req.url));
   }
-  const decodedToken = jwtDecode(token);
-  console.log(decodedToken)
-
-  // if (pathname.startsWith("/AdminNavView")) {
-  //   if (!user) {
-  //     return NextResponse.redirect(new URL("/Login", req.url));
-  //   } else if (!user.isAdmin) {
-  //     return NextResponse.redirect(new URL("/VolunteerNavView/Homepage", req.url));
-  //   }
-  // }
 
   return NextResponse.next();
 }
