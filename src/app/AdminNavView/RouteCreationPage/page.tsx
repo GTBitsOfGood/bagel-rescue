@@ -176,7 +176,7 @@ useEffect(() => {
     createRoute(JSON.stringify(route))
       .then(() => {
         alert("Route created successfully!");
-        router.push("/AdminNavView/DailyShiftDashboard");
+        router.push("/AdminNavView/RouteDashboard");
       })
       .catch(() => alert("Failed to create route."));
   }
