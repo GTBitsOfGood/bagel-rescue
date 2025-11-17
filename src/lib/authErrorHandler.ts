@@ -12,10 +12,12 @@ export function handleAuthError(error: any, router: AppRouterInstance): boolean 
 
     if (message.includes('admin access required')) {
         router.push('/VolunteerNavView/Homepage');
-    } else {
+        return true;
+    } else if (message.includes('unauthorized') || message.includes('forbidden')) {
         router.push('/Login');
+        return true;
     }
-    return true;
+    return false;
   }
   return false;
 }
