@@ -1,7 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUserByEmail } from "./server/db/actions/User";
-import { adminAuth } from "./server/db/firebase/admin/firebaseAdmin";
-import { jwtDecode } from "jwt-decode";
 
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
