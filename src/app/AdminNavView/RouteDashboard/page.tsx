@@ -35,7 +35,7 @@ export default function RouteDashboardPage() {
         const data = JSON.parse(response || "[]");
         setRoutes(data || []);
       } catch (error) {
-        if (handleAuthError(error, router, true)) {
+        if (handleAuthError(error, router)) {
           return; // Auth error handled, user redirected
         }
         console.error("Error fetching routes:", error);
