@@ -13,7 +13,7 @@ import { auth } from '../server/db/firebase';
 import { getUserByEmail } from '../server/db/actions/User';
 import { FaPeopleLine } from "react-icons/fa6";
 import Image from 'next/image';
-import bagelsLogo from '../app/Login/bagels.png';
+import bagelsLogo from '@/app/icon.png';
 
 interface NavItem {
   name: string;
