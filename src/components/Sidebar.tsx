@@ -9,7 +9,7 @@ import { TbBrandGoogleAnalytics } from "react-icons/tb";
 import { auth } from '../server/db/firebase';
 import { getUserByEmail } from '../server/db/actions/User';
 import Image from 'next/image';
-import bagelsLogo from '../app/Login/bagels.png';
+import bagelsLogo from '@/app/icon.png';
 
 interface NavItem {
   name: string;
