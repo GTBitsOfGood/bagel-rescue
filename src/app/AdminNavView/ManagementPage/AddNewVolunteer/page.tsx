@@ -85,15 +85,38 @@ export default function AddNewVolunteer() {
                 <div className='flex flex-col gap-2'>
                     <label htmlFor="locations" className="text-lg font-bold text-[#072B68]">Location Preferences</label>
                     <Select isMulti styles={{
-                        control: (baseStyles) => ({
+                        control: (baseStyles, state) => ({
                             ...baseStyles,
-                            padding: "1rem",
+                            padding: "0",
                             border: "solid 2px #0F7AFF",
+                            borderColor: "#0F7AFF",
                             borderRadius: "0.5rem",
                             color: "#072B68",
                             display: "flex",
                             alignItems: "center",
-                            height: "60px"
+                            height: "60px",
+                            minHeight: "60px",
+                            boxShadow: "none",
+                            "&:hover": {
+                                borderColor: "#0F7AFF"
+                            }
+                        }),
+                        valueContainer: (baseStyles) => ({
+                            ...baseStyles,
+                            padding: "0 1rem",
+                            display: "flex",
+                            alignItems: "center",
+                            height: "100%"
+                        }),
+                        input: (baseStyles) => ({
+                            ...baseStyles,
+                            color: "#072B68",
+                            margin: "0",
+                            padding: "0"
+                        }),
+                        placeholder: (baseStyles) => ({
+                            ...baseStyles,
+                            margin: "0"
                         }),
                         indicatorSeparator: (baseStyles) => ({
                             ...baseStyles,
