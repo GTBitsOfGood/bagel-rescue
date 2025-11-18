@@ -186,17 +186,6 @@ export default function LoginScreen() {
                   />
                 </div>
                 <div className="mb-1 flex justify-center items-center"></div>
-                <div className="flex flex-row justify-center mb-8 sm:mb-1">
-                  <div className="text-[#063c7c] text-base font-normal font-opensans leading-tight tracking-tight mr-2">
-                    Don&apos;t have an account?&nbsp;
-                    <button
-                      className="text-mbb-pink text-base font-semibold text-[#016ff3] hover:underline"
-                      onClick={() => router.push("/signup")}
-                    >
-                      Sign Up Now
-                    </button>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
