@@ -316,6 +316,38 @@ export default function NewShiftPage() {
     return null;
   };
 
+  // Check if all required fields are filled
+  const isFormComplete = () => {
+    // Check required time fields
+    if (!startTime.trim() || !endTime.trim()) {
+      return false;
+    }
+    
+    // Check date range fields if dateRange is enabled
+    if (dateRange) {
+      if (!startDate.trim() || !endDate.trim()) {
+        return false;
+      }
+    }
+    
+    // Check route
+    if (routes.length === 0) {
+      return false;
+    }
+    
+    // Check volunteers
+    if (volunteers.length === 0) {
+      return false;
+    }
+    
+    // Check selected days
+    if (selectedDays.length === 0) {
+      return false;
+    }
+    
+    return true;
+  };
+
   async function saveEdits() {
     // Prevent duplicate submissions
     if (isSubmitting) {
@@ -492,9 +524,16 @@ export default function NewShiftPage() {
                         <div className="flex justify-end">
                             <button 
                               onClick={() => saveEdits()} 
-                              disabled={isSubmitting}
+                              disabled={isSubmitting || !isFormComplete()}
                               className="font-bold text-white px-6 py-[.8rem] rounded-xl text-base" 
-                              style={{backgroundColor: isSubmitting ? '#CCCCCC' : '#A3A3A3', cursor: isSubmitting ? 'not-allowed' : 'pointer'}}
+                              style={{
+                                backgroundColor: isSubmitting 
+                                  ? '#CCCCCC' 
+                                  : isFormComplete() 
+                                    ? '#0F7AFF' 
+                                    : '#A3A3A3', 
+                                cursor: (isSubmitting || !isFormComplete()) ? 'not-allowed' : 'pointer'
+                              }}
                             >
                               {isSubmitting ? 'Creating...' : 'Complete Shift'}
                             </button>
