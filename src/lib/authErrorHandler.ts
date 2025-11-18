@@ -9,10 +9,14 @@ import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.share
 export function handleAuthError(error: any, router: AppRouterInstance): boolean {
   if (error instanceof Error) {
     const message = error.message.toLowerCase();
-    if (message.includes('unauthorized') || message.includes('forbidden') || message.includes('admin access required')) {
-      router.push('/Login');
-      return true;
+    if (message.includes('admin access required')) {
+        router.push('/VolunteerNavView/Homepage');
+        return true;
+    } else if (message.includes('unauthorized') || message.includes('forbidden')) {
+        router.push('/Login');
+        return true;
     }
+    return false;
   }
   return false;
 }
