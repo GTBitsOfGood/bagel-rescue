@@ -178,7 +178,7 @@ function RouteCreationPage() {
     createRoute(JSON.stringify(route))
       .then(() => {
         successToast("Route created successfully!");
-        router.push("/AdminNavView/DailyShiftDashboard");
+        router.push("/AdminNavView/RouteDashboard");
       })
       .catch(() => errorToast("Failed to create route."));
   }
