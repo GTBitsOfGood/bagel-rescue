@@ -129,7 +129,6 @@ export async function sendVolunteerSignupEmails(emails: string[]) {
         },
       });
 
-      const signUpLink = `${process.env.BASE_URL}/signup?token=${token}`;
       const bagelsimg =
         "https://static.wixstatic.com/media/c95ffe_7302ff5526b34e8c81cd07b4b6eef796~mv2.png/v1/fill/w_230,h_236,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Bagel%20Rescue%20no%20background.png";
       const info = await transporter.sendMail({
@@ -141,10 +140,7 @@ export async function sendVolunteerSignupEmails(emails: string[]) {
                         <img src="${bagelsimg}" alt="Bagel Rescue" style="width: 150px; height: auto;"/>
                         <h2>Hello from Bagel Rescue! </h2>
                         <p>You have been invited to be a volunteer. We are excited to have you be apart of our team</p>
-                        <p>We have provided a sign up link below:</p>
-                        <br/>
-                        <a href="${signUpLink}" style="color: #1a73e8;">${signUpLink}</a>
-                        <p>If you are having issues, copy and paste the link into your broswer.</p>
+                        <p>Please contact your administrator for account setup instructions.</p>
                         <hr/>
                         <p style="line-height: 14px; font-size: 12px;">This is email was sent to <a href ="${
                           "mailto:" + email

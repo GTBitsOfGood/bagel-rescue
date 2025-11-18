@@ -6,7 +6,6 @@ export async function middleware(req: NextRequest) {
   if (
     pathname.startsWith("/Login") ||
     pathname.startsWith("/public") ||
-    pathname.startsWith("/signup") ||
     pathname.startsWith("/activate") ||
     pathname.startsWith("/icon.png")
   ) {

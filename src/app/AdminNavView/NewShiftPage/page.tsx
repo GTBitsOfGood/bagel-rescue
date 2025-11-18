@@ -401,8 +401,12 @@ export default function NewShiftPage() {
       finalEndDay = new Date(finalStartDay); 
       finalEndDay.setFullYear(finalEndDay.getFullYear() + 5);
     } else {
-      finalStartDay = new Date(startDate);
-      finalEndDay = new Date(endDate);
+      // Parse date strings in local time to avoid timezone issues
+      // Date input format is "YYYY-MM-DD"
+      const [startYear, startMonth, startDay] = startDate.split('-').map(Number);
+      const [endYear, endMonth, endDay] = endDate.split('-').map(Number);
+      finalStartDay = new Date(startYear, startMonth - 1, startDay); // month is 0-indexed
+      finalEndDay = new Date(endYear, endMonth - 1, endDay); // month is 0-indexed
     }
 
     finalStartDay.setHours(startHour);
@@ -540,6 +544,7 @@ export default function NewShiftPage() {
                                       value={startDate}
                                       onChange={(e) => dateRange ? setStartDate(e.target.value) : null}
                                       onClick={(e) => !dateRange && e.preventDefault()}
+                                      disabled={!dateRange}
                                     />
                                 </div>
                                 <div className="flex flex-col space-y-2 flex-1">
@@ -553,6 +558,7 @@ export default function NewShiftPage() {
                                     value={endDate}
                                     onChange={(e) => dateRange ? setEndDate(e.target.value) : null}
                                     onClick={(e) => !dateRange && e.preventDefault()}
+                                    disabled={!dateRange}
                                   />
                                 </div>
                               </div>
