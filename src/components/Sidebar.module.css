@@ -3,12 +3,13 @@
     top: 0;
   
     height: 100vh;
-    background-color: #fff;
+    background-color: rgb(var(--background-rgb));
     display: flex;
     flex-direction: column;
-    padding: 1rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
     transition: width 0.3s ease;
-    border-right: 1px solid #D3D8DE;
+    border-right: 1px solid var(--Bagel-Rescue-Light-Grey);
   }
   
   .open {
@@ -30,10 +31,13 @@
   
   .nav {
     flex: 1;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
   
   .navIcon {
-    font-size: 3rem;
+    width: 5rem;
+    height: 5rem;
   }
 
   .navHeaderText {
@@ -51,8 +55,10 @@
 
   .navHeader {
     text-align: left;
-    margin-bottom: 1rem;
+    margin-bottom: 2rem;
     font-weight: bold;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 
   .navItem {
@@ -71,7 +77,8 @@
   }
   
   .active {
-    background-color: #ffffff;
+    background-color: var(--Bagel-Rescue-Light-Blue);
+    color: var(--Bagel-Rescue-Blue);
   }
   
   .icon {
@@ -88,8 +95,9 @@
     display: flex;
     align-items: center;
     padding: 1rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
     margin-top: auto; 
-    background-color: #e5e7eb;
     border-radius: 0.5rem;
     transition: all 0.3s ease;
   }
@@ -97,8 +105,9 @@
   .avatar {
     width: 40px;
     height: 40px;
-    background-color: #0F7AFF;
+    background-color: var(--Bagel-Rescue-Blue);
     border-radius: 8px;
+    flex-shrink: 0;
   }
   
   .profileInfo {
@@ -113,7 +122,10 @@
   
   .role {
     margin: 0;
-    color: #000;
+    color: rgb(var(--foreground-rgb));
   }
   
+  .line {
+    padding-bottom: 1rem;
+  }
   
