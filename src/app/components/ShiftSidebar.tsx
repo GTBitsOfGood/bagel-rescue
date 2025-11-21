@@ -14,6 +14,7 @@ import "./stylesheet.css";
 import { getShiftUsers } from "@/server/db/actions/userShifts";
 import { IRoute } from "@/server/db/models/Route";
 import { useRouter } from "next/navigation";
+import { formattedDateFull } from "@/lib/dateHandler";
 
 export type ShiftSidebarInfo = {
     shift: Shift;
@@ -66,7 +67,9 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({
                 Object.keys(comments).length > 0
             ) {
                 const currentDateComment =
-                    comments[shiftSidebarInfo.shiftDate.toISOString().split("T")[0]];
+                    comments[
+                        shiftSidebarInfo.shiftDate.toISOString().split("T")[0]
+                    ];
                 setComment(currentDateComment || "");
                 setDraft(currentDateComment || "");
             }
@@ -92,11 +95,12 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({
         fetchshiftUsers();
     }, [shift]);
 
-
     const handleEditClick = () => {
         router.push(`/AdminNavView/EditShift/${shift._id}`);
         // Note: In App Router, navigation is immediate and doesn't return a promise
-    }
+    };
+
+    console.log(typeof shift.shiftStartDate);
 
     return (
         <div className="main-sidebar">
@@ -115,7 +119,8 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({
                         />
                     </svg>
                 </div>
-                <div onClick={handleEditClick}
+                <div
+                    onClick={handleEditClick}
                     className="bg-white text-[#00377A] font-[500] p-[.8rem] px-5 gap-2 rounded-xl 
         hover:bg-[#005bb5] border-2 border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] 
         hover:text-white cursor-pointer"
@@ -126,7 +131,7 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({
             </div>
             <div className="sidebar-content">
                 <div className="sidebar-route-name">
-                  {shiftSidebarInfo?.route?.routeName ?? "Route"}
+                    {shiftSidebarInfo?.route?.routeName ?? "Route"}
                 </div>
                 {/* Comment Section */}
                 <div className="comment-content flex flex-col w-full">
@@ -258,23 +263,8 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({
                 <div className="sidebar-content-header">
                     <h3> Date Range</h3>
                     <p>
-                        {new Date(shift.shiftStartDate).toLocaleDateString(
-                            "en-US",
-                            {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                            }
-                        )}{" "}
-                        -{" "}
-                        {new Date(shift.shiftEndDate).toLocaleDateString(
-                            "en-US",
-                            {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                            }
-                        )}
+                        {formattedDateFull(new Date(shift.shiftStartDate))}{" "}
+                        - {formattedDateFull(new Date(shift.shiftEndDate))}
                     </p>
                 </div>
                 <div className="sidebar-content-header">
