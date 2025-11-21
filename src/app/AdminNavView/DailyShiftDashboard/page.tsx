@@ -51,7 +51,7 @@ function DailyShiftDashboardPage() {
     const AddDays = (e: number) => {
         const newDate = new Date(date);
         if (newDate.getDate() - new Date().getDate() !== 7 || e === -1) {
-            setDailyShiftData([])
+            setDailyShiftData([]);
             newDate.setDate(newDate.getDate() + e);
             setDate(newDate);
         }
@@ -157,9 +157,7 @@ function DailyShiftDashboardPage() {
                             Object.keys(shift.confirmationForm).includes(
                                 dateToString(normalizeDate(date))
                             )
-                                ? shift.confirmationForm[
-                                      dateToString(date)
-                                  ]
+                                ? shift.confirmationForm[dateToString(date)]
                                 : null
                         }
                         returnRoute={"/AdminNavView/DailyShiftDashboard"}

@@ -14,11 +14,8 @@ import React, { useEffect, useRef, useState } from "react";
 import dayToNumber, { dayList } from "@/lib/dayHandler";
 
 import { updateShift } from "@/server/db/actions/shift";
-import {
-  deleteUserShift,
-  updateUserShiftsRoute,
-} from "@/server/db/actions/userShifts";
-import { dateToString, stringToDate, stringZToDate } from "@/lib/dateHandler";
+import { deleteUserShift, updateUserShiftsRoute } from "@/server/db/actions/userShifts";
+import { dateToString, stringToDate } from "@/lib/dateHandler";
 import toast from "react-hot-toast";
 import { errorToast } from "@/lib/toastConfig";
 
@@ -74,8 +71,8 @@ export default function EditShift() {
 
         if (shift.shiftStartDate && shift.shiftEndDate) {
           setDateRange(true);
-          setStartDate(dateToString(stringZToDate(shift.shiftStartDate)));
-          setEndDate(dateToString(stringZToDate(shift.shiftEndDate)));
+          setStartDate(dateToString(stringToDate(shift.shiftStartDate)));
+          setEndDate(dateToString(stringToDate(shift.shiftEndDate)));
         }
 
         if (volunteersData.length > 0) {

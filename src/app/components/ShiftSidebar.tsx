@@ -14,6 +14,7 @@ import "./stylesheet.css";
 import { getShiftUsers } from "@/server/db/actions/userShifts";
 import { IRoute } from "@/server/db/models/Route";
 import { useRouter } from "next/navigation";
+import { formattedDateFull } from "@/lib/dateHandler";
 import { errorToast } from "@/lib/toastConfig";
 
 export type ShiftSidebarInfo = {
@@ -59,20 +60,22 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({
 
   const [volunteers, setVolunteers] = useState<string[]>([]);
   useEffect(() => {
-    if (!hasLoaded) {
-      const comments = shift.comments;
-      if (
-        comments &&
-        typeof comments === "object" &&
-        Object.keys(comments).length > 0
-      ) {
-        const currentDateComment =
-          comments[shiftSidebarInfo.shiftDate.toISOString().split("T")[0]];
-        setComment(currentDateComment || "");
-        setDraft(currentDateComment || "");
+      if (!hasLoaded) {
+          const comments = shift.comments;
+          if (
+              comments &&
+              typeof comments === "object" &&
+              Object.keys(comments).length > 0
+          ) {
+              const currentDateComment =
+                  comments[
+                      shiftSidebarInfo.shiftDate.toISOString().split("T")[0]
+                  ];
+              setComment(currentDateComment || "");
+              setDraft(currentDateComment || "");
+          }
+          setHasLoaded(true);
       }
-      setHasLoaded(true);
-    }
   }, [shift._id, hasLoaded, shift.comments]);
 
   useEffect(() => {
@@ -212,7 +215,6 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({
               </div>
             </div>
           )}
-
           {!isEditing && comment && (
             <div className="sidebar-content-header flex flex-col gap-1 w-max max-w-[390px] h-max">
               <button
@@ -237,6 +239,13 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({
             </div>
           )}
         </div>
+        
+        {shift.additionalInfo && (
+            <div className="sidebar-content-header">
+                <h3> Additional Information </h3>
+                <p>{shift.additionalInfo}</p>
+            </div>
+        )}
 
         <div className="sidebar-content-header">
           <h3> Route Locations</h3>
@@ -253,17 +262,8 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({
         <div className="sidebar-content-header">
           <h3> Date Range</h3>
           <p>
-            {new Date(shift.shiftStartDate).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}{" "}
-            -{" "}
-            {new Date(shift.shiftEndDate).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
+              {formattedDateFull(new Date(shift.shiftStartDate))}{" "}
+              - {formattedDateFull(new Date(shift.shiftEndDate))}
           </p>
         </div>
         <div className="sidebar-content-header">
