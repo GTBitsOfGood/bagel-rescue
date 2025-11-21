@@ -240,21 +240,6 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({
           )}
         </div>
         
-        <div className="sidebar-content-header">
-            <h3 className="margin-bottom-15px">
-                Volunteer(s) Assigned
-            </h3>
-            <div className="volunteer-container">
-                {volunteers.map((name) => (
-                    <div
-                        className="volunteer-item"
-                        key={shift._id.toString()}
-                    >
-                        <p className="volunteer-name">{name}</p>
-                    </div>
-                ))}
-            </div>
-        </div>
         {shift.additionalInfo && (
             <div className="sidebar-content-header">
                 <h3> Additional Information </h3>
