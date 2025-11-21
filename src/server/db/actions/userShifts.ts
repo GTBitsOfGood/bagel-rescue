@@ -344,16 +344,18 @@ export async function getDetailedShiftInfo(userShiftId: string): Promise<Detaile
       confirmationForms[dateKey] = objectId.toString();
     });
 
+    console.log("DAta!!!: ", shift?.shiftStartDate);
+
     return {
       id: userShift._id.toString(),
       routeName: route.routeName || "Unknown Route",
       area: route.locationDescription || "",
-      shiftStartTime: new Date(shift?.shiftStartTime || new Date()),
-      shiftEndTime: new Date(shift?.shiftEndTime || new Date()),
-      shiftStartDate: new Date(shift?.shiftStartDate || new Date()),
-      shiftEndDate: new Date(shift?.shiftEndDate || new Date()),
-      startTime: new Date(userShift.shiftDate),
-      endTime: new Date(userShift.shiftEndDate),
+      shiftStartTime: shift?.shiftStartTime || new Date(),
+      shiftEndTime: shift?.shiftEndTime || new Date(),
+      shiftStartDate: shift?.shiftStartDate || new Date(),
+      shiftEndDate: shift?.shiftEndDate || new Date(),
+      startTime: userShift.shiftDate,
+      endTime: userShift.shiftEndDate,
       confirmationForm: confirmationForms,
       routeInfo: {
         routeName: route.routeName || "Unknown Route",
@@ -413,12 +415,12 @@ export async function getDetailedOpenShiftInfo(shiftId: string): Promise<Detaile
       id: shift._id.toString(),
       routeName: route.routeName || "Unknown Route",
       area: route.locationDescription || "",
-      shiftStartTime: new Date(shift.shiftStartTime || new Date()),
-      shiftEndTime: new Date(shift.shiftEndTime || new Date()),
-      shiftStartDate: new Date(shift.shiftStartDate || new Date()),
-      shiftEndDate: new Date(shift.shiftEndDate || new Date()),
-      startTime: new Date(shift.shiftStartDate || new Date()),
-      endTime: new Date(shift.shiftEndDate || new Date()),
+      shiftStartTime: shift.shiftStartTime || new Date(),
+      shiftEndTime: shift.shiftEndTime || new Date(),
+      shiftStartDate: shift.shiftStartDate || new Date(),
+      shiftEndDate: shift.shiftEndDate || new Date(),
+      startTime: shift.shiftStartDate || new Date(),
+      endTime: shift.shiftEndDate || new Date(),
       confirmationForm: confirmationForms,
       routeInfo: {
         routeName: route.routeName || "Unknown Route",
