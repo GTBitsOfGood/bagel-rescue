@@ -15,7 +15,7 @@ import dayToNumber, { dayList } from "@/lib/dayHandler";
 
 import { updateShift } from "@/server/db/actions/shift";
 import { deleteUserShift, updateUserShiftsRoute } from "@/server/db/actions/userShifts";
-import { dateToString, stringToDate, stringZToDate } from "@/lib/dateHandler";
+import { dateToString, stringToDate } from "@/lib/dateHandler";
 
 export default function EditShift() {
     const timeStartInputRef = useRef<HTMLInputElement>(null);
@@ -69,8 +69,8 @@ export default function EditShift() {
         
         if (shift.shiftStartDate && shift.shiftEndDate) {
           setDateRange(true);
-          setStartDate(dateToString(stringZToDate(shift.shiftStartDate)));
-          setEndDate(dateToString(stringZToDate(shift.shiftEndDate)));
+          setStartDate(dateToString(stringToDate(shift.shiftStartDate)));
+          setEndDate(dateToString(stringToDate(shift.shiftEndDate)));
         }
 
         if (volunteersData.length > 0) {

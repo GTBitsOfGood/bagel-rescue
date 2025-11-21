@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import ThreeDotModal from "@/app/components/ThreeDotModal";
 import { Shift } from "@/server/db/models/shift";
+import { formattedDate } from "@/lib/dateHandler";
 
 interface ShiftCardVolunteer {
     userId: string;
@@ -63,6 +64,8 @@ export default function ShiftCard({
     const [modalOpen, setModalOpen] = useState(false);
     const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
     const ellipsisRef = useRef<HTMLButtonElement>(null);
+
+    console.log("Dates: ", startDate, endDate);
 
     const startDateObj = new Date(startDate);
     const endDateObj = new Date(endDate);
@@ -224,8 +227,8 @@ export default function ShiftCard({
                     </span>
                     <span className="shift-card-time">{timeRange}</span>
                     <span className="shift-card-period">
-                        {startDateObj.toLocaleDateString("en-US")} -{" "}
-                        {endDateObj.toLocaleDateString("en-US")}
+                        {formattedDate(startDateObj)} -{" "}
+                        {formattedDate(endDateObj)}
                     </span>
                     <span className="shift-card-next-shift">{shiftDate}</span>
                 </div>

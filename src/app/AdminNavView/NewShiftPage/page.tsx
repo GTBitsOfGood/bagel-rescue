@@ -14,6 +14,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import dayToNumber, { dayList } from "@/lib/dayHandler";
+import { combineDateAndTime, dateToString, normalizeDate, stringToDate } from "@/lib/dateHandler";
 
 export default function NewShiftPage() {
     const timeStartInputRef = useRef<HTMLInputElement>(null);
@@ -398,27 +399,19 @@ export default function NewShiftPage() {
 
     if (!dateRange) {
       finalStartDay = findFirstDateAfterToday(targetDay)!;
-      finalEndDay = new Date(finalStartDay); 
+      finalEndDay = new Date(finalStartDay);
       finalEndDay.setFullYear(finalEndDay.getFullYear() + 5);
     } else {
-      finalStartDay = new Date(startDate);
-      finalEndDay = new Date(endDate);
+      finalStartDay = stringToDate(startDate);
+      finalEndDay = stringToDate(endDate);
     }
-
-    finalStartDay.setHours(startHour);
-    finalStartDay.setMinutes(startMinute);
-    finalStartDay.setSeconds(0);
-
-    finalEndDay.setHours(endHour);
-    finalEndDay.setMinutes(endMinute);
-    finalEndDay.setSeconds(0);
 
     const newShift = {
       routeId: selectedRoute,
       shiftStartTime: startTimeAsDate,
       shiftEndTime: endTimeAsDate,
-      shiftStartDate: finalStartDay,
-      shiftEndDate: finalEndDay,
+      shiftStartDate: dateToString(finalStartDay),
+      shiftEndDate: dateToString(finalEndDay),
       recurrenceDates: targetDay,
       timeSpecific: timeSpecific ?? false,
       confirmationForm: {},
