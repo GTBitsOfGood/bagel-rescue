@@ -344,8 +344,6 @@ export async function getDetailedShiftInfo(userShiftId: string): Promise<Detaile
       confirmationForms[dateKey] = objectId.toString();
     });
 
-    console.log("DAta!!!: ", shift?.shiftStartDate);
-
     return {
       id: userShift._id.toString(),
       routeName: route.routeName || "Unknown Route",
