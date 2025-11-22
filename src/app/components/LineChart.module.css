@@ -84,9 +84,8 @@
 .lineChart {
     flex: 1;
     position: relative;
-    height: 160px; /* Fixed height for chart area */
+    height: 160px;
     max-height: 160px;
-    background: linear-gradient(180deg, rgba(15, 122, 255, 0.05) 0%, transparent 100%);
     border-radius: 8px;
 }
 

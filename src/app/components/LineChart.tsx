@@ -7,20 +7,14 @@ interface Data {
 }
 
 interface LineChartProps {
+    title: string;
     legend: string;
     units: string;
     monthlyData: Data[];
 }
 
-export const LineChart = ({
-    legend,
-    units,
-    monthlyData,
-}: LineChartProps) => {
-    const maxMonthly = Math.max(
-        ...monthlyData.map((datum) => datum.value),
-        1
-    );
+export const LineChart = ({ title, legend, units, monthlyData }: LineChartProps) => {
+    const maxMonthly = Math.max(...monthlyData.map((datum) => datum.value), 1);
 
     const chartLinePoints = useMemo(() => {
         if (monthlyData.length === 0) {
@@ -32,7 +26,7 @@ export const LineChart = ({
                 const x =
                     monthlyData.length === 1
                         ? 50
-                        : (index / (monthlyData.length - 1)) * 196 - 48;
+                        : (220 / (2 * monthlyData.length) - 60) + (220 / (monthlyData.length)) * index;
                 const y = 100 - (datum.value / maxMonthly) * 87;
 
                 return `${x},${y}`;
@@ -41,20 +35,16 @@ export const LineChart = ({
     }, [maxMonthly, monthlyData]);
 
     const averageShifts = Math.round(
-        monthlyData.reduce(
-            (total, datum) => total + datum.value,
-            0
-        ) / monthlyData.length
+        monthlyData.reduce((total, datum) => total + datum.value, 0) /
+            monthlyData.length
     );
 
-    const averageLineY = Math.round(
-        100 - (averageShifts / maxMonthly) * 87
-    );
+    const averageLineY = Math.round(100 - (averageShifts / maxMonthly) * 87);
 
     return (
         <div className={styles.chartCard}>
             <header className={styles.chartHeader}>
-                <h3 className={styles.sectionTitle}>Monthly shifts</h3>
+                <h3 className={styles.sectionTitle}>{title}</h3>
             </header>
 
             <div className={styles.chartContent}>
@@ -67,8 +57,7 @@ export const LineChart = ({
                             style={{
                                 position: "relative",
                                 top: `-${
-                                    (averageShifts / maxMonthly - 0.5) *
-                                    74
+                                    (averageShifts / maxMonthly - 0.5) * 74
                                 }px`,
                             }}
                         >
@@ -87,9 +76,9 @@ export const LineChart = ({
                             {/* Grid lines */}
                             <g className={styles.gridLines}>
                                 <line
-                                    x1="-100"
+                                    x1="-60"
                                     y1={averageLineY}
-                                    x2="200"
+                                    x2="160"
                                     y2={averageLineY}
                                 />
                             </g>
@@ -106,13 +95,8 @@ export const LineChart = ({
                                 const x =
                                     monthlyData.length === 1
                                         ? 50
-                                        : (index /
-                                              (monthlyData.length - 1)) *
-                                              196 -
-                                          48;
-                                const y =
-                                    100 -
-                                    (datum.value / maxMonthly) * 87;
+                                        : (220 / (2 * monthlyData.length) - 60) + (220 / (monthlyData.length)) * index;
+                                const y = 100 - (datum.value / maxMonthly) * 87;
 
                                 return (
                                     <g key={`${datum.key}-point`}>

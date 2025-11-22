@@ -311,7 +311,7 @@ const UserSidebar = ({ userId, onClose }: UserSidebarProps) => {
                                         Volunteer Time
                                     </h3>
                                     <span className={styles.metricValue}>
-                                        {Math.round(volunteerHoursTotal)} hours
+                                        {Math.round(volunteerHoursTotal / 60)} hours
                                     </span>
                                 </section>
 
@@ -360,7 +360,7 @@ const UserSidebar = ({ userId, onClose }: UserSidebarProps) => {
                                         monthlyData={monthlyChartData.map(
                                             (datum) => ({
                                                 key: datum.monthLabel,
-                                                value: datum.shiftTime,
+                                                value: datum.shiftTime / 60,
                                             })
                                         )}
                                     />
@@ -368,6 +368,9 @@ const UserSidebar = ({ userId, onClose }: UserSidebarProps) => {
 
                                 <section className={styles.section}>
                                     <LineChart
+                                        title="Monthly Shifts"
+                                        legend="Shift"
+                                        units="shifts"
                                         monthlyData={monthlyChartData.map(
                                             (datum) => ({
                                                 key: datum.monthLabel,
@@ -375,8 +378,6 @@ const UserSidebar = ({ userId, onClose }: UserSidebarProps) => {
                                                     datum.totalShifts ?? 0,
                                             })
                                         )}
-                                        legend="Shift"
-                                        units="shifts"
                                     />
                                 </section>
 
