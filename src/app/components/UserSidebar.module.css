@@ -2,7 +2,7 @@
   position: fixed;
   right: 0;
   top: 99px;
-  width: 28rem;
+  width: 32rem;
   z-index: 50;
   background: #ffffff;
   box-shadow: -2px 0 6px rgba(84, 70, 70, 0.1);
@@ -88,13 +88,31 @@
 }
 
 .statusChip {
-  align-self: flex-start;
-  padding: 6px 12px;
-  border-radius: 9999px;
-  font-family: Inter, sans-serif;
+  /* w-[9rem] flex justify-center items-center text-[0.75rem] rounded-lg px-2 py-[0.2rem] */
+  width: 9rem;
+  padding: 2px 0.2rem;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
+  font-weight: 500;
+  font-family: Inter, sans-serif;
+}
+
+.statusChip[data-status="active"] {
+  background-color: #C8FFE3;
+  color: #166534; /* green-900 equivalent */
+}
+
+.statusChip[data-status="invite-not-sent"] {
+  background-color: #FFDAC8;
+  color: #501B00;
+}
+
+.statusChip[data-status="invite-sent"] {
+  background-color: #FBFFC8;
+  color: #3D4200;
 }
 
 .statusInvite {
@@ -192,14 +210,22 @@
   gap: 12px;
 }
 
-.metricsRow {
-  display: grid;
+.metrics {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
 
+.metrics > div {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 @media (min-width: 640px) {
-  .metricsRow {
+  .metrics {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
@@ -247,7 +273,7 @@
 .metricValue {
   color: #072B68;
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 500;
   word-break: break-word;
 }
 
@@ -258,13 +284,13 @@
 }
 
 .chip {
-  padding: 8px 12px;
-  border-radius: 9999px;
-  background: #F6F9FC;
-  color: #072B68;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--Bagel-Rescue-Background-Grey);
+  color: var(--Bagel-Rescue-Dark-Blue);
   font-family: Inter, sans-serif;
-  font-size: 13px;
-  font-weight: 600;
 }
 
 .emptyState {
@@ -290,105 +316,6 @@
 
 .errorState {
   color: #bf1650;
-}
-
-.chartCard {
-  background: #ffffff;
-  border-radius: 16px;
-  border: 1px solid #E3E9F4;
-  padding: 20px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  box-shadow: 0 10px 30px rgba(7, 43, 104, 0.08);
-}
-
-.chartHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.chartSubtitle {
-  color: #6C7D93;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.chartLegend {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #6C7D93;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.legendDot {
-  width: 12px;
-  height: 12px;
-  border-radius: 9999px;
-  background: #0F7AFF;
-  display: inline-block;
-}
-
-.legendDashed {
-  border-radius: 0;
-  width: 24px;
-  height: 2px;
-  background: transparent;
-  border-top: 2px dashed #0F7AFF;
-}
-
-.barChart {
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
-  height: 180px;
-  padding: 8px 0 0;
-}
-
-.barGroup {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-.bar {
-  width: 28px;
-  border-radius: 10px;
-  background: linear-gradient(180deg, #0F7AFF 0%, #0D5DE2 100%);
-  transition: opacity 0.2s ease;
-}
-
-.barGroup:hover .bar {
-  opacity: 0.8;
-}
-
-.barLabel {
-  color: #6C7D93;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.averageLine {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: repeating-linear-gradient(
-    to right,
-    rgba(15, 122, 255, 0.5) 0,
-    rgba(15, 122, 255, 0.5) 8px,
-    transparent 8px,
-    transparent 12px
-  );
 }
 
 .lineChart {

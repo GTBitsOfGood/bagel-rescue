@@ -1,0 +1,221 @@
+.chartCard {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e3e9f4;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 10px 30px rgba(7, 43, 104, 0.08);
+}
+
+.chartHeader {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.chartTitleGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sectionTitle {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a2a3a;
+}
+
+.chartSubtitle {
+    color: #6c7d93;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Fixed layout structure */
+.chartContent {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+    max-height: 200px;
+}
+
+/* Y-axis on the left */
+.yAxis {
+    color: #6c7d93;
+    font-size: 11px;
+    font-weight: 600;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    height: 180px;
+}
+
+.yScale {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+    height: 140px;
+    padding-bottom: 18px;
+}
+
+.yTick {
+    line-height: 1;
+}
+
+.yLabel {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    color: #6c7d93;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 24px;
+}
+
+/* Main chart area */
+.chartMain {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-height: 200px;
+}
+
+.lineChart {
+    flex: 1;
+    position: relative;
+    height: 160px; /* Fixed height for chart area */
+    max-height: 160px;
+    background: linear-gradient(180deg, rgba(15, 122, 255, 0.05) 0%, transparent 100%);
+    border-radius: 8px;
+}
+
+.lineChartSvg {
+    width: 100%;
+    height: 100%;
+    max-height: 160px;
+    padding-bottom: 12px 0;
+}
+
+.lineChartPath {
+    stroke: #0f7aff;
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+    transition: stroke-width 0.2s ease;
+}
+
+.lineChartPath:hover {
+    stroke-width: 3;
+}
+
+.gridLines {
+    stroke: rgba(15, 122, 255, 0.5);
+    stroke-width: 1.2;
+    stroke-dasharray: 5,2;
+}
+
+.lineChartDot {
+    fill: #0f7aff;
+    stroke: #ffffff;
+    stroke-width: 1.5;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.lineChartHoverArea {
+    fill: transparent;
+    cursor: pointer;
+    transition: fill 0.2s ease;
+}
+
+.lineChartHoverArea:hover + .lineChartDot,
+.lineChartDot:hover {
+    fill: #0d5de2;
+    r: 2;
+}
+
+.lineChartTooltip {
+    fill: #1a2a3a;
+    font-size: 8px;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.lineChartHoverArea:hover ~ .lineChartTooltip,
+.lineChartDot:hover ~ .lineChartTooltip {
+    opacity: 1;
+}
+
+/* X-axis labels at the bottom */
+.lineChartLabels {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0 0;
+    border-top: 1px solid #f0f4f9;
+    margin-top: 8px;
+    height: 20px;
+    min-height: 20px;
+}
+
+.lineChartLabel {
+    color: #6c7d93;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    flex: 1;
+    min-width: 0;
+    padding: 0 4px;
+}
+
+.chartLegend {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #6c7d93;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.legendLine {
+    width: 24px;
+    height: 2px;
+    border-radius: 0;
+    background: transparent;
+    border-top: 2px solid #0f7aff;
+}
+
+.legendDashed {
+    width: 24px;
+    height: 2px;
+    border-radius: 0;
+    background: transparent;
+    border-top: 2px dashed #0f7aff;
+}

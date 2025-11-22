@@ -1,0 +1,185 @@
+.chartCard {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e3e9f4;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 10px 30px rgba(7, 43, 104, 0.08);
+}
+
+.chartHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.chartTitleGroup {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sectionTitle {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a2a3a;
+}
+
+.chartSubtitle {
+    color: #6c7d93;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.chartLegend {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.legendItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #6c7d93;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.legendDot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #0f7aff;
+    flex-shrink: 0;
+}
+
+.legendDashed {
+    width: 24px;
+    height: 2px;
+    border-radius: 0;
+    background: transparent;
+    border-top: 2px dashed #0f7aff;
+}
+
+.barChartContainer {
+    display: flex;
+    gap: 12px;
+}
+
+.yAxis {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    height: 180px;
+}
+
+.yLabel {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    color: #6c7d93;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 24px;
+}
+
+.yScale {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+    height: 100%;
+    padding-bottom: 24px;
+}
+
+.yTick {
+    color: #6c7d93;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.yTickAverageLine {
+    color: #6c7d93;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    
+    position: absolute;
+    left: -0.2rem;
+    top: -0.25rem;
+    transform: translateX(-100%);
+    padding-right: 8px;
+    white-space: nowrap;
+}
+
+.barChart {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    height: 180px;
+    padding-top: 8px;
+    flex: 1;
+}
+
+.barGroup {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.bar {
+    width: 28px;
+    min-height: 2px;
+    border-radius: 5px;
+    background: linear-gradient(180deg, #0f7aff 0%, #0d5de2 100%);
+    transition: opacity 0.2s ease;
+}
+
+.barLabel {
+    color: #6c7d93;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.averageLine {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: repeating-linear-gradient(
+        to right,
+        rgba(15, 122, 255, 0.5) 0,
+        rgba(15, 122, 255, 0.5) 8px,
+        transparent 8px,
+        transparent 12px
+    );
+    pointer-events: none;
+}
