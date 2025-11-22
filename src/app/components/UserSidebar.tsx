@@ -24,85 +24,12 @@ type MonthlyShiftDatum = {
 };
 
 const statusLabels: Record<NonNullable<IUser["status"]>, string> = {
-    SEND_INVITE: "Invite Not Sent",
+    SEND_INVITE: "Send Invite",
     INVITE_SENT: "Invite Sent",
     ACTIVE: "Active",
 };
 
-const statusClassName: Record<NonNullable<IUser["status"]>, string> = {
-    SEND_INVITE: "statusInvite",
-    INVITE_SENT: "statusSent",
-    ACTIVE: "statusActive",
-};
-
 const monthFormatter = new Intl.DateTimeFormat("en-US", { month: "short" });
-
-const SAMPLE_MONTHLY_DATA: MonthlyShiftDatum[] = [
-    {
-        dateKey: "2023-08-01T00:00:00.000Z",
-        monthLabel: "Aug",
-        shiftTime: 18,
-        bagelsDelivered: 120,
-        bagelsReceived: 98,
-        totalShifts: 9,
-    },
-    {
-        dateKey: "2023-09-01T00:00:00.000Z",
-        monthLabel: "Sep",
-        shiftTime: 12,
-        bagelsDelivered: 96,
-        bagelsReceived: 80,
-        totalShifts: 6,
-    },
-    {
-        dateKey: "2023-10-01T00:00:00.000Z",
-        monthLabel: "Oct",
-        shiftTime: 22,
-        bagelsDelivered: 144,
-        bagelsReceived: 110,
-        totalShifts: 11,
-    },
-    {
-        dateKey: "2023-11-01T00:00:00.000Z",
-        monthLabel: "Nov",
-        shiftTime: 28,
-        bagelsDelivered: 180,
-        bagelsReceived: 140,
-        totalShifts: 14,
-    },
-    {
-        dateKey: "2023-12-01T00:00:00.000Z",
-        monthLabel: "Dec",
-        shiftTime: 16,
-        bagelsDelivered: 110,
-        bagelsReceived: 96,
-        totalShifts: 8,
-    },
-    {
-        dateKey: "2024-01-01T00:00:00.000Z",
-        monthLabel: "Jan",
-        shiftTime: 12,
-        bagelsDelivered: 90,
-        bagelsReceived: 70,
-        totalShifts: 6,
-    },
-    {
-        dateKey: "2024-02-01T00:00:00.000Z",
-        monthLabel: "Feb",
-        shiftTime: 20,
-        bagelsDelivered: 150,
-        bagelsReceived: 118,
-        totalShifts: 10,
-    },
-    {
-        dateKey: "2024-03-01T00:00:00.000Z",
-        monthLabel: "Mar",
-        shiftTime: 14,
-        bagelsDelivered: 120,
-        bagelsReceived: 98,
-        totalShifts: 7,
-    },
-];
 
 const mapMonthlyShifts = (
     monthlyShifts?: IUser["monthlyShifts"]
@@ -265,44 +192,13 @@ const UserSidebar = ({ userId, onClose }: UserSidebarProps) => {
         [user?.monthlyShifts]
     );
 
-    const usingSampleData = monthlyDataFromUser.length === 0;
-    const monthlyChartData = usingSampleData
-        ? SAMPLE_MONTHLY_DATA
-        : monthlyDataFromUser;
+    const hasData = monthlyDataFromUser.length !== 0;
+    const monthlyChartData = monthlyDataFromUser;
 
     const volunteerHoursTotal = useMemo(
         () => monthlyChartData.reduce((sum, datum) => sum + datum.shiftTime, 0),
         [monthlyChartData]
     );
-
-    const maxVolunteerHours = Math.max(
-        ...monthlyChartData.map((datum) => datum.shiftTime),
-        1
-    );
-    const avgVolunteerHours =
-        volunteerHoursTotal / (monthlyChartData.length || 1);
-
-    const maxMonthlyShifts = Math.max(
-        ...monthlyChartData.map((datum) => datum.totalShifts),
-        1
-    );
-
-    const chartLinePoints = useMemo(() => {
-        if (monthlyChartData.length === 0) {
-            return "";
-        }
-
-        return monthlyChartData
-            .map((datum, index) => {
-                const x =
-                    monthlyChartData.length === 1
-                        ? 50
-                        : (index / (monthlyChartData.length - 1)) * 100;
-                const y = 100 - (datum.totalShifts / maxMonthlyShifts) * 100;
-                return `${x},${y}`;
-            })
-            .join(" ");
-    }, [maxMonthlyShifts, monthlyChartData]);
 
     return (
         <div className={styles.sidebar}>
@@ -320,7 +216,7 @@ const UserSidebar = ({ userId, onClose }: UserSidebarProps) => {
                     fill="none"
                 >
                     <path
-                        d="M14.2925 21.2924L24.2925 11.2924C24.4801 11.1048 24.7346 10.9994 25 10.9994C25.2654 10.9994 25.5199 11.1048 25.7075 11.2924C25.8951 11.48 26.0005 11.7345 26.0005 11.9999C26.0005 12.2653 25.8951 12.5198 25.7075 12.7074L16.4137 22L25.7075 31.2924C25.8951 31.48 26.0005 31.7345 26.0005 31.9999C26.0005 32.2653 25.8951 32.5198 25.7075 32.7074C25.5199 32.895 25.2654 33.0004 25 33.0004C24.7346 33.0004 24.4801 32.895 24.2925 32.7074L14.2925 22.7074C14.1995 22.6146 14.1258 22.5043 14.0754 22.3829C14.0251 22.2615 13.9992 22.1313 13.9992 21.9999C13.9992 21.8685 14.0251 21.7384 14.0754 21.617C14.1258 21.4956 14.1995 21.3853 14.2925 21.2924ZM4.29251 22.7074L14.2925 32.7074C14.4801 32.895 14.7346 33.0004 15 33.0004C15.2654 33.0004 15.5199 32.895 15.7075 32.7074C15.8951 32.5198 16.0005 32.2653 16.0005 31.9999C16.0005 31.7345 15.8951 31.48 15.7075 31.2924L6.41374 22L15.7075 12.7074C15.8951 12.5198 16.0005 12.2653 16.0005 11.9999C16.0005 11.7345 15.8951 11.48 15.7075 11.2924C15.5199 11.1048 15.2654 10.9994 15 10.9994C14.7346 10.9994 14.4801 11.1048 14.2925 11.2924L4.29251 21.2924C4.19948 21.3852 4.12579 21.4955 4.07543 21.6169C4.02507 21.7383 3.99915 21.8685 3.99915 21.9999C3.99915 22.1313 4.02507 22.2614 4.07543 22.3828C4.12579 22.5042 4.19948 22.6145 4.29251 22.7074Z"
+                        d="M17.7075 22.7076L7.70751 32.7076C7.51987 32.8952 7.26537 33.0006 7.00001 33.0006C6.73464 33.0006 6.48015 32.8952 6.29251 32.7076C6.10487 32.5199 5.99945 32.2654 5.99945 32.0001C5.99945 31.7347 6.10487 31.4802 6.29251 31.2926L15.5863 22.0001L6.29251 12.7076C6.10487 12.5199 5.99945 12.2654 5.99945 12.0001C5.99945 11.7347 6.10487 11.4802 6.29251 11.2926C6.48015 11.1049 6.73464 10.9995 7.00001 10.9995C7.26537 10.9995 7.51987 11.1049 7.70751 11.2926L17.7075 21.2926C17.8005 21.3854 17.8742 21.4957 17.9246 21.6171C17.9749 21.7385 18.0008 21.8687 18.0008 22.0001C18.0008 22.1315 17.9749 22.2616 17.9246 22.383C17.8742 22.5044 17.8005 22.6147 17.7075 22.7076ZM27.7075 21.2926L17.7075 11.2926C17.5199 11.1049 17.2654 10.9995 17 10.9995C16.7346 10.9995 16.4801 11.1049 16.2925 11.2926C16.1049 11.4802 15.9995 11.7347 15.9995 12.0001C15.9995 12.2654 16.1049 12.5199 16.2925 12.7076L25.5863 22.0001L16.2925 31.2926C16.1049 31.4802 15.9995 31.7347 15.9995 32.0001C15.9995 32.2654 16.1049 32.5199 16.2925 32.7076C16.4801 32.8952 16.7346 33.0006 17 33.0006C17.2654 33.0006 17.5199 32.8952 17.7075 32.7076L27.7075 22.7076C27.8005 22.6147 27.8742 22.5044 27.9246 22.383C27.9749 22.2616 28.0008 22.1315 28.0008 22.0001C28.0008 21.8687 27.9749 21.7385 27.9246 21.6171C27.8742 21.4957 27.8005 21.3854 27.7075 21.2926Z"
                         fill="#072B68"
                     />
                 </svg>
@@ -362,23 +258,26 @@ const UserSidebar = ({ userId, onClose }: UserSidebarProps) => {
                             )}
                         </section>
 
-                        <section className={styles.section}>
-                            <h3 className={styles.sectionTitle}>Status</h3>
-                            {statusLabel ? (
-                                <div
-                                    className={styles.statusChip}
-                                    data-status={statusLabel
-                                        .toLowerCase()
-                                        .replace(/\s+/g, "-")}
-                                >
-                                    {statusLabel}
-                                </div>
-                            ) : (
-                                <span className={styles.infoValue}>
-                                    Not available
-                                </span>
-                            )}
-                        </section>
+                        {user.status && (
+                            <section className={styles.section}>
+                                <h3 className={styles.sectionTitle}>Status</h3>
+                                {statusLabel ? (
+                                    <div
+                                        className={styles.statusChip}
+                                        data-status={user.status
+                                            .toLowerCase()
+                                            .replace(/\s+/g, "-")}
+                                    >
+                                        {statusLabel}
+                                    </div>
+                                ) : (
+                                    <span className={styles.infoValue}>
+                                        Not available
+                                    </span>
+                                )}
+                            </section>
+                        )}
+
                         <div className={styles.metrics}>
                             <div>
                                 <section className={styles.section}>
@@ -386,7 +285,12 @@ const UserSidebar = ({ userId, onClose }: UserSidebarProps) => {
                                         Shifts
                                     </h3>
                                     <span className={styles.metricValue}>
-                                        {user.totalShifts ?? 0}
+                                        {/* {Sum of all shifts} */}
+                                        {monthlyChartData.reduce(
+                                            (total, data) =>
+                                                total + data.totalShifts,
+                                            0
+                                        )}
                                     </span>
                                 </section>
 
@@ -445,41 +349,47 @@ const UserSidebar = ({ userId, onClose }: UserSidebarProps) => {
                             )}
                         </section>
 
-                        <section className={styles.section}>
-                            <BarChart
-                                title="Monthly Volunteer Time"
-                                legend="Volunteer time"
-                                units="hours"
-                                monthlyData={monthlyChartData.map(
-                                    (datum) => ({
-                                        "key": datum.monthLabel,
-                                        "value": datum.shiftTime,
-                                    })
-                                )}
-                            />
-                        </section>
+                        {hasData && (
+                            <>
+                                <section className={styles.section}>
+                                    <BarChart
+                                        title="Monthly Volunteer Time"
+                                        legend="Volunteer time"
+                                        units="hours"
+                                        monthlyData={monthlyChartData.map(
+                                            (datum) => ({
+                                                key: datum.monthLabel,
+                                                value: datum.shiftTime,
+                                            })
+                                        )}
+                                    />
+                                </section>
 
-                        <section className={styles.section}>
-                            <LineChart
-                                monthlyChartData={monthlyChartData}
-                                legend="Shift"
-                                units="shifts"
-                            />
-                        </section>
+                                <section className={styles.section}>
+                                    <LineChart
+                                        monthlyChartData={monthlyChartData}
+                                        legend="Shift"
+                                        units="shifts"
+                                    />
+                                </section>
 
-                        <section className={styles.section}>
-                            <BarChart
-                                title="Monthly Bagels Rescued"
-                                legend="Bagels rescued"
-                                units="bagels"
-                                monthlyData={monthlyChartData.map(
-                                    (datum) => ({
-                                        "key": datum.monthLabel,
-                                        "value": datum.bagelsDelivered + datum.bagelsReceived,
-                                    })
-                                )}
-                            />
-                        </section>
+                                <section className={styles.section}>
+                                    <BarChart
+                                        title="Monthly Bagels Rescued"
+                                        legend="Bagels rescued"
+                                        units="bagels"
+                                        monthlyData={monthlyChartData.map(
+                                            (datum) => ({
+                                                key: datum.monthLabel,
+                                                value:
+                                                    datum.bagelsDelivered +
+                                                    datum.bagelsReceived,
+                                            })
+                                        )}
+                                    />
+                                </section>
+                            </>
+                        )}
                     </>
                 ) : null}
             </div>

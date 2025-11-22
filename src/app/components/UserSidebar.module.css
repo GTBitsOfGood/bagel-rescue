@@ -15,14 +15,6 @@
   transform: translateX(0);
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  width: 100%;
-  gap: 16px;
-}
-
 .closeButton {
   background: none;
   border: none;
@@ -31,60 +23,12 @@
   flex-shrink: 0;
 }
 
-.headerContent {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex: 1;
-}
-
-.pretitle {
-  color: var(--Bagel-Rescue-Primary-Blue, #0F7AFF);
-  font-family: Inter, sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.headerLine {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.avatar {
-  width: 52px;
-  height: 52px;
-  border-radius: 12px;
-  background: #0F7AFF;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.headline {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
 .userName {
   color: var(--Bagel-Rescue-Dark-Blue, #072B68);
   font-family: Inter, sans-serif;
   font-size: 24px;
   font-weight: 700;
   line-height: 32px;
-}
-
-.userEmail {
-  color: #6C7D93;
-  font-family: Inter, sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 20px;
 }
 
 .statusChip {
@@ -105,29 +49,14 @@
   color: #166534; /* green-900 equivalent */
 }
 
-.statusChip[data-status="invite-not-sent"] {
+.statusChip[data-status="send_invite"] {
   background-color: #FFDAC8;
   color: #501B00;
 }
 
-.statusChip[data-status="invite-sent"] {
+.statusChip[data-status="invite_sent"] {
   background-color: #FBFFC8;
   color: #3D4200;
-}
-
-.statusInvite {
-  background: rgba(15, 122, 255, 0.1);
-  color: #0F7AFF;
-}
-
-.statusSent {
-  background: rgba(7, 43, 104, 0.1);
-  color: #072B68;
-}
-
-.statusActive {
-  background: rgba(19, 220, 101, 0.1);
-  color: #138C4D;
 }
 
 .content {
@@ -146,10 +75,6 @@
   gap: 12px;
 }
 
-.overviewSection {
-  margin-top: 0;
-}
-
 .sectionTitle {
   color: var(--Bagel-Rescue-Dark-Blue, #072B68);
   font-family: Inter, sans-serif;
@@ -158,56 +83,10 @@
   line-height: 20px;
 }
 
-.infoCard {
-  background: #F6F9FC;
-  border-radius: 12px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.overviewCard {
-  background: #ffffff;
-  border: 1px solid #E3E9F4;
-  box-shadow: 0 10px 30px rgba(7, 43, 104, 0.08);
-  padding: 20px 24px;
-  gap: 20px;
-}
-
-.overviewHeader {
-  display: flex;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
-.infoRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  color: #072B68;
-  font-family: Inter, sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.infoLabel {
-  color: #6C7D93;
-  font-size: 13px;
-  font-weight: 500;
-}
-
 .infoValue {
   color: #072B68;
   font-size: 14px;
   font-weight: 600;
-}
-
-.statGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
 }
 
 .metrics {
@@ -239,37 +118,6 @@
   gap: 6px;
 }
 
-.statLabel {
-  color: #6C7D93;
-  font-family: Inter, sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.statValue {
-  color: #072B68;
-  font-family: Inter, sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.metricBlock {
-  background: #F6F9FC;
-  border-radius: 12px;
-  padding: 12px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.metricLabel {
-  color: #6C7D93;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
 .metricValue {
   color: #072B68;
   font-size: 18px;
@@ -293,12 +141,6 @@
   font-family: Inter, sans-serif;
 }
 
-.emptyState {
-  color: #6C7D93;
-  font-family: Inter, sans-serif;
-  font-size: 14px;
-}
-
 .supportText {
   color: #6C7D93;
   font-family: Inter, sans-serif;
@@ -316,43 +158,4 @@
 
 .errorState {
   color: #bf1650;
-}
-
-.lineChart {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.lineChartSvg {
-  width: 100%;
-  height: 180px;
-}
-
-.lineChartPath {
-  fill: none;
-  stroke: #0F7AFF;
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.lineChartDot {
-  fill: #0F7AFF;
-  stroke: #ffffff;
-  stroke-width: 0.8;
-}
-
-.lineChartLabels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  font-weight: 600;
-  color: #6C7D93;
-}
-
-.sampleDataNote {
-  color: #6C7D93;
-  font-size: 12px;
-  font-style: italic;
 }
