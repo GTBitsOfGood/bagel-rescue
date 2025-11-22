@@ -194,7 +194,18 @@ const UserSidebar = ({ userId, onClose }: UserSidebarProps) => {
     );
 
     const hasData = monthlyDataFromUser.length !== 0;
-    const monthlyChartData = monthlyDataFromUser;
+    let monthlyChartData = monthlyDataFromUser;
+
+    if (monthlyChartData.length > 8) {
+        monthlyChartData = monthlyChartData
+            .sort((a, b) => {
+                const first = stringToDate(a.dateKey).getTime();
+                const second = stringToDate(b.dateKey).getTime();
+                return first - second;
+            });
+
+        monthlyChartData = monthlyChartData.slice(monthlyChartData.length - 8);
+    }
 
     const volunteerHoursTotal = useMemo(
         () => monthlyChartData.reduce((sum, datum) => sum + datum.shiftTime, 0),
