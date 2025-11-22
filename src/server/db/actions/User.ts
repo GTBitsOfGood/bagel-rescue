@@ -39,7 +39,7 @@ async function getUser(
   id: string,
   session?: ClientSession
 ): Promise<IUser | null> {
-  await requireUser();
+  await requireAdmin();
   await dbConnect();
 
   const userId = new mongoose.Types.ObjectId(id);
@@ -54,6 +54,32 @@ async function getUser(
   if (!document) {
     throw new Error("User with that id " + id + " does not exist");
   }
+  return JSON.parse(JSON.stringify(document));
+}
+
+async function getUserById(
+  id: string,
+  session?: ClientSession
+): Promise<IUser | null> {
+  await requireAdmin();
+  await dbConnect();
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new Error("Invalid user id provided");
+  }
+
+  const document = await User.findById(
+    new mongoose.Types.ObjectId(id),
+    { __v: 0 },
+    {
+      session: session,
+    }
+  ).lean();
+
+  if (!document) {
+    throw new Error("User with that id " + id + " does not exist");
+  }
+
   return JSON.parse(JSON.stringify(document));
 }
 
@@ -286,9 +312,24 @@ async function getVolunteerManagementData(): Promise<string> {
   }
 }
 
+async function setMonthlyShifts(userId: string, monthlyShifts: Map<string, { shiftTime: number; bagelsDelivered: number; bagelsReceived: number; totalShifts: number }>): Promise<void> {
+  await dbConnect();
+  await requireUser();
+
+  if (await getCurrentUserId() !== userId) {
+    throw new Error("You are not authorized to update this user");
+  }
+
+  await User.updateOne(
+    { _id: new mongoose.Types.ObjectId(userId) },
+    { $set: { monthlyShifts: monthlyShifts } }
+  );
+}
+
 export {
   createUser,
   getUser,
+  getUserById,
   getUserByEmail,
   getUserByActivationToken,
   updateUser,
@@ -298,5 +339,6 @@ export {
   getAllUsers,
   getCurrentUserId,
   getUsersPerShift,
-  getVolunteerManagementData
+  getVolunteerManagementData,
+  setMonthlyShifts
 };
