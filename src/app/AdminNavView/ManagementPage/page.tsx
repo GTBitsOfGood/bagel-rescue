@@ -50,7 +50,7 @@ function ManagementPage() {
             <AdminSidebar />
             <div className="flex flex-col flex-1 min-w-0">
                 <ManagementBar />
-                <div className="bg-[#ECF2F9] flex flex-col pl-9 pr-9 gap-6 min-h-screen pt-12">
+                <div className="bg-[#ECF2F9] flex flex-col pl-9 pr-9 gap-6 min-h-screen">
                     <div className="flex justify-between text-[#6C7D93] mt-6">
                         <div className="px-5 py-[.6rem] rounded-xl space-x-2 border bg-white">
                             <FontAwesomeIcon icon={faArrowUpShortWide} />

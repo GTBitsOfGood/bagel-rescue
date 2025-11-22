@@ -60,7 +60,7 @@ function ManagementBar() {
     }
 
     return (
-        <div className="flex flex-row justify-between p-9 border-b-[1px] border-b-[#D3D8DE] position-absolute top-0 bg-white">
+        <div className="flex flex-row justify-between p-9 border-b-[1px] border-b-[#D3D8DE] sticky top-0 bg-white">
             <span className="text-[#072B68] mt-2 font-[700] text-4xl">
                 Volunteer Management
             </span>
