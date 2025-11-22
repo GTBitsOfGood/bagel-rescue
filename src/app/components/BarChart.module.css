@@ -35,14 +35,6 @@
     color: #1a2a3a;
 }
 
-.chartSubtitle {
-    color: #6c7d93;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
 .chartLegend {
     display: flex;
     justify-content: center;

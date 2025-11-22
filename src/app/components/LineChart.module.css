@@ -17,25 +17,11 @@
     flex-wrap: wrap;
 }
 
-.chartTitleGroup {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
 .sectionTitle {
     margin: 0;
     font-size: 16px;
     font-weight: 600;
     color: #1a2a3a;
-}
-
-.chartSubtitle {
-    color: #6c7d93;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
 /* Fixed layout structure */
