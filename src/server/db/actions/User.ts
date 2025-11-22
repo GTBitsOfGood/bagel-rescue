@@ -8,6 +8,7 @@ import { adminAuth } from "../firebase/admin/firebaseAdmin";
 import { cookies } from "next/headers";
 import { requireAdmin, requireUser } from "../auth/auth";
 import { UserShiftModel } from "../models/userShift";
+import { ShiftModel } from "../models/shift";
 
 export type UserStats = {
   bagelsDelivered: number;
@@ -41,6 +42,27 @@ async function getUser(
 ): Promise<IUser | null> {
   await requireAdmin();
   await dbConnect();
+
+  // Validate input
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+    throw new Error("Invalid user ID format");
+  }
+
+  // Get current user and verify authorization
+  const currentUserId = await getCurrentUserId();
+  if (!currentUserId) {
+    throw new Error("User not authenticated");
+  }
+  
+  const currentUser = await User.findById(currentUserId);
+  if (!currentUser) {
+    throw new Error("Current user not found");
+  }
+  
+  // Only allow users to view their own data, or admins to view any user's data
+  if (currentUserId !== id && !currentUser.isAdmin) {
+    throw new Error("You do not have permission to view this user's data");
+  }
 
   const userId = new mongoose.Types.ObjectId(id);
 
@@ -166,6 +188,38 @@ async function getUsersPerShift(
   await requireUser();
   await dbConnect();
   try {
+    // Validate input
+    if (!shiftId || !mongoose.Types.ObjectId.isValid(shiftId)) {
+      throw new Error("Invalid shiftId format");
+    }
+    
+    // Get current user and verify authorization
+    const currentUserId = await getCurrentUserId();
+    if (!currentUserId) {
+      throw new Error("User not authenticated");
+    }
+    
+    const currentUser = await User.findById(currentUserId);
+    if (!currentUser) {
+      throw new Error("Current user not found");
+    }
+    
+    // For non-admins, verify they have access to this shift
+    if (!currentUser.isAdmin) {
+      // Check if user is assigned to this shift
+      const userShift = await UserShiftModel.findOne({
+        userId: new mongoose.Types.ObjectId(currentUserId),
+        shiftId: new mongoose.Types.ObjectId(shiftId)
+      });
+      
+      // Also check if shift is open
+      const shift = await ShiftModel.findById(shiftId);
+      
+      if (!userShift && shift?.status !== "open") {
+        throw new Error("You do not have permission to view users for this shift");
+      }
+    }
+    
     const documents = await UserShiftModel.aggregate([
       {
         $match: { shiftId: new mongoose.Types.ObjectId(shiftId) }, // filter by the specific shift
@@ -187,8 +241,9 @@ async function getUsersPerShift(
     ]);
     return documents;
   } catch (error) {
-    console.error("Error fetching users per shift:", error);
-    throw new Error("Failed to fetch users per shift");
+    const err = error as Error;
+    console.error("Error fetching users per shift:", err);
+    throw new Error(`Failed to fetch users per shift: ${err.message}`);
   }
 }
 
@@ -198,6 +253,22 @@ async function getUserStats(
 ): Promise<UserStats | null> {
   await requireUser();
   await dbConnect();
+
+  // Get current user and verify authorization
+  const currentUserId = await getCurrentUserId();
+  if (!currentUserId) {
+    throw new Error("User not authenticated");
+  }
+  
+  const currentUser = await User.findById(currentUserId);
+  if (!currentUser) {
+    throw new Error("Current user not found");
+  }
+  
+  // Only allow users to view their own stats, or admins to view any user's stats
+  if (currentUserId !== id.toString() && !currentUser.isAdmin) {
+    throw new Error("You do not have permission to view this user's stats");
+  }
 
   const document = await User.findById(
     id,
@@ -216,7 +287,7 @@ async function getUserStats(
 }
 
 async function getAllUserStats(): Promise<string | null> {
-  await requireUser();
+  await requireAdmin(); // Only admins can view all user stats
   await dbConnect();
 
   const documents = await User.find(
@@ -238,6 +309,7 @@ async function getTotalBagelsDelivered(): Promise<number | null> {
 
 async function getAllUsers(): Promise<string> {
   try {
+    await requireAdmin();
     await dbConnect();
     const users = await User.find({}).select("firstName lastName email");
     return JSON.stringify(users);

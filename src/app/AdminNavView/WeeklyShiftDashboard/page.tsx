@@ -130,8 +130,12 @@ function WeeklyShiftDashboard() {
                 .flat()
                 .map((shift) => shift._id.toString());
 
-            const usersPerShift = await getShiftUsers(shiftIdList);
-
+            let usersPerShift;
+            if (shiftIdList.length !== 0) {
+            usersPerShift = await getShiftUsers(shiftIdList);
+            } else {
+              return;
+            }
             const map = new Map<string, string>();
             usersPerShift.forEach((item) => {
                 map.set(item.shiftId, item.fullName);

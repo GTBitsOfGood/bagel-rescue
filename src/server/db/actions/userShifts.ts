@@ -75,13 +75,38 @@ export async function deleteUserShift(userId: string, shiftId: string): Promise<
   await dbConnect();
 
   try {
+    // Validate inputs
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+      throw new Error("Invalid userId format");
+    }
+    if (!shiftId || !mongoose.Types.ObjectId.isValid(shiftId)) {
+      throw new Error("Invalid shiftId format");
+    }
+    
+    // Get current user and verify authorization
+    const currentUserId = await getCurrentUserId();
+    if (!currentUserId) {
+      throw new Error("User not authenticated");
+    }
+    
+    const user = await User.findById(currentUserId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    
+    // Only allow users to delete their own shifts, or admins to delete any shift
+    if (currentUserId !== userId && !user.isAdmin) {
+      throw new Error("You do not have permission to delete this user shift");
+    }
+    
     await UserShiftModel.findOneAndDelete({
       userId: new mongoose.Types.ObjectId(userId),
       shiftId: new mongoose.Types.ObjectId(shiftId),
     });
   } catch (error) {
-    console.error("Error deleting user shift:", error);
-    throw new Error("Failed to delete user shift");
+    const err = error as Error;
+    console.error("Error deleting user shift:", err);
+    throw new Error(`Failed to delete user shift: ${err.message}`);
   }
 }
 
@@ -148,6 +173,41 @@ export async function getUserShiftsByDateRange(
   await dbConnect();
 
   try {
+    // Validate inputs
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+      throw new Error("Invalid userId format");
+    }
+    
+    if (!(startDate instanceof Date) || isNaN(startDate.getTime())) {
+      throw new Error("startDate must be a valid Date");
+    }
+    if (!(endDate instanceof Date) || isNaN(endDate.getTime())) {
+      throw new Error("endDate must be a valid Date");
+    }
+    
+    if (typeof page !== "number" || page < 1 || !Number.isInteger(page)) {
+      throw new Error("page must be a positive integer");
+    }
+    if (typeof limit !== "number" || limit < 1 || !Number.isInteger(limit)) {
+      throw new Error("limit must be a positive integer");
+    }
+    
+    // Get current user and verify authorization
+    const currentUserId = await getCurrentUserId();
+    if (!currentUserId) {
+      throw new Error("User not authenticated");
+    }
+    
+    const user = await User.findById(currentUserId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    
+    // Only allow users to view their own shifts, or admins to view any user's shifts
+    if (currentUserId !== userId && !user.isAdmin) {
+      throw new Error("You do not have permission to view this user's shifts");
+    }
+    
     const skip = (page - 1) * limit;
 
     const startAbsDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
@@ -284,6 +344,37 @@ export async function updateUserShiftStatus(
   await dbConnect();
   
   try {
+    // Validate inputs
+    if (!shiftId || !mongoose.Types.ObjectId.isValid(shiftId)) {
+      throw new Error("Invalid shiftId format");
+    }
+    
+    if (!["Complete", "Incomplete"].includes(status)) {
+      throw new Error("status must be 'Complete' or 'Incomplete'");
+    }
+    
+    // Get current user and verify authorization
+    const currentUserId = await getCurrentUserId();
+    if (!currentUserId) {
+      throw new Error("User not authenticated");
+    }
+    
+    // Get the userShift to check ownership
+    const userShift = await UserShiftModel.findById(shiftId);
+    if (!userShift) {
+      throw new Error("User shift not found");
+    }
+    
+    const user = await User.findById(currentUserId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    
+    // Only allow users to update their own shifts, or admins to update any shift
+    if (userShift.userId.toString() !== currentUserId && !user.isAdmin) {
+      throw new Error("You do not have permission to update this user shift");
+    }
+    
     const updatedShift = await UserShiftModel.findByIdAndUpdate(
       shiftId,
       { status },
@@ -292,8 +383,9 @@ export async function updateUserShiftStatus(
     
     return updatedShift;
   } catch (error) {
-    console.error("Error updating user shift status:", error);
-    throw new Error("Failed to update user shift status");
+    const err = error as Error;
+    console.error("Error updating user shift status:", err);
+    throw new Error(`Failed to update user shift status: ${err.message}`);
   }
 }
 
@@ -308,10 +400,31 @@ export async function getDetailedShiftInfo(userShiftId: string): Promise<Detaile
   await dbConnect();
 
   try {
+    // Validate input
+    if (!userShiftId || !mongoose.Types.ObjectId.isValid(userShiftId)) {
+      throw new Error("Invalid userShiftId format");
+    }
+    
+    // Get current user and verify authorization
+    const currentUserId = await getCurrentUserId();
+    if (!currentUserId) {
+      throw new Error("User not authenticated");
+    }
+    
     // Get the UserShift document
     const userShift = await UserShiftModel.findById(userShiftId).lean();
     if (!userShift) {
       throw new Error("User shift not found");
+    }
+    
+    const user = await User.findById(currentUserId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    
+    // Only allow users to view their own shifts, or admins to view any shift
+    if (userShift.userId.toString() !== currentUserId && !user.isAdmin) {
+      throw new Error("You do not have permission to view this user shift");
     }
 
     // Get the Route details
@@ -379,9 +492,19 @@ export async function getDetailedOpenShiftInfo(shiftId: string): Promise<Detaile
   await dbConnect();
 
   try {
+    // Validate input
+    if (!shiftId || !mongoose.Types.ObjectId.isValid(shiftId)) {
+      throw new Error("Invalid shiftId format");
+    }
+    
     const shift = (await getShift(shiftId))?.toObject();
     if (!shift) {
       throw new Error("Shift not found");
+    }
+    
+    // Verify that the shift is open (getShift already checks permissions, but we need to verify it's open)
+    if (shift.status !== "open") {
+      throw new Error("This shift is not open for sub-request");
     }
 
     const route = await RouteModel.findById(shift.routeId).lean();
@@ -478,6 +601,7 @@ export async function getCurrentUserShiftsByDateRange(
 export async function getUserUniqueRoutes(
   userId: string
 ): Promise<UserRoute[]> {
+  await requireUser();
   await dbConnect();
 
   // Calculate date 6 months ago for filtering recent routes
@@ -485,6 +609,26 @@ export async function getUserUniqueRoutes(
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
   try {
+    // Validate input
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+      throw new Error("Invalid userId format");
+    }
+    
+    // Get current user and verify authorization
+    const currentUserId = await getCurrentUserId();
+    if (!currentUserId) {
+      throw new Error("User not authenticated");
+    }
+    
+    const user = await User.findById(currentUserId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    
+    // Only allow users to view their own routes, or admins to view any user's routes
+    if (currentUserId !== userId && !user.isAdmin) {
+      throw new Error("You do not have permission to view this user's routes");
+    }
     
     const userShifts = await UserShiftModel.find({
       userId: new mongoose.Types.ObjectId(userId),
@@ -659,11 +803,55 @@ export async function getCurrentUserUniqueRoutes(): Promise<UserRoute[]> {
 
 
 export async function getShiftUsers(shiftIds: string[]) {
+  await requireUser();
   await dbConnect();
 
-  const newShiftIds = shiftIds.map(id => new ObjectId(id));
-
   try {
+    // Validate input
+    if (!Array.isArray(shiftIds)) {
+      throw new Error("shiftIds must be an array");
+    }
+    
+    if (shiftIds.length === 0) {
+      throw new Error("shiftIds array cannot be empty");
+    }
+    
+    // Validate all ObjectIds
+    const validShiftIds = shiftIds.filter(id => mongoose.Types.ObjectId.isValid(id));
+    if (validShiftIds.length === 0) {
+      throw new Error("No valid shift IDs provided");
+    }
+    
+    // Get current user and verify authorization
+    const currentUserId = await getCurrentUserId();
+    if (!currentUserId) {
+      throw new Error("User not authenticated");
+    }
+    
+    const user = await User.findById(currentUserId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    
+    // For non-admins, verify they have access to at least one of the shifts
+    if (!user.isAdmin) {
+      const userShifts = await UserShiftModel.find({
+        userId: new mongoose.Types.ObjectId(currentUserId),
+        shiftId: { $in: validShiftIds.map(id => new mongoose.Types.ObjectId(id)) }
+      });
+      
+      // Also check if any of the shifts are open
+      const openShifts = await ShiftModel.find({
+        _id: { $in: validShiftIds.map(id => new mongoose.Types.ObjectId(id)) },
+        status: "open"
+      });
+      
+      if (userShifts.length === 0 && openShifts.length === 0) {
+        throw new Error("You do not have permission to view users for these shifts");
+      }
+    }
+
+    const newShiftIds = validShiftIds.map(id => new ObjectId(id));
 
     const results = await UserShiftModel.aggregate([
       { $match: { shiftId: { $in: newShiftIds } } },
@@ -703,16 +891,41 @@ export async function createUserShift(userShiftData: {
   shiftDate: Date | string;
   shiftEndDate: Date | string;
 }): Promise<string> {
+  await requireUser();
   try {
     await dbConnect();
+    
+    // Validate inputs
+    if (!userShiftData.userId || !mongoose.Types.ObjectId.isValid(userShiftData.userId)) {
+      throw new Error("Invalid userId format");
+    }
+    if (!userShiftData.shiftId || !mongoose.Types.ObjectId.isValid(userShiftData.shiftId)) {
+      throw new Error("Invalid shiftId format");
+    }
+    if (!userShiftData.routeId || !mongoose.Types.ObjectId.isValid(userShiftData.routeId)) {
+      throw new Error("Invalid routeId format");
+    }
+    if (!Array.isArray(userShiftData.recurrenceDates)) {
+      throw new Error("recurrenceDates must be an array");
+    }
+    
+    const shiftDate = userShiftData.shiftDate instanceof Date ? userShiftData.shiftDate : new Date(userShiftData.shiftDate);
+    const shiftEndDate = userShiftData.shiftEndDate instanceof Date ? userShiftData.shiftEndDate : new Date(userShiftData.shiftEndDate);
+    
+    if (isNaN(shiftDate.getTime())) {
+      throw new Error("shiftDate must be a valid date");
+    }
+    if (isNaN(shiftEndDate.getTime())) {
+      throw new Error("shiftEndDate must be a valid date");
+    }
     
     const newUserShift = new UserShiftModel({
       userId: userShiftData.userId,
       shiftId: userShiftData.shiftId,
       routeId: userShiftData.routeId,
       recurrenceDates: userShiftData.recurrenceDates,
-      shiftDate: userShiftData.shiftDate,
-      shiftEndDate: userShiftData.shiftEndDate,
+      shiftDate: shiftDate,
+      shiftEndDate: shiftEndDate,
       status: "Incomplete",
       canceledShifts: [],
     });
@@ -720,8 +933,9 @@ export async function createUserShift(userShiftData: {
     await newUserShift.save();
     return "UserShift created successfully";
   } catch (error) {
-    console.error("Error creating UserShift:", error);
-    throw error;
+    const err = error as Error;
+    console.error("Error creating UserShift:", err);
+    throw new Error(`Error creating UserShift: ${err.message}`);
   }
 }
 
