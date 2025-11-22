@@ -13,6 +13,7 @@ import handleSendEmail from "./sendEmail";
 import { IUser } from "@/server/db/models/User";
 import { getVolunteerManagementData } from "@/server/db/actions/User";
 import UserSidebar from "@/app/components/UserSidebar";
+import { errorToast, successToast } from "@/lib/toastConfig";
 
 function ManagementPage() {
     const [search, setSearch] = useState<string>("");
@@ -149,13 +150,13 @@ function ManagementPage() {
                                                             volunteer._id.toString()
                                                         ).then((res) => {
                                                             if (!res) {
-                                                                alert(
+                                                                errorToast(
                                                                     "Failed to send email!"
                                                                 );
                                                                 return;
                                                             }
 
-                                                            alert(
+                                                            successToast(
                                                                 "Email sent successfully!"
                                                             );
                                                             setVolunteers(
@@ -201,8 +202,8 @@ function ManagementPage() {
                                                         <path
                                                             d="M8.5 2.5H2.5C1.96957 2.5 1.46086 2.71071 1.08579 3.08579C0.710714 3.46086 0.5 3.96957 0.5 4.5V14.5C0.5 15.0304 0.710714 15.5391 1.08579 15.9142C1.46086 16.2893 1.96957 16.5 2.5 16.5H12.5C13.0304 16.5 13.5391 16.2893 13.9142 15.9142C14.2893 15.5391 14.5 15.0304 14.5 14.5V8.5M7.5 9.5L16.5 0.5M16.5 0.5H11.5M16.5 0.5V5.5"
                                                             stroke="#59431B"
-                                                            stroke-linecap="round"
-                                                            stroke-linejoin="round"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
                                                         />
                                                     </svg>
                                                 </div>

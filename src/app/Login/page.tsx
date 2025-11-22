@@ -112,7 +112,25 @@ export default function LoginScreen() {
                   <span className="text-gray-400">or</span>
                   <hr className="w-[45%] my-3 ml-5 border-t-2" />
                 </div>
-                <Button type="Google" text="Sign in with Google"></Button>
+                <Button type="Google" text="Sign in with Google"
+                onClick={async () => {
+                  const res = await loginWithGoogle();
+                  if (res.success) {
+                    if ("user" in res && res.user && res.user.isAdmin) {
+                        router.push(
+                          "/AdminNavView/WeeklyShiftDashboard"
+                        );
+                      } else {
+                        router.push(
+                          "/VolunteerNavView/Homepage"
+                        );
+                      }
+                    } else {
+                      setErrorBannerMsg(res.error || "Google sign-in failed");
+                    }
+                  }
+                }
+                ></Button>
                 <div className="flex justify-between mb-7 sm:mb-7">
                   <div className="flex justify-start">
                     <label className="flex items-center cursor-pointer">

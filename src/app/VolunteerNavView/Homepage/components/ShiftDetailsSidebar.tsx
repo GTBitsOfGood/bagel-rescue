@@ -13,7 +13,7 @@ import {
 } from "@/server/db/actions/userShifts";
 import ConfirmationModal from "./ConfirmationModal";
 import "./stylesheet.css";
-import { dateToString } from "@/lib/dateHandler";
+import { dateToString, formattedDateFull } from "@/lib/dateHandler";
 
 
 interface ShiftDetailsSidebarProps {
@@ -234,6 +234,8 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({
     }
   };
 
+  console.log(detailedShift?.shiftStartDate);
+
   return (
     <>
       <div className="main-sidebar">
@@ -309,7 +311,7 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({
                 <div>
                   <h3 className="font-semibold text-[#072B68] mb-2">Date Range</h3>
                   <p className="text-gray-600">
-                    {(detailedShift as any).shiftStartDate && (detailedShift as any).shiftEndDate 
+                    {/* {(detailedShift as any).shiftStartDate && (detailedShift as any).shiftEndDate 
                       ? `${new Date((detailedShift as any).shiftStartDate).toLocaleDateString("en-US", {
                           year: "numeric",
                           month: "long", 
@@ -319,6 +321,10 @@ const ShiftDetailsSidebar: React.FC<ShiftDetailsSidebarProps> = ({
                           month: "long", 
                           day: "numeric"
                         })}`
+                      : "--"
+                    } */}
+                    {(detailedShift as any).shiftStartDate && (detailedShift as any).shiftEndDate 
+                      ? `${formattedDateFull(detailedShift.shiftStartDate)} - ${formattedDateFull(detailedShift.shiftEndDate)}`
                       : "--"
                     }
                   </p>

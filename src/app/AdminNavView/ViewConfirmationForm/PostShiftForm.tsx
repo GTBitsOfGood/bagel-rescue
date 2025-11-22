@@ -7,7 +7,7 @@ import {
     getConfirmationForm,
     postConfirmationForm,
 } from "@/server/db/actions/confirmationForm";
-import { dateToString, stringZToDate } from "@/lib/dateHandler";
+import { dateToString, stringToDate } from "@/lib/dateHandler";
 import AdminSidebar from "@/components/AdminSidebar";
 
 export default function PostShiftForm() {
@@ -48,7 +48,7 @@ export default function PostShiftForm() {
                 comments: form.comments ?? "",
                 routeName: form.routeName ?? "",
                 volunteerName: form.volunteerName ?? "",
-                shiftDate: stringZToDate(form.shiftDate) ?? new Date(),
+                shiftDate: stringToDate(form.shiftDate) ?? new Date(),
             });
             setLoading(false);
         };
