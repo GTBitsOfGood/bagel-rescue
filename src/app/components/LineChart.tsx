@@ -1,58 +1,54 @@
 import { useMemo } from "react";
 import styles from "./LineChart.module.css";
 
-type MonthlyShiftDatum = {
-    dateKey: string;
-    monthLabel: string;
-    shiftTime: number;
-    bagelsDelivered: number;
-    bagelsReceived: number;
-    totalShifts: number;
-};
+interface Data {
+    key: string;
+    value: number;
+}
 
 interface LineChartProps {
     legend: string;
     units: string;
-    monthlyChartData: MonthlyShiftDatum[];
+    monthlyData: Data[];
 }
 
 export const LineChart = ({
     legend,
     units,
-    monthlyChartData,
+    monthlyData,
 }: LineChartProps) => {
-    const maxMonthlyShifts = Math.max(
-        ...monthlyChartData.map((datum) => datum.totalShifts),
+    const maxMonthly = Math.max(
+        ...monthlyData.map((datum) => datum.value),
         1
     );
 
     const chartLinePoints = useMemo(() => {
-        if (monthlyChartData.length === 0) {
+        if (monthlyData.length === 0) {
             return "";
         }
 
-        return monthlyChartData
+        return monthlyData
             .map((datum, index) => {
                 const x =
-                    monthlyChartData.length === 1
+                    monthlyData.length === 1
                         ? 50
-                        : (index / (monthlyChartData.length - 1)) * 196 - 48;
-                const y = 100 - (datum.totalShifts / maxMonthlyShifts) * 87;
+                        : (index / (monthlyData.length - 1)) * 196 - 48;
+                const y = 100 - (datum.value / maxMonthly) * 87;
 
                 return `${x},${y}`;
             })
             .join(" ");
-    }, [maxMonthlyShifts, monthlyChartData]);
+    }, [maxMonthly, monthlyData]);
 
     const averageShifts = Math.round(
-        monthlyChartData.reduce(
-            (total, datum) => total + datum.totalShifts,
+        monthlyData.reduce(
+            (total, datum) => total + datum.value,
             0
-        ) / monthlyChartData.length
+        ) / monthlyData.length
     );
 
     const averageLineY = Math.round(
-        100 - (averageShifts / maxMonthlyShifts) * 87
+        100 - (averageShifts / maxMonthly) * 87
     );
 
     return (
@@ -65,13 +61,13 @@ export const LineChart = ({
                 <div className={styles.yAxis}>
                     <div className={styles.yLabel}>{units}</div>
                     <div className={styles.yScale}>
-                        <span className={styles.yTick}>{maxMonthlyShifts}</span>
+                        <span className={styles.yTick}>{maxMonthly}</span>
                         <span
                             className={styles.yTick}
                             style={{
                                 position: "relative",
                                 top: `-${
-                                    (averageShifts / maxMonthlyShifts - 0.5) *
+                                    (averageShifts / maxMonthly - 0.5) *
                                     74
                                 }px`,
                             }}
@@ -106,20 +102,20 @@ export const LineChart = ({
                             />
 
                             {/* Data points */}
-                            {monthlyChartData.map((datum, index) => {
+                            {monthlyData.map((datum, index) => {
                                 const x =
-                                    monthlyChartData.length === 1
+                                    monthlyData.length === 1
                                         ? 50
                                         : (index /
-                                              (monthlyChartData.length - 1)) *
+                                              (monthlyData.length - 1)) *
                                               196 -
                                           48;
                                 const y =
                                     100 -
-                                    (datum.totalShifts / maxMonthlyShifts) * 87;
+                                    (datum.value / maxMonthly) * 87;
 
                                 return (
-                                    <g key={`${datum.dateKey}-point`}>
+                                    <g key={`${datum.key}-point`}>
                                         {/* Hover area */}
                                         <circle
                                             className={
@@ -143,7 +139,7 @@ export const LineChart = ({
                                             y={y - 6}
                                             textAnchor="middle"
                                         >
-                                            {datum.totalShifts}
+                                            {datum.value}
                                         </text>
                                     </g>
                                 );
@@ -153,12 +149,12 @@ export const LineChart = ({
 
                     {/* X-axis labels at the bottom */}
                     <div className={styles.lineChartLabels}>
-                        {monthlyChartData.map((datum) => (
+                        {monthlyData.map((datum) => (
                             <span
-                                key={`${datum.dateKey}-label`}
+                                key={`${datum.key}-label`}
                                 className={styles.lineChartLabel}
                             >
-                                {datum.monthLabel}
+                                {datum.key}
                             </span>
                         ))}
                     </div>

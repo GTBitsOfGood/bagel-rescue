@@ -6,6 +6,7 @@ import { getUserById } from "@/server/db/actions/User";
 import type { IUser } from "@/server/db/models/User";
 import { BarChart } from "./BarChart";
 import { LineChart } from "./LineChart";
+import { stringToDate } from "@/lib/dateHandler";
 
 interface UserSidebarProps {
     userId: string;
@@ -49,10 +50,10 @@ const mapMonthlyShifts = (
                 return null;
             }
 
-            const parsedDate = new Date(key);
-            const monthLabel = Number.isNaN(parsedDate.getTime())
-                ? key.slice(0, 3)
-                : monthFormatter.format(parsedDate);
+            console.log(stringToDate(key).getUTCMonth());
+
+            const parsedDate = stringToDate(key);
+            const monthLabel = parsedDate.toUTCString().slice(8, 11);
 
             return {
                 dateKey: key,
@@ -367,7 +368,13 @@ const UserSidebar = ({ userId, onClose }: UserSidebarProps) => {
 
                                 <section className={styles.section}>
                                     <LineChart
-                                        monthlyChartData={monthlyChartData}
+                                        monthlyData={monthlyChartData.map(
+                                            (datum) => ({
+                                                key: datum.monthLabel,
+                                                value:
+                                                    datum.totalShifts ?? 0,
+                                            })
+                                        )}
                                         legend="Shift"
                                         units="shifts"
                                     />
