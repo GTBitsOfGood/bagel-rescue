@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import styles from "./LineChart.module.css";
+import { average } from "firebase/firestore";
 
 interface Data {
     key: string;
@@ -13,7 +14,12 @@ interface LineChartProps {
     monthlyData: Data[];
 }
 
-export const LineChart = ({ title, legend, units, monthlyData }: LineChartProps) => {
+export const LineChart = ({
+    title,
+    legend,
+    units,
+    monthlyData,
+}: LineChartProps) => {
     const maxMonthly = Math.max(...monthlyData.map((datum) => datum.value), 1);
 
     const chartLinePoints = useMemo(() => {
@@ -26,7 +32,9 @@ export const LineChart = ({ title, legend, units, monthlyData }: LineChartProps)
                 const x =
                     monthlyData.length === 1
                         ? 50
-                        : (220 / (2 * monthlyData.length) - 60) + (220 / (monthlyData.length)) * index;
+                        : 220 / (2 * monthlyData.length) -
+                          60 +
+                          (220 / monthlyData.length) * index;
                 const y = 100 - (datum.value / maxMonthly) * 87;
 
                 return `${x},${y}`;
@@ -38,6 +46,13 @@ export const LineChart = ({ title, legend, units, monthlyData }: LineChartProps)
         monthlyData.reduce((total, datum) => total + datum.value, 0) /
             monthlyData.length
     );
+
+    const avgOffset =
+        maxMonthly > 0 && Number.isFinite(averageShifts)
+            ? (averageShifts / maxMonthly - 0.5) * 140
+            : 0;
+
+    console.log(averageShifts, maxMonthly);
 
     const averageLineY = Math.round(100 - (averageShifts / maxMonthly) * 87);
 
@@ -56,9 +71,7 @@ export const LineChart = ({ title, legend, units, monthlyData }: LineChartProps)
                             className={styles.yTick}
                             style={{
                                 position: "relative",
-                                top: `-${
-                                    (averageShifts / maxMonthly - 0.5) * 74
-                                }px`,
+                                top: `${-Math.round(avgOffset)}px`,
                             }}
                         >
                             {averageShifts}
@@ -95,7 +108,9 @@ export const LineChart = ({ title, legend, units, monthlyData }: LineChartProps)
                                 const x =
                                     monthlyData.length === 1
                                         ? 50
-                                        : (220 / (2 * monthlyData.length) - 60) + (220 / (monthlyData.length)) * index;
+                                        : 220 / (2 * monthlyData.length) -
+                                          60 +
+                                          (220 / monthlyData.length) * index;
                                 const y = 100 - (datum.value / maxMonthly) * 87;
 
                                 return (
