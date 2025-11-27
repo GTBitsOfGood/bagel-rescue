@@ -66,7 +66,7 @@ export default function AddNewVolunteer() {
     return (
     <div className="flex">
       <AdminSidebar />
-      <div className='flex flex-col flex-1 gap-6 mx-8'>
+      <div className='flex flex-col flex-1 gap-6 mx-8 pb-16'>
         <div onClick={() => router.push('/AdminNavView/ManagementPage')} className='flex mt-8 items-center gap-2 hover:cursor-pointer text-[#57A0D5]'>
             <FontAwesomeIcon icon={faChevronLeft} className="size-4" />
             <span>Back</span>
@@ -134,7 +134,7 @@ export default function AddNewVolunteer() {
                 </div>
                 <div className='flex flex-col gap-2'>
                     <label htmlFor="additionalInfo" className="text-lg font-bold text-[#072B68]">Additional Information</label>
-                    <textarea id="additionalInfo" name="additionalInfo" className="p-4 border-solid border-2 border-[#0F7AFF] rounded-lg text-[#072B68]" placeholder="Enter additional information here"></textarea>
+                    <textarea id="additionalInfo" name="additionalInfo" rows={10} className="p-4 border-solid border-2 border-[#0F7AFF] rounded-lg text-[#072B68]" placeholder="Enter additional information here"></textarea>
                 </div>
             </div>
             <div className='flex flex-col gap-6 grow max-w-[45%]'>

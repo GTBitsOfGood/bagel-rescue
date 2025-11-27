@@ -10,7 +10,8 @@ import { requireUser } from "../auth/auth";
 import { UserShiftModel } from "../models/userShift";
 import RouteModel from "../models/Route";
 import User from "../models/User";
-import { stringToDate } from "@/lib/dateHandler";
+import { dateToString, normalizeDate, stringToDate } from "@/lib/dateHandler";
+import { setMonthlyShifts } from "./User";
 
 
 interface confirmationFormField {
@@ -106,13 +107,45 @@ export async function postConfirmationForm(date: string, userShift: string, form
       console.error("Missing shiftId or confirmationId");
       return;
     }
+    
+    const monthlyShifts: Map<
+            string,
+            {
+                shiftTime: number;
+                bagelsDelivered: number;
+                bagelsReceived: number;
+                totalShifts: number;
+            }
+        > = user.monthlyShifts;
 
-    console.log(confirmationShift)
+    let monthlyShfitDate: Date = stringToDate(date);
+    monthlyShfitDate.setDate(1);
+    monthlyShfitDate = normalizeDate(monthlyShfitDate);
+    const monthlyShfitKey: string = dateToString(monthlyShfitDate);
+    
+    if (!monthlyShifts.has(monthlyShfitKey)) {
+      monthlyShifts.set(monthlyShfitKey, {
+        shiftTime: 0,
+        bagelsDelivered: 0,
+        bagelsReceived: 0,
+        totalShifts: 0
+      });
+    }
+
+    monthlyShifts.set(monthlyShfitKey, {
+      shiftTime: monthlyShifts.get(monthlyShfitKey)!.shiftTime + form.time,
+      bagelsDelivered: monthlyShifts.get(monthlyShfitKey)!.bagelsDelivered + form.numDelivered,
+      bagelsReceived: monthlyShifts.get(monthlyShfitKey)!.bagelsReceived + form.numPickedUp,
+      totalShifts: monthlyShifts.get(monthlyShfitKey)!.totalShifts + 1
+    });
+
+    setMonthlyShifts(user._id.toString(), monthlyShifts);
+
     await updateShiftConfirmation(
       confirmationShift.shiftId.toString(),
       dateKey,
       savedConfirmation._id.toString()
-    );    
+    );
 
   } catch (error) {
     const err = error as Error;

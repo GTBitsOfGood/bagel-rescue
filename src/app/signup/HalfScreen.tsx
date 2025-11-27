@@ -1,6 +1,6 @@
 import BackButton from "./BackButton";
 import Image from 'next/image';
-import bagelsPic from './bagels.png';
+import bagelsPic from '../icon.png';
 
 interface Props {
   caregiver?: boolean;

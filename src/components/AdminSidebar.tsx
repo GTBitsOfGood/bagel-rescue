@@ -12,6 +12,8 @@ import { faRoute } from "@fortawesome/free-solid-svg-icons";
 import { auth } from '../server/db/firebase';
 import { getUserByEmail } from '../server/db/actions/User';
 import { FaPeopleLine } from "react-icons/fa6";
+import Image from 'next/image';
+import bagelsLogo from '@/app/icon.png';
 
 interface NavItem {
   name: string;
@@ -65,7 +67,7 @@ const AdminSidebar: React.FC = () => {
     <div className={`${styles.sidebar} ${isOpen ? styles.open : styles.closed}`}>
       <Link href="/AdminNavView/DailyShiftDashboard">
       <div className={styles.navHeader}>
-        <div className={styles.navIcon}>🥯</div>
+        <Image src={bagelsLogo} className={styles.navIcon} alt="Bagels Logo" />
         <div className={styles.navHeaderText}>Bagel Rescue</div>
         <div className={styles.navTitleText}>Admin Portal</div>
       </div>
@@ -87,6 +89,7 @@ const AdminSidebar: React.FC = () => {
           </Link>
         ))}
       </nav>
+      <hr className={styles.line} />
       <Link href="/AdminNavView/AdminProfile">
       <div className={styles.profile}>
           <div className={styles.avatar}></div>

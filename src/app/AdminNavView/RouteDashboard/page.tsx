@@ -33,7 +33,13 @@ export default function RouteDashboardPage() {
       try {
         const response = await getAllRoutes();
         const data = JSON.parse(response || "[]");
-        setRoutes(data || []);
+        const sortedByName =
+          Array.isArray(data)
+            ? [...data].sort((a: IRoute, b: IRoute) =>
+                a.routeName.localeCompare(b.routeName)
+              )
+            : [];
+        setRoutes(sortedByName);
       } catch (error) {
         if (handleAuthError(error, router)) {
           return; // Auth error handled, user redirected

@@ -7,10 +7,6 @@ export const dateToString = (date: Date) => {
     return formattedDate;
 };
 
-export const stringZToDate = (dateString: string) => {
-    return new Date(dateString);
-};
-
 export const stringToDate = (dateString: string) => {
     return new Date(dateString);
 };
@@ -28,6 +24,21 @@ export const combineDateAndTime = (date: Date, time: Date) => {
 
 export const normalizeDate = (date: Date) => {
     const normalizedDate = new Date(date);
-    normalizedDate.setHours(0, 0, 0, 0);
+    normalizedDate.setUTCHours(0, 0, 0, 0);
     return normalizedDate;
 };
+
+export const formattedDateMDY = (date: Date) => {
+    const year = date.getUTCFullYear();
+    const month = (date.getUTCMonth() + 1).toString().padStart(2, "0");
+    const day = date.getUTCDate().toString().padStart(2, "0");
+    return `${month}/${day}/${year}`;
+};
+
+export const formattedDateFull = (date: Date) => {
+    const year = date.getUTCFullYear();
+    const month = (date.getUTCMonth() + 1)
+    const day = date.getUTCDate().toString().padStart(2, "0");
+    const monthName = new Date(year, month - 1).toLocaleString("en-US", { month: "long" });
+    return `${monthName} ${day}, ${year}`;
+}

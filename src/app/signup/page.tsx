@@ -9,7 +9,11 @@ import { signupWithCredentials } from "@/server/db/actions/Signup";
 import HalfScreen from "./HalfScreen";
 import Button from "./Button";
 import TextInput from "./TextInput";
-import { deleteSignUpToken, validateSignUpToken } from "@/server/db/actions/email";
+import {
+  deleteSignUpToken,
+  validateSignUpToken,
+} from "@/server/db/actions/email";
+import { errorToast } from "@/lib/toastConfig";
 
 function SignupScreenWithParams() {
   const router = useRouter();
@@ -19,7 +23,13 @@ function SignupScreenWithParams() {
   return <SignupScreen token={token} router={router} />;
 }
 
-function SignupScreen({ token, router }: { token: string | null; router: any }) {
+function SignupScreen({
+  token,
+  router,
+}: {
+  token: string | null;
+  router: any;
+}) {
   const { register, formState, trigger, getValues, watch, setValue } = useForm<{
     username: string;
     firstName: string;
@@ -44,15 +54,13 @@ function SignupScreen({ token, router }: { token: string | null; router: any }) 
         setValue("email", email);
       } catch (error) {
         setErrorBannerMsg("Invalid or expired sign-up link.");
-        alert("Invalid or expired sign-up link.");
+        errorToast("Invalid or expired sign-up link.");
         router.push("/");
       }
       setLoading(false);
     };
 
-    
     validateToken();
-    
   }, []);
 
   return (
@@ -69,28 +77,32 @@ function SignupScreen({ token, router }: { token: string | null; router: any }) 
                 <TextInput
                   label="Username"
                   formValue={register("username", {
-                    validate: (v) => (!v ? "Username cannot be empty." : undefined),
+                    validate: (v) =>
+                      !v ? "Username cannot be empty." : undefined,
                   })}
                   error={formState.errors.username?.message}
                 />
                 <TextInput
                   label="First Name"
                   formValue={register("firstName", {
-                    validate: (v) => (!v ? "First Name cannot be empty." : undefined),
+                    validate: (v) =>
+                      !v ? "First Name cannot be empty." : undefined,
                   })}
                   error={formState.errors.firstName?.message}
                 />
                 <TextInput
                   label="Last Name"
                   formValue={register("lastName", {
-                    validate: (v) => (!v ? "Last Name cannot be empty." : undefined),
+                    validate: (v) =>
+                      !v ? "Last Name cannot be empty." : undefined,
                   })}
                   error={formState.errors.lastName?.message}
                 />
                 <TextInput
                   label="Email"
                   formValue={register("email", {
-                    validate: (v) => (!v ? "Email cannot be empty." : undefined),
+                    validate: (v) =>
+                      !v ? "Email cannot be empty." : undefined,
                   })}
                   error={formState.errors.email?.message}
                   placeholder={email ? email : "loading..."}
@@ -99,7 +111,8 @@ function SignupScreen({ token, router }: { token: string | null; router: any }) 
                 <TextInput
                   label="Phone Number"
                   formValue={register("phoneNumber", {
-                    validate: (v) => (!v ? "Phone Number cannot be empty." : undefined),
+                    validate: (v) =>
+                      !v ? "Phone Number cannot be empty." : undefined,
                   })}
                   error={formState.errors.phoneNumber?.message}
                 />
@@ -107,7 +120,8 @@ function SignupScreen({ token, router }: { token: string | null; router: any }) 
                   label="Password"
                   inputType="password"
                   formValue={register("password", {
-                    validate: (v) => (!v ? "Password cannot be empty." : undefined),
+                    validate: (v) =>
+                      !v ? "Password cannot be empty." : undefined,
                   })}
                   error={formState.errors.password?.message}
                 />
@@ -137,8 +151,14 @@ function SignupScreen({ token, router }: { token: string | null; router: any }) 
                           return;
                         }
 
-                        const { username, firstName, phoneNumber, lastName, email, password } =
-                          getValues();
+                        const {
+                          username,
+                          firstName,
+                          phoneNumber,
+                          lastName,
+                          email,
+                          password,
+                        } = getValues();
                         try {
                           const res = await signupWithCredentials(
                             username,
@@ -149,19 +169,21 @@ function SignupScreen({ token, router }: { token: string | null; router: any }) 
                             password
                           );
                           if (!res.success) {
-                            alert("error" in res ? res.error : "");
+                            errorToast("error" in res ? res.error : "");
                             setLoading(false);
                             return;
                           }
 
-                          const deleteToken = await deleteSignUpToken(token as string);
+                          const deleteToken = await deleteSignUpToken(
+                            token as string
+                          );
 
                           if (deleteToken) {
                             router.push("/VolunteerNavView/Homepage");
                           }
                         } catch (err) {
                           console.error(err);
-                          alert(
+                          errorToast(
                             "An unknown error occurred signing up. Check your internet connection."
                           );
                         }

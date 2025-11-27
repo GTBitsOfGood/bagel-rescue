@@ -3,6 +3,7 @@ import {
     GoogleAuthProvider,
     signInWithPopup,
     signInWithCustomToken,
+    signOut
 } from "firebase/auth";
 //import Cookies from "js-cookie"; // For setting cookies
 import { auth } from "../firebase";
@@ -76,21 +77,44 @@ export const loginWithCredentials = async (email: string, password: string) => {
 
 // Login with Google
 export const loginWithGoogle = async () => {
-    return await signInWithPopup(auth, new GoogleAuthProvider())
+    const provider = new GoogleAuthProvider();
+    // Force account picker to show on each attempt
+    provider.setCustomParameters({
+        prompt: 'select_account'
+    });
+    
+    return await signInWithPopup(auth, provider)
         .then(async (res) => {
             const user = res.user;
 
-            // Fetch the token and set it in the cookies
             const token = await user.getIdToken();
+
+            // Send token to server for authentication and whitelisting check
+            const serverRes = await fetch("/api/google-login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token, email: user.email }),
+                credentials: "include",
+            });
+
+            const response = await serverRes.json();
+
+            if (!serverRes.ok) {
+                // Clear Firebase session on server error to prevent cached errors
+                await signOut(auth);
+                return { success: false, error: response.error || "Authentication failed" };
+            }
 
             // Check if the user is new
             const isNewUser =
                 res.user.metadata.creationTime ===
                 res.user.metadata.lastSignInTime;
-            return { success: true, isNewUser };
+            
+            return { success: true, isNewUser, user: response.user };
         })
-        .catch((error) => {
-            console.error("Error during Google login:", error); // Debug log for errors
+        .catch(async (error) => {
+            console.error("Error during Google login:", error);
+            await signOut(auth);
             const errorMsg = "Something went wrong, please try again.";
             return { success: false, error: errorMsg };
         });
