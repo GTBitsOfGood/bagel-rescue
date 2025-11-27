@@ -167,7 +167,7 @@ export const LineChart = ({
                 <div className={styles.legendItem}>
                     <span className={styles.legendDashed} />
                     Average {units} {"("}
-                    {Math.round(10)}
+                    {Math.round(averageShifts)}
                     {")"}
                 </div>
             </div>
