@@ -1,4 +1,4 @@
-import { dayToFull } from "./dayHandler";
+import { dayToThree } from "./dayHandler";
 
 const getWeekRange = (date: Date) => {
     const startOfWeek = new Date(date);
@@ -17,20 +17,18 @@ const findDayInRange = (day: string, startDate: Date, endDate: Date) => {
         return null;
     }
 
-    if (!dayToFull[day.toLowerCase()]) {
+    if (!dayToThree[day.toLowerCase()]) {
         return null;
     }
 
-    const current = dayToFull[day.toLowerCase()];
+    const current = dayToThree[day.toLowerCase()];
 
     // Iterate through each day in the range
     const currentDate = new Date(startDate.getTime());
     const lastDate = new Date(endDate);
 
     while (currentDate <= lastDate) {
-        const currentDay = currentDate
-            .toLocaleString("en-US", { weekday: "long" })
-            .toLowerCase();
+        const currentDay = currentDate.toUTCString().split(",")[0];
 
         if (currentDay === current) {
             return new Date(currentDate);
