@@ -30,6 +30,16 @@ export const dayToFull: { [key: string]: string } = {
     su: "sunday",
 };
 
+export const dayToThree: { [key: string]: string } = {
+    mo: "Mon",
+    tu: "Tue",
+    we: "Wed",
+    th: "Thu",
+    fr: "Fri",
+    sa: "Sat",
+    su: "Sun",
+};
+
 export const dayList: string[] = ["mo", "tu", "we", "th", "fr", "sa", "su"];
 
 export function getDaysInRange(startDate: Date, endDate: Date): string[] {

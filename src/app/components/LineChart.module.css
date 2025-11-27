@@ -50,8 +50,9 @@
     flex-direction: column;
     justify-content: space-between;
     align-items: flex-end;
-    height: 140px;
+    height: 185px;
     padding-bottom: 18px;
+    padding-top: 20px
 }
 
 .yTick {

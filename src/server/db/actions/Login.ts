@@ -33,18 +33,26 @@ export const loginWithCredentials = async (email: string, password: string) => {
                 throw new Error(response.error);
             }
 
-            const mongoUser = await getUserByEmail(email);
+            // Only check for email update if login was successful
+            // Use getUserByEmail only for email update check (still needed for this specific use case)
+            // This is safe as we're already authenticated via the login API
+            try {
+                const mongoUser = await getUserByEmail(email);
 
-            if (
-                mongoUser &&
-                mongoUser._id &&
-                mongoUser.newEmail &&
-                auth.currentUser &&
-                auth.currentUser.email !== mongoUser.email
-            ) {
-                await updateUser(mongoUser._id.toString(), {
-                    email: mongoUser.newEmail,
-                });
+                if (
+                    mongoUser &&
+                    mongoUser._id &&
+                    mongoUser.newEmail &&
+                    auth.currentUser &&
+                    auth.currentUser.email !== mongoUser.email
+                ) {
+                    await updateUser(mongoUser._id.toString(), {
+                        email: mongoUser.newEmail,
+                    });
+                }
+            } catch (error) {
+                // If getUserByEmail fails, continue anyway as it's only for email update
+                console.warn("Failed to check for email update:", error);
             }
 
             return response;
@@ -146,19 +154,21 @@ export const checkAuthStatus = async () => {
 
             if (user) {
                 try {
-                    // User is logged in, get their email
-                    const email = user.email;
+                    // Use the safe API endpoint to check admin status
+                    const res = await fetch("/api/user/is-admin", {
+                        method: "GET",
+                        credentials: "include",
+                    });
 
-                    if (email) {
-                        // Fetch user data from MongoDB to check admin status
-                        const mongoUser = await getUserByEmail(email);
-
+                    if (res.ok) {
+                        const data = await res.json();
                         resolve({
                             isLoggedIn: true,
-                            isAdmin: mongoUser?.isAdmin || false,
+                            isAdmin: data.isAdmin || false,
                         });
                     } else {
-                        resolve({ isLoggedIn: true, isAdmin: false });
+                        // User might not be fully authenticated on server
+                        resolve({ isLoggedIn: false, isAdmin: false });
                     }
                 } catch (error) {
                     console.error("Error checking auth status:", error);
