@@ -5,6 +5,7 @@ import ShiftDetailsSidebar from "./ShiftDetailsSidebar";
 import { UserShiftData } from "@/server/db/actions/userShifts";
 import { dateToString } from "@/lib/dateHandler";
 import { useRouter } from "next/navigation";
+import LoadingFallback from "@/app/components/LoadingFallback";
 
 /**
  * ShiftsTable is a React component that displays a table of shifts.
@@ -67,7 +68,7 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
-        <p>Loading shifts...</p>
+        <LoadingFallback />
       </div>
     );
   }
