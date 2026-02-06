@@ -9,6 +9,7 @@ import {
 } from "@/server/db/actions/confirmationForm";
 import { dateToString, stringToDate } from "@/lib/dateHandler";
 import AdminSidebar from "@/components/AdminSidebar";
+import LoadingFallback from "@/app/components/LoadingFallback";
 
 export default function PostShiftForm() {
     const searchParams = useSearchParams();
@@ -90,7 +91,7 @@ export default function PostShiftForm() {
                         </button>
                         <h1 className={styles.pageTitle}>Post-Shift Form</h1>
                     </div>
-                    {loading && <div>Loading...</div>}
+                    {loading && <LoadingFallback />}
                     {!loading && (
                         <div className={styles.formContainer}>
                             <div className={styles.formHeaderContainer}>

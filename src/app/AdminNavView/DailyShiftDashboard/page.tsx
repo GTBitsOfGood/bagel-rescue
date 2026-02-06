@@ -16,6 +16,7 @@ import styles from "@/app/VolunteerNavView/Homepage/page.module.css";
 import "../WeeklyShiftDashboard/stylesheet.css";
 import { dateToString, getTodayDate, normalizeDate } from "@/lib/dateHandler";
 import { Shift } from "@/server/db/models/shift";
+import LoadingFallback from "@/app/components/LoadingFallback";
 
 // Filter Icon Component
 const FilterIcon = () => (
@@ -47,6 +48,7 @@ function DailyShiftDashboardPage() {
     const [routeToLocationsMap, setRouteToLocationsMap] = useState<
         Map<string, Location[]>
     >(new Map());
+    const [isLoading, setIsLoading] = useState(false);
 
     const AddDays = (e: number) => {
         const newDate = new Date(date);
@@ -67,8 +69,13 @@ function DailyShiftDashboardPage() {
     };
 
     useEffect(() => {
+        setSelectedItem(null)
+    }, [isLoading])
+
+    useEffect(() => {
         const fetchDailyShifts = async (targetDate: Date) => {
             try {
+                setIsLoading(true)
                 const dailyShiftResponse = await getShiftsByDay(targetDate);
                 let dailyShiftData = JSON.parse(dailyShiftResponse || "[]");
                 dailyShiftData = dailyShiftData.filter((shift: any) => {
@@ -81,6 +88,8 @@ function DailyShiftDashboardPage() {
                 setDailyShiftData(dailyShiftData);
             } catch (error) {
                 console.error("Error fetching shifts:", error);
+            } finally {
+                setIsLoading(false)
             }
         };
 
@@ -224,7 +233,13 @@ function DailyShiftDashboardPage() {
                             Open Shifts ({openCount})
                         </button>
                     </div>
-                    <div className="shift-container">{shiftCardsList()}</div>
+                    {isLoading ? (
+                        <>
+                            <LoadingFallback/>
+                        </>
+                    ) : (
+                        <div className="shift-container">{shiftCardsList()}</div>
+                    )}
                     {selectedItem && (
                         <ShiftSidebar
                             shiftSidebarInfo={selectedItem}

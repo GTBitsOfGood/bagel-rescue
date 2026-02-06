@@ -8,6 +8,7 @@ import { signOut, EmailAuthProvider, reauthenticateWithCredential } from 'fireba
 import { getUserByEmail } from '../server/db/actions/User';
 import { updatePassword } from "firebase/auth";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
+import LoadingFallback from '@/app/components/LoadingFallback';
 
 const PasswordForm: React.FC = () => {
   const router = useRouter();
@@ -108,7 +109,11 @@ const PasswordForm: React.FC = () => {
   }
 
   if (loading) {
-    return <div className={styles.container}>Loading profile...</div>;
+    return (
+      <div className={styles.container}>
+        <LoadingFallback />
+      </div>
+    );
   }
 
   return (
