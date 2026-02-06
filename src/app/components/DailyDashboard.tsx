@@ -18,14 +18,14 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ date, AddDays }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [timeFrame, setTimeFrame] = useState("Day");
 
-    const handleTimeFrameChange = (newTimeFrame: string) => {
-        setTimeFrame(newTimeFrame);
-        if (newTimeFrame === 'Day') {
-            router.push('/AdminNavView/DailyShiftDashboard');
-        } else {
-            router.push('/AdminNavView/WeeklyShiftDashboard');
-        }
-    };
+  const handleTimeFrameChange = (newTimeFrame: string) => {
+    setTimeFrame(newTimeFrame);
+    if (newTimeFrame === 'Day') {
+      router.push('/AdminNavView/DailyShiftDashboard');
+    } else {
+      router.push('/AdminNavView/WeeklyShiftDashboard');
+    }
+  };
 
   const debouncedAddDays = useCallback(debounce(AddDays, 300), [AddDays]);
 
