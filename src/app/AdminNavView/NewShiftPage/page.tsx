@@ -506,7 +506,7 @@ export default function NewShiftPage() {
                 disabled={isSubmitting}
                 className="font-bold text-white px-6 py-[.8rem] rounded-xl text-base"
                 style={{
-                  backgroundColor: formComplete() ? "#0F7AFF" : isSubmitting ? "#CCCCCC" : "#A3A3A3",
+                  backgroundColor: isSubmitting ? "#CCCCCC" : formComplete() ? "#0F7AFF" : "#A3A3A3",
                   cursor: isSubmitting ? "not-allowed" : "pointer",
                 }}
               >
