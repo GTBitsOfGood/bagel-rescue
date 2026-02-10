@@ -143,9 +143,7 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({
               </div>
             </div>
             <div className={styles.timeCell}>
-              {formatDate(shift.occurrenceDate)}
-              <br></br>
-              {formatTimeRange(shift.startTime, shift.endTime)}
+              <br />
             </div>
             <div className={styles.areaCell}>{shift.area}</div>
             <div className={styles.statusCell}>
