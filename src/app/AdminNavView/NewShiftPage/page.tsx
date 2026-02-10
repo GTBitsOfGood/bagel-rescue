@@ -322,6 +322,12 @@ export default function NewShiftPage() {
 
     return null;
   };
+  const formComplete = () => {
+    if (!startTime.trim() || !endTime.trim() || (dateRange && (!startDate.trim() || !endDate.trim())) || routes.length === 0 || volunteers.length === 0 || selectedDays.length === 0) {
+      return false;
+    }
+    return true;
+  }
 
   async function saveEdits() {
     // Prevent duplicate submissions
@@ -375,6 +381,8 @@ export default function NewShiftPage() {
       setIsSubmitting(false);
       return;
     }
+
+
 
     const selectedRoute = routes[0]._id;
 
@@ -498,7 +506,7 @@ export default function NewShiftPage() {
                 disabled={isSubmitting}
                 className="font-bold text-white px-6 py-[.8rem] rounded-xl text-base"
                 style={{
-                  backgroundColor: isSubmitting ? "#CCCCCC" : "#A3A3A3",
+                  backgroundColor: isSubmitting ? "#CCCCCC" : formComplete() ? "#0F7AFF" : "#A3A3A3",
                   cursor: isSubmitting ? "not-allowed" : "pointer",
                 }}
               >
@@ -593,6 +601,7 @@ export default function NewShiftPage() {
                       type="date"
                       placeholder="Enter additional information here"
                       value={startDate}
+                      disabled = {!dateRange}
                       onChange={(e) =>
                         dateRange ? setStartDate(e.target.value) : null
                       }
@@ -614,6 +623,7 @@ export default function NewShiftPage() {
                       type="date"
                       placeholder="Enter additional information here"
                       value={endDate}
+                      disabled = {!dateRange}
                       onChange={(e) =>
                         dateRange ? setEndDate(e.target.value) : null
                       }
