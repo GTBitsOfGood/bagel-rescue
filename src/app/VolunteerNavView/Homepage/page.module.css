@@ -380,7 +380,7 @@
 /* Header section */
 .tableHeader {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 0.5fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr 0.5fr;
   background-color: #C6E3F9;
   border-radius: 0.5rem;
   margin: 1rem 2rem 0 2rem;
@@ -410,7 +410,7 @@
 
 .tableRow {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 0.5fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr 0.5fr;
   align-items: center;
   min-height: 3rem;
   color: #072B68;
