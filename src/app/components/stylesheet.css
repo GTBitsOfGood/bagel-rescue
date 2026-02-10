@@ -1,7 +1,7 @@
 .main-sidebar {
     position: fixed; 
     right: 0;
-    top: 99px;     
+    top: 125px;     
     width: 30rem;     
     z-index: 50;
     background: #fff;
@@ -10,7 +10,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    height: calc(100% - 99px);
+    height: calc(100% - 125px);
   
     transition: transform 0.3s ease-in-out;
     transform: translateX(0); /* visible */

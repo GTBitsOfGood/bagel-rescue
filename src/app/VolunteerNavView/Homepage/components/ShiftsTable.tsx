@@ -52,6 +52,16 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({
     router.push(`/VolunteerNavView/ConfirmationForm?userShiftId=${shift.id}&date=${date.toLocaleDateString("en-CA")}`);
   }
 
+  const formatDate = (date: Date | undefined) => {
+    return date ?
+    date.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+    }) :
+    "";
+  }
+
   // Format time range for display (e.g. "10:00 AM - 12:00 PM")
   const formatTimeRange = (startTime: Date, endTime: Date) => {
     const formatTime = (date: Date) => {
@@ -111,7 +121,6 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({
         <div className={styles.headerCell}>Time</div>
         <div className={styles.headerCell}>Area</div>
         <div className={styles.headerCell}>Status</div>
-        <div className={styles.headerCell}>Shift Date</div>
         <div className={styles.headerCell}></div>
       </div>
       
@@ -134,6 +143,8 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({
               </div>
             </div>
             <div className={styles.timeCell}>
+              {formatDate(shift.occurrenceDate)}
+              <br />
               {formatTimeRange(shift.startTime, shift.endTime)}
             </div>
             <div className={styles.areaCell}>{shift.area}</div>
@@ -158,9 +169,6 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({
                   }
                 </span>
               </button>
-            </div>
-            <div className={styles.routeNameCell}>
-              {shift.occurrenceDate ? dateToString(shift.occurrenceDate) : ""}
             </div>
             <div>
               {/* Ellipsis button - this will be implemented in the future */}

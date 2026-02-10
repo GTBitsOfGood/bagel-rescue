@@ -380,7 +380,7 @@
 /* Header section */
 .tableHeader {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 0.5fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr 0.5fr;
   background-color: #C6E3F9;
   border-radius: 0.5rem;
   margin: 1rem 2rem 0 2rem;
@@ -399,7 +399,7 @@
 .tableBody {
   background-color: white;
   border-radius: 0.5rem;
-  margin: 0 2rem 0 2rem;
+  margin: 1rem 2rem 0 2rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   max-height: 50vh;
@@ -410,7 +410,7 @@
 
 .tableRow {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 0.5fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr 0.5fr;
   align-items: center;
   min-height: 3rem;
   color: #072B68;
