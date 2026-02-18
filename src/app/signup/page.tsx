@@ -14,6 +14,7 @@ import {
   validateSignUpToken,
 } from "@/server/db/actions/email";
 import { errorToast } from "@/lib/toastConfig";
+import BackButton from "../components/BackButton";
 
 function SignupScreenWithParams() {
   const router = useRouter();
@@ -47,6 +48,16 @@ function SignupScreen({
   useEffect(() => {
     const validateToken = async () => {
       try {
+
+        // DELETE THIS
+        if (!token) {
+          // Bypass for front-end work: no token = show form with empty email
+          setEmail("");
+          setLoading(false);
+          return;
+        }
+        ////////
+
         if (!token) throw new Error("Invalid or missing token");
 
         const email = await validateSignUpToken(token);
@@ -67,12 +78,16 @@ function SignupScreen({
     <div className="flex bg-white h-screen">
       <div className="h-screen w-screen">
         <div className="flex flex-col w-full h-full sm:flex-row">
-          <HalfScreen />
-          <div className="flex flex-col w-full h-full justify-center items-center mt-8 sm:mt-0 sm:w-1/2">
+          <HalfScreen/>
+          <div className="flex flex-col w-full h-full justify-center items-center mt-8 sm:mt-0 sm:w-1/2 relative">
+            <div className="absolute top-4 left-4 sm:top-6 sm:left-6">
+              <BackButton onClick={() => router.push('/Login')} />
+            </div>
             <div className="flex flex-col w-[90%] sm:w-[60%] sm:items-center">
-              <p className="text-primary-text text-2xl font-bold font-opensans mb-10 sm:order-1">
+              <div className="text-primary-text text-2xl font-bold font-opensans mb-10 sm:order-1">
+      
                 Volunteer Sign Up
-              </p>
+              </div>
               <div className="flex flex-col w-full sm:order-2">
                 <TextInput
                   label="Username"

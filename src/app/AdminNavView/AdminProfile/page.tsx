@@ -3,6 +3,8 @@
 import AdminSidebar from '../../../components/AdminSidebar';
 import AdminProfileForm from '../../../components/AdminProfileForm';
 import styles from './page.module.css';
+import BackButton from '@/app/components/BackButton';
+
 const AdminProfile: React.FC = () => {
   return (
     <div className={styles.container}>
@@ -11,12 +13,7 @@ const AdminProfile: React.FC = () => {
       <div className={styles.layout}>  
       <div className={styles.mainContent}>
 
-      <button 
-            className={styles.backButton}
-            onClick={() => window.history.back()}
-          >
-            &lt; Back
-          </button>
+      <BackButton onClick={() => window.history.back()} />
         <div className={styles.header}>
           <h1 className={styles.pageTitle}>Account</h1>
         </div>

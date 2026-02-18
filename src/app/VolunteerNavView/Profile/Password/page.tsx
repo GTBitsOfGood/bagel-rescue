@@ -1,5 +1,6 @@
 "use client";
 
+import BackButton from '@/app/components/BackButton';
 import PasswordForm from '../../../../components/PasswordForm';
 import Sidebar from "../../../../components/Sidebar";
 import styles from "./page.module.css";
@@ -11,9 +12,7 @@ const ChangePassword: React.FC = () => {
 
       <div className={styles.layout}>
         <div className={styles.mainContent}>
-          <button className={styles.backButton} onClick={() => window.history.back()}>
-            &lt; Back
-          </button>
+          <BackButton onClick={() => window.history.back()}/>
           <div className={styles.header}>
             <h1 className={styles.pageTitle}>Account</h1>
           </div>

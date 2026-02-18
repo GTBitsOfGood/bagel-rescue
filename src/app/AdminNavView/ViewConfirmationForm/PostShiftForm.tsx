@@ -10,6 +10,7 @@ import {
 import { dateToString, stringToDate } from "@/lib/dateHandler";
 import AdminSidebar from "@/components/AdminSidebar";
 import LoadingFallback from "@/app/components/LoadingFallback";
+import BackButton from "@/app/components/BackButton";
 
 export default function PostShiftForm() {
     const searchParams = useSearchParams();
@@ -63,32 +64,7 @@ export default function PostShiftForm() {
                 <AdminSidebar />
                 <div className={styles.mainContent}>
                     <div className={styles.header}>
-                        <button
-                            onClick={() =>
-                                router.push(
-                                    returnRoute ||
-                                        "/AdminNavView/DailyShiftDashboard"
-                                )
-                            }
-                            className={styles.backButton}
-                        >
-                            <svg
-                                width="5"
-                                height="8"
-                                viewBox="0 0 11 16"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path
-                                    d="M9.5 1.5L1.5 8L9.5 14.5"
-                                    stroke="#072B68"
-                                    stroke-width="3"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                />
-                            </svg>
-                            Back
-                        </button>
+                        <BackButton onClick={() => router.push(returnRoute ||"/AdminNavView/DailyShiftDashboard")}/>
                         <h1 className={styles.pageTitle}>Post-Shift Form</h1>
                     </div>
                     {loading && <LoadingFallback />}
