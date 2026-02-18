@@ -20,6 +20,7 @@ import HalfScreen from "./HalfScreen";
 import Button from "./Button";
 import TextInput from "./TextInput";
 import ErrorBanner from "./ErrorBanner";
+import LoadingFallback from "../components/LoadingFallback";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -29,6 +30,7 @@ export default function LoginScreen() {
   }>();
   const [errorBannerMsg, setErrorBannerMsg] = useState("");
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Clear error when user starts typing
   const clearError = () => {
@@ -162,14 +164,19 @@ export default function LoginScreen() {
                   </button>
                 </div>
                 <div className="mb-3 sm:mb-1">
-                  <Button
+                  {loading ? <LoadingFallback/> :
+                    <Button
                     text="Continue"
                     onClick={async () => {
+                      setLoading(true);
                       setErrorBannerMsg("");
                       const isValid = await trigger(undefined, {
                         shouldFocus: true,
                       });
-                      if (!isValid) return;
+                      if (!isValid) {
+                        setLoading(false);
+                        return;
+                      }
 
                       const { email, password } = getValues();
 
@@ -199,9 +206,11 @@ export default function LoginScreen() {
                         setErrorBannerMsg(
                           "An unknown error occurred logging in. Please check your internet connection and try again."
                         );
+                      } finally {
+                        setLoading(false);
                       }
                     }}
-                  />
+                  />}
                 </div>
                 <div className="mb-1 flex justify-center items-center"></div>
                 <div className="flex flex-row justify-center mb-8 sm:mb-1">
