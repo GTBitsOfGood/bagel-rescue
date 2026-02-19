@@ -178,6 +178,7 @@ function DailyShiftDashboardPage() {
                             year: "numeric",
                         })}
                         onOpenSidebar={() => handleShiftCardClick(shift)}
+                        isSelected={selectedItem?.shift._id === shift._id}
                     />
                 );
             })

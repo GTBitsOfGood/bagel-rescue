@@ -129,7 +129,7 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({
         {shifts.map((shift: UserShiftData) => {
           const status = shift.confirmationForms[shift.occurrenceDate ? dateToString(shift.occurrenceDate) : ""] ? "Complete" : "Incomplete";
           return (
-          <div key={shift.id} className={styles.tableRow} onClick={() => handleRowClick(shift)}>
+          <div key={shift.id} className={`${styles.tableRow} ${isSidebarOpen && selectedShift?.id === shift.id ? styles.tableRowSelected : ''}`} onClick={() => handleRowClick(shift)}>
             <div className={styles.routeNameCell}>
               <div className="flex items-center gap-2.5">
                 {shift.hasComment?.includes(dateToString(date)) && (

@@ -270,6 +270,7 @@ function WeeklyShiftDashboard() {
                                 handleShiftCardClick(shift, new Date(shiftDate))
                             }
                             onDeleteShift={handleDeleteShift}
+                            isSelected={selectedItem?.shift._id === shift._id && selectedItem?.shiftDate != null && dateToString(selectedItem.shiftDate) === dateToString(shiftDate)}
                         />
                     );
                 })
