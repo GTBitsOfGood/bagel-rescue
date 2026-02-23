@@ -49,14 +49,6 @@ function SignupScreen({
     const validateToken = async () => {
       try {
 
-        // DELETE THIS
-        if (!token) {
-          // Bypass for front-end work: no token = show form with empty email
-          setEmail("");
-          setLoading(false);
-          return;
-        }
-        ////////
 
         if (!token) throw new Error("Invalid or missing token");
 

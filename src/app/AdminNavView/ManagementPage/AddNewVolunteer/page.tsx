@@ -67,7 +67,7 @@ export default function AddNewVolunteer() {
     return (
     <div className="flex">
       <AdminSidebar />
-      <div className='flex flex-col flex-1 gap-6 mx-8 p-8'>
+      <div className='flex flex-col flex-1 gap-6 mx-8 pb-16 pt-8'>
         <BackButton onClick={() => router.push('/AdminNavView/ManagementPage')} />
         <div className='flex justify-between items-center'>
             <h1 className="font-bold text-4xl text-[#072B68]">Add a Volunteer</h1>

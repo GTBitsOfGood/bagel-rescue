@@ -21,6 +21,7 @@ import Button from "./Button";
 import TextInput from "./TextInput";
 import ErrorBanner from "./ErrorBanner";
 import LoadingFallback from "../components/LoadingFallback";
+import MiniSpinner from "@/components/MiniSpinner";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -164,9 +165,10 @@ export default function LoginScreen() {
                   </button>
                 </div>
                 <div className="mb-3 sm:mb-1">
-                  {loading ? <LoadingFallback/> :
                     <Button
-                    text="Continue"
+                    text={loading ? "" : "Continue"}
+                    icon={loading ? <MiniSpinner /> : undefined}
+                    label="Continue"
                     onClick={async () => {
                       setLoading(true);
                       setErrorBannerMsg("");
@@ -210,7 +212,7 @@ export default function LoginScreen() {
                         setLoading(false);
                       }
                     }}
-                  />}
+                  />
                 </div>
                 <div className="mb-1 flex justify-center items-center"></div>
                 <div className="flex flex-row justify-center mb-8 sm:mb-1">
