@@ -48,8 +48,6 @@ function SignupScreen({
   useEffect(() => {
     const validateToken = async () => {
       try {
-
-
         if (!token) throw new Error("Invalid or missing token");
 
         const email = await validateSignUpToken(token);

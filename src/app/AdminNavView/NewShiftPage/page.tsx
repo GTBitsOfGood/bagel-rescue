@@ -396,8 +396,6 @@ export default function NewShiftPage() {
       return;
     }
 
-
-
     const selectedRoute = routes[0]._id;
 
     const [startHour, startMinute] = timeIntoHoursandMinutes(startTime);
