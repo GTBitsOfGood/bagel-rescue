@@ -6,6 +6,7 @@ import styles from "./page.module.css";
 import { getShift } from "@/server/db/actions/shift";
 import { Shift } from "@/server/db/models/shift";
 import Sidebar from "@/components/Sidebar";
+import BackButton from "@/app/components/BackButton";
 import { postConfirmationForm } from "@/server/db/actions/confirmationForm";
 import { dateToString } from "@/lib/dateHandler";
 import { errorToast, successToast } from "@/lib/toastConfig";
@@ -121,24 +122,7 @@ export default function PostShiftForm() {
         <div className={styles.mainContent}>
           {/* Header */}
           <div className={styles.header}>
-            <button onClick={handleBackClick} className={styles.backButton}>
-              <svg
-                width="11"
-                height="16"
-                viewBox="0 0 11 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M9.5 1.5L1.5 8L9.5 14.5"
-                  stroke="#072B68"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Back
-            </button>
+            <BackButton onClick={handleBackClick} />
             <h1 className={styles.pageTitle}>Post-Shift Form</h1>
           </div>
 

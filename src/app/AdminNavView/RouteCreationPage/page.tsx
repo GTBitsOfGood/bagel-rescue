@@ -18,6 +18,7 @@ import { ILocation } from "@/server/db/models/Route";
 import { getRoute, createRoute } from "@/server/db/actions/Route";
 import AdminSidebar from "../../../components/AdminSidebar";
 import { errorToast, successToast } from "@/lib/toastConfig";
+import BackButton from "@/app/components/BackButton";
 
 function RouteCreationPage() {
   const [routeName, setRouteName] = useState<string>("");
@@ -320,10 +321,7 @@ function RouteCreationPage() {
       <AdminSidebar />
       <div className="flex flex-col flex-1">
         <div className="container">
-          <button className="back-btn" onClick={() => window.history.back()}>
-            <FontAwesomeIcon icon={faAngleLeft} />
-            <p>Back</p>
-          </button>
+          <BackButton onClick={() => window.history.back()}/>
           <div className="header">
             <p className="header-text">Create a Route</p>
             <button

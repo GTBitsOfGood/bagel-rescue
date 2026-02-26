@@ -8,6 +8,7 @@ import Select from "react-select";
 import locations from "@/lib/locations";
 import { createUser } from "@/server/db/actions/User";
 import { IUser } from "@/server/db/models/User";
+import BackButton from "@/app/components/BackButton";
 
 export default function AddNewVolunteer() {
     const router = useRouter();
@@ -66,11 +67,8 @@ export default function AddNewVolunteer() {
     return (
     <div className="flex">
       <AdminSidebar />
-      <div className='flex flex-col flex-1 gap-6 mx-8 pb-16'>
-        <div onClick={() => router.push('/AdminNavView/ManagementPage')} className='flex mt-8 items-center gap-2 hover:cursor-pointer text-[#57A0D5]'>
-            <FontAwesomeIcon icon={faChevronLeft} className="size-4" />
-            <span>Back</span>
-        </div>
+      <div className='flex flex-col flex-1 gap-6 mx-8 pb-16 pt-8'>
+        <BackButton onClick={() => router.push('/AdminNavView/ManagementPage')} />
         <div className='flex justify-between items-center'>
             <h1 className="font-bold text-4xl text-[#072B68]">Add a Volunteer</h1>
             <button onClick={() => formRef.current?.requestSubmit()} className={`font-bold text-white ${isComplete ? 'bg-[#0F7AFF] hover:opacity-75 active:opacity-100' : 'bg-[#A3A3A3] cursor-not-allowed'} p-4 rounded-xl`}>Complete Profile</button>
