@@ -67,8 +67,6 @@ export default function ShiftCard({
     const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
     const ellipsisRef = useRef<HTMLButtonElement>(null);
 
-    console.log("Dates: ", startDate, endDate);
-
     const startDateObj = new Date(startDate);
     const endDateObj = new Date(endDate);
 

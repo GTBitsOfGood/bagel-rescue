@@ -17,6 +17,7 @@ import "../WeeklyShiftDashboard/stylesheet.css";
 import { dateToString, getTodayDate, normalizeDate } from "@/lib/dateHandler";
 import { Shift } from "@/server/db/models/shift";
 import LoadingFallback from "@/app/components/LoadingFallback";
+import { usePathname } from "next/navigation";
 
 // Filter Icon Component
 const FilterIcon = () => (
@@ -35,6 +36,7 @@ const FilterIcon = () => (
 );
 
 function DailyShiftDashboardPage() {
+    const pathname = usePathname();
     const [shiftSearchText, setShiftSearchText] = useState("");
     const [date, setDate] = useState<Date>(getTodayDate());
     const [dailyShiftData, setDailyShiftData] = useState([]);
@@ -71,6 +73,16 @@ function DailyShiftDashboardPage() {
     useEffect(() => {
         setSelectedItem(null)
     }, [isLoading])
+
+    useEffect(() => {
+        setSelectedItem(null);
+    }, [date, activeTab]);
+
+    useEffect(() => {
+        if (pathname === "/AdminNavView/DailyShiftDashboard") {
+            setSelectedItem(null);
+        }
+    }, [pathname]);
 
     useEffect(() => {
         const fetchDailyShifts = async (targetDate: Date) => {
@@ -142,6 +154,14 @@ function DailyShiftDashboardPage() {
     };
 
     const shiftCardsList = () => {
+        const isShiftCardSelected = (shift: Shift) => {
+            if (!selectedItem || !selectedItem.shift?._id || !shift?._id) {
+                return false;
+            }
+
+            return String(selectedItem.shift._id) === String(shift._id);
+        };
+
         return dailyShiftData
             .map((shift: any, shiftIndex) => {
                 // Filter by status
@@ -178,7 +198,7 @@ function DailyShiftDashboardPage() {
                             year: "numeric",
                         })}
                         onOpenSidebar={() => handleShiftCardClick(shift)}
-                        isSelected={selectedItem?.shift._id === shift._id}
+                        isSelected={isShiftCardSelected(shift)}
                     />
                 );
             })

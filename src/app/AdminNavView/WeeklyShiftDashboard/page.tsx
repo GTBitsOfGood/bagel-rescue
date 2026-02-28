@@ -4,7 +4,7 @@ import "./stylesheet.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { Shift } from "@/server/db/models/shift";
 import {
@@ -46,6 +46,7 @@ const FilterIcon = () => (
 
 function WeeklyShiftDashboard() {
     const router = useRouter();
+    const pathname = usePathname();
     const [shiftSearchText, setShiftSearchText] = useState("");
     const [shiftsPerRoute, setShiftsPerRoute] = useState<Map<string, Shift[]>>(
         new Map()
@@ -129,6 +130,16 @@ function WeeklyShiftDashboard() {
     }, [isLoading])
 
     useEffect(() => {
+        setSelectedItem(null);
+    }, [date, activeTab]);
+
+    useEffect(() => {
+        if (pathname === "/AdminNavView/WeeklyShiftDashboard") {
+            setSelectedItem(null);
+        }
+    }, [pathname]);
+
+    useEffect(() => {
         fetchShifts();
         fetchWeeklyShifts(startOfWeek, endOfWeek);
     }, [date]);
@@ -201,6 +212,22 @@ function WeeklyShiftDashboard() {
         });
     };
 
+    const isShiftCardSelected = (shift: Shift, shiftDate: Date) => {
+        if (
+            !selectedItem ||
+            !selectedItem.shift?._id ||
+            !shift?._id ||
+            !selectedItem.shiftDate
+        ) {
+            return false;
+        }
+
+        return (
+            String(selectedItem.shift._id) === String(shift._id) &&
+            dateToString(selectedItem.shiftDate) === dateToString(shiftDate)
+        );
+    };
+
     // TODO: Can definitely be made more efficient - probably not need
     // to pass entire volunteersPerShift into every Route card
     const routesList = () => {
@@ -270,7 +297,7 @@ function WeeklyShiftDashboard() {
                                 handleShiftCardClick(shift, new Date(shiftDate))
                             }
                             onDeleteShift={handleDeleteShift}
-                            isSelected={selectedItem?.shift._id === shift._id && selectedItem?.shiftDate != null && dateToString(selectedItem.shiftDate) === dateToString(shiftDate)}
+                            isSelected={isShiftCardSelected(shift, shiftDate)}
                         />
                     );
                 })

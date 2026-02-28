@@ -121,11 +121,11 @@
   width: 100%;
   background-color: white;
   border: 1px solid;
-  border-color: var(--Bagel-Rescue-Blue);
+  border-color: var(--Bagel-Rescue-Light-Grey);
   margin-top: 5px;
 }
 
 .shift-container > *:nth-child(n + 2) {
   border-top: 1px solid;
-  border-color: var(--Bagel-Rescue-Blue);
+  border-color: var(--Bagel-Rescue-Light-Grey);
 }

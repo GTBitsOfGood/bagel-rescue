@@ -8,22 +8,26 @@
   flex-direction: column;
   gap: 14px;
   position: relative;
-  border-left: 3px solid transparent;
+  border-left: 0.3rem solid transparent;
   cursor: pointer;
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-.shift-card:hover {
-  background-color: #f8fafc;
+.shift-card:not(.shift-card-selected) {
+  border-left-color: transparent;
+}
+
+.shift-card:not(.shift-card-selected):hover {
+  background-color: var(--Bagel-Rescue-Surface-Hover);
 }
 
 .shift-card-selected {
   border-left-color: var(--Bagel-Rescue-Blue);
-  background-color: #f0f7ff;
+  background-color: var(--Bagel-Rescue-Surface-Selected);
 }
 
 .shift-card-selected:hover {
-  background-color: #e8f1fd;
+  background-color: var(--Bagel-Rescue-Surface-Selected-Hover);
 }
 
 .shift-card * {
