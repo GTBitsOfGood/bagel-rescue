@@ -156,7 +156,7 @@ export default function RouteDashboardPage() {
         setRoutes((prev) =>
           prev.map((r) =>
             r._id.toString() === editingRoute._id.toString()
-              ? { ...r, routeName: updated.routeName, additionalInfo: updated.additionalInfo }
+              ? ({ ...r, routeName: updated.routeName, additionalInfo: updated.additionalInfo } as IRoute)
               : r
           )
         );
