@@ -319,7 +319,8 @@ const MyShiftsPage: React.FC = () => {
           </button>
         </div>
 
-        <ShiftsTable 
+        <ShiftsTable
+          key={activeTab}
           shifts={activeTab === "myShifts" ? shifts : openShifts}
           date={currentDate}
           loading={loading}
