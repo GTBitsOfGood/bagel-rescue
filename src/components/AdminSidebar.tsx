@@ -21,7 +21,7 @@ interface NavItem {
   icon: JSX.Element;
 }
 
-const DASHBOARD_VIEW = 'dashboardView';
+const DASHBOARD_VIEW = "adminDashboardView";
 
 const navItems: NavItem[] = [
   { name: 'Dashboard', href: '/AdminNavView/DailyShiftDashboard', icon: <FiHome size={20} strokeWidth={1.5} /> },

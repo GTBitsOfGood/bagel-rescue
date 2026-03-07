@@ -28,7 +28,7 @@ import { dateToString, normalizeDate } from "@/lib/dateHandler";
 import styles from "@/app/VolunteerNavView/Homepage/page.module.css";
 import LoadingFallback from "@/app/components/LoadingFallback";
 
-const DASHBOARD_VIEW = "dashboardView";
+const DASHBOARD_VIEW = "adminDashboardView";
 
 // Filter Icon Component
 const FilterIcon = () => (
@@ -69,7 +69,7 @@ function WeeklyShiftDashboard() {
     >(new Map());
     const [isLoading, setIsLoading] = useState(false);
 
-    const DASHBOARD_DATE = 'dashboardDateWeekView';
+    const DASHBOARD_DATE = "adminDashboardDate";
     
     const getDateFromStorage = (): Date => {
         if (typeof window === "undefined") {
@@ -83,7 +83,6 @@ function WeeklyShiftDashboard() {
     };
 
     const [date, setDate] = useState<Date>(() => new Date());
-    const [mounted, setMounted] = useState(false);
     const { startOfWeek, endOfWeek } = getWeekRange(date);
 
     useEffect(() => {
@@ -93,7 +92,6 @@ function WeeklyShiftDashboard() {
             router.replace("/AdminNavView/DailyShiftDashboard");
             return;
         }
-        setMounted(true);
     }, [router]);
 
     const AddDays = (e: number) => {

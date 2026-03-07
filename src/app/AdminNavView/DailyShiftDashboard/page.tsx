@@ -19,7 +19,7 @@ import { dateToString, getTodayDate, normalizeDate } from "@/lib/dateHandler";
 import { Shift } from "@/server/db/models/shift";
 import LoadingFallback from "@/app/components/LoadingFallback";
 
-const DASHBOARD_VIEW = "dashboardView";
+const DASHBOARD_VIEW = "adminDashboardView";
 
 // Filter Icon Component
 const FilterIcon = () => (
@@ -52,7 +52,7 @@ function DailyShiftDashboardPage() {
         Map<string, Location[]>
     >(new Map());
     const [isLoading, setIsLoading] = useState(false);
-    const DASHBOARD_DATE = "dashboardDateDayView"
+    const DASHBOARD_DATE = "adminDashboardDate";
 
     const getDateFromStorage = (): Date => {
         if (typeof window === "undefined") {
@@ -65,7 +65,6 @@ function DailyShiftDashboardPage() {
         return new Date(storedDate);
     };
     const [date, setDate] = useState<Date>(() => new Date());
-    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         if (typeof window === "undefined") return;
@@ -74,7 +73,6 @@ function DailyShiftDashboardPage() {
             router.replace("/AdminNavView/WeeklyShiftDashboard");
             return;
         }
-        setMounted(true);
     }, [router]);
 
     const AddDays = (e: number) => {

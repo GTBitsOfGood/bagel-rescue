@@ -17,7 +17,7 @@ interface WeeklyDashboardHeaderProps {
 const WeeklyDashboardHeader: React.FC<WeeklyDashboardHeaderProps> = ({ date, AddDays }) => {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const DASHBOARD_VIEW = 'dashboardView';
+  const DASHBOARD_VIEW = "adminDashboardView";
 
   const handleTimeFrameChange = (newTimeFrame: string) => {
     if (newTimeFrame === 'Day') {

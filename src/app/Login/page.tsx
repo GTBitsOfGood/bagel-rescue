@@ -23,6 +23,14 @@ import ErrorBanner from "./ErrorBanner";
 import LoadingFallback from "../components/LoadingFallback";
 import MiniSpinner from "@/components/MiniSpinner";
 
+const DASHBOARD_VIEW = "adminDashboardView";
+
+const getAdminDashboardPath = () =>
+  typeof window !== "undefined" &&
+  localStorage.getItem(DASHBOARD_VIEW) === "daily"
+    ? "/AdminNavView/DailyShiftDashboard"
+    : "/AdminNavView/WeeklyShiftDashboard";
+
 export default function LoginScreen() {
   const router = useRouter();
   const { register, formState, trigger, getValues } = useForm<{
@@ -51,9 +59,7 @@ export default function LoginScreen() {
       if (isLoggedIn) {
         // Redirect to appropriate page based on user role
         router.push(
-          isAdmin
-            ? "/AdminNavView/WeeklyShiftDashboard"
-            : "/VolunteerNavView/Homepage"
+          isAdmin ? getAdminDashboardPath() : "/VolunteerNavView/Homepage"
         );
       }
     };
@@ -120,9 +126,7 @@ export default function LoginScreen() {
                   const res = await loginWithGoogle();
                   if (res.success) {
                     if ("user" in res && res.user && res.user.isAdmin) {
-                        router.push(
-                          "/AdminNavView/WeeklyShiftDashboard"
-                        );
+                        router.push(getAdminDashboardPath());
                       } else {
                         router.push(
                           "/VolunteerNavView/Homepage"
@@ -196,7 +200,7 @@ export default function LoginScreen() {
                           if ("isAdmin" in res) {
                             router.push(
                               res.isAdmin === "admin"
-                                ? "/AdminNavView/WeeklyShiftDashboard"
+                                ? getAdminDashboardPath()
                                 : "/VolunteerNavView/Homepage"
                             );
                           }

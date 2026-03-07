@@ -77,13 +77,11 @@ const MyShiftsPage: React.FC = () => {
     return (stored === "Week" ? "Week" : "Day");
   };
   const [viewMode, setViewMode] = useState<ViewMode>(() => "Day");
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     setCurrentDate(getDateFromStorage());
     setViewMode(getViewModeFromStorage());
-    setMounted(true);
   }, []);
 
   const [activeTab, setActiveTab] = useState<"myShifts" | "openShifts">("myShifts");

@@ -17,7 +17,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ date, AddDays }) => {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [timeFrame, setTimeFrame] = useState("Day");
-  const DASHBOARD_VIEW = 'dashboardView';
+  const DASHBOARD_VIEW = "adminDashboardView";
 
 
   const handleTimeFrameChange = (newTimeFrame: string) => {
