@@ -20,6 +20,9 @@ import { auth } from "@/server/db/firebase";
 import { dateToString, getTodayDate } from "@/lib/dateHandler";
 import { findDayInRange } from "@/lib/dateRangeHandler";
 
+const DASHBOARD_VIEW = "volunteerDashboardView";
+const DASHBOARD_DATE = "volunteerDashboardDate";
+
 // Filter Icon Component
 const FilterIcon = () => (
   <svg width="16" height="13" viewBox="0 0 16 13" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -53,8 +56,36 @@ const MyShiftsPage: React.FC = () => {
   const [openShifts, setOpenShifts] = useState<UserShiftData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentDate, setCurrentDate] = useState<Date>(getTodayDate());
-  const [viewMode, setViewMode] = useState<ViewMode>("Day");
+
+  const getDateFromStorage = (): Date => {
+    if (typeof window === "undefined") {
+      return new Date();
+    }
+    const storedDate = localStorage.getItem(DASHBOARD_DATE);
+    if (!storedDate) {
+      return new Date();
+    }
+    return new Date(storedDate);
+  };
+  const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
+
+  const getViewModeFromStorage = (): ViewMode => {
+    if (typeof window === "undefined") {
+      return "Day";
+    }
+    const stored = localStorage.getItem(DASHBOARD_VIEW);
+    return (stored === "Week" ? "Week" : "Day");
+  };
+  const [viewMode, setViewMode] = useState<ViewMode>(() => "Day");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setCurrentDate(getDateFromStorage());
+    setViewMode(getViewModeFromStorage());
+    setMounted(true);
+  }, []);
+
   const [activeTab, setActiveTab] = useState<"myShifts" | "openShifts">("myShifts");
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [firebaseReady, setFirebaseReady] = useState<boolean>(false);
@@ -186,6 +217,7 @@ const MyShiftsPage: React.FC = () => {
       newDate.setDate(newDate.getDate() - 7);
     }
     setCurrentDate(newDate);
+    localStorage.setItem(DASHBOARD_DATE, newDate.toISOString());
   };
 
   // Navigate to next day/week
@@ -197,11 +229,13 @@ const MyShiftsPage: React.FC = () => {
       newDate.setDate(newDate.getDate() + 7);
     }
     setCurrentDate(newDate);
+    localStorage.setItem(DASHBOARD_DATE, newDate.toISOString());
   };
 
   // Handle view mode change
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode);
+    localStorage.setItem(DASHBOARD_VIEW, mode);
     // Reset pagination when view changes
     setPagination(prev => ({ ...prev, page: 1 }));
   };

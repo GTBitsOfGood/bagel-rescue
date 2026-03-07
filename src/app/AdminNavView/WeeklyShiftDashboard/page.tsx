@@ -28,6 +28,8 @@ import { dateToString, normalizeDate } from "@/lib/dateHandler";
 import styles from "@/app/VolunteerNavView/Homepage/page.module.css";
 import LoadingFallback from "@/app/components/LoadingFallback";
 
+const DASHBOARD_VIEW = "dashboardView";
+
 // Filter Icon Component
 const FilterIcon = () => (
     <svg
@@ -57,7 +59,6 @@ function WeeklyShiftDashboard() {
         Map<string, string>
     >(new Map());
     const [weeklyShiftData, setWeeklyShiftData] = useState([]);
-    const [date, setDate] = useState<Date>(new Date());
     const [activeTab, setActiveTab] = useState<"assigned" | "open">("assigned");
 
     const [shiftToRouteMap, setShiftToRouteMap] = useState<Map<string, IRoute>>(
@@ -68,7 +69,32 @@ function WeeklyShiftDashboard() {
     >(new Map());
     const [isLoading, setIsLoading] = useState(false);
 
+    const DASHBOARD_DATE = 'dashboardDateWeekView';
+    
+    const getDateFromStorage = (): Date => {
+        if (typeof window === "undefined") {
+            return new Date();
+        }
+        const storedDate = localStorage.getItem(DASHBOARD_DATE);
+        if (!storedDate) {
+            return new Date();
+        } 
+        return new Date(storedDate);
+    };
+
+    const [date, setDate] = useState<Date>(() => new Date());
+    const [mounted, setMounted] = useState(false);
     const { startOfWeek, endOfWeek } = getWeekRange(date);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        setDate(getDateFromStorage());
+        if (localStorage.getItem(DASHBOARD_VIEW) === "daily") {
+            router.replace("/AdminNavView/DailyShiftDashboard");
+            return;
+        }
+        setMounted(true);
+    }, [router]);
 
     const AddDays = (e: number) => {
         const newDate = new Date(date);
@@ -76,6 +102,7 @@ function WeeklyShiftDashboard() {
         setWeeklyShiftData([])
         newDate.setDate(newDate.getDate() + e);
         setDate(newDate);
+        localStorage.setItem(DASHBOARD_DATE, newDate.toISOString());
     };
 
     const fetchWeeklyShifts = async (startDate: Date, endDate: Date) => {

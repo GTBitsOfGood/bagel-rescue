@@ -17,11 +17,14 @@ interface WeeklyDashboardHeaderProps {
 const WeeklyDashboardHeader: React.FC<WeeklyDashboardHeaderProps> = ({ date, AddDays }) => {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const DASHBOARD_VIEW = 'dashboardView';
 
   const handleTimeFrameChange = (newTimeFrame: string) => {
     if (newTimeFrame === 'Day') {
+      localStorage.setItem(DASHBOARD_VIEW, 'daily');
       router.push('/AdminNavView/DailyShiftDashboard');
     } else {
+      localStorage.setItem(DASHBOARD_VIEW, 'weekly');
       router.push('/AdminNavView/WeeklyShiftDashboard');
     }
   };

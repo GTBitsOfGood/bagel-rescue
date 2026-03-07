@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import DashboardHeader from "../../components/DailyDashboard";
@@ -17,6 +18,8 @@ import "../WeeklyShiftDashboard/stylesheet.css";
 import { dateToString, getTodayDate, normalizeDate } from "@/lib/dateHandler";
 import { Shift } from "@/server/db/models/shift";
 import LoadingFallback from "@/app/components/LoadingFallback";
+
+const DASHBOARD_VIEW = "dashboardView";
 
 // Filter Icon Component
 const FilterIcon = () => (
@@ -35,8 +38,8 @@ const FilterIcon = () => (
 );
 
 function DailyShiftDashboardPage() {
+    const router = useRouter();
     const [shiftSearchText, setShiftSearchText] = useState("");
-    const [date, setDate] = useState<Date>(getTodayDate());
     const [dailyShiftData, setDailyShiftData] = useState([]);
     const [selectedItem, setSelectedItem] = useState<ShiftSidebarInfo | null>(
         null
@@ -49,6 +52,30 @@ function DailyShiftDashboardPage() {
         Map<string, Location[]>
     >(new Map());
     const [isLoading, setIsLoading] = useState(false);
+    const DASHBOARD_DATE = "dashboardDateDayView"
+
+    const getDateFromStorage = (): Date => {
+        if (typeof window === "undefined") {
+            return new Date();
+        }
+        const storedDate = localStorage.getItem(DASHBOARD_DATE);
+        if (!storedDate) {
+            return new Date();
+        }
+        return new Date(storedDate);
+    };
+    const [date, setDate] = useState<Date>(() => new Date());
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        setDate(getDateFromStorage());
+        if (localStorage.getItem(DASHBOARD_VIEW) === "weekly") {
+            router.replace("/AdminNavView/WeeklyShiftDashboard");
+            return;
+        }
+        setMounted(true);
+    }, [router]);
 
     const AddDays = (e: number) => {
         const newDate = new Date(date);
@@ -56,6 +83,7 @@ function DailyShiftDashboardPage() {
             setDailyShiftData([]);
             newDate.setDate(newDate.getDate() + e);
             setDate(newDate);
+            localStorage.setItem(DASHBOARD_DATE, newDate.toISOString());
         }
     };
 

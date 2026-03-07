@@ -17,12 +17,16 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ date, AddDays }) => {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [timeFrame, setTimeFrame] = useState("Day");
+  const DASHBOARD_VIEW = 'dashboardView';
+
 
   const handleTimeFrameChange = (newTimeFrame: string) => {
     setTimeFrame(newTimeFrame);
     if (newTimeFrame === 'Day') {
+      localStorage.setItem(DASHBOARD_VIEW, 'daily');
       router.push('/AdminNavView/DailyShiftDashboard');
     } else {
+      localStorage.setItem(DASHBOARD_VIEW, 'weekly');
       router.push('/AdminNavView/WeeklyShiftDashboard');
     }
   };
