@@ -2,17 +2,18 @@
 
 import React, { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { 
-  faAngleLeft, 
-  faMagnifyingGlass, 
+import {
+  faAngleLeft,
+  faMagnifyingGlass,
   faPlus,
   faEllipsisH,
   faTrashCan,
-  faCopy 
+  faCopy,
+  faPenToSquare
 } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 
-import { deleteRoute, getAllRoutes } from "@/server/db/actions/Route";
+import { deleteRoute, getAllRoutes, updateRoute } from "@/server/db/actions/Route";
 import { IRoute } from "@/server/db/models/Route";
 import AdminSidebar from "../../../components/AdminSidebar";
 import styles from "./page.module.css";
@@ -25,6 +26,10 @@ export default function RouteDashboardPage() {
   const [searchText, setSearchText] = useState<string>("");
   const [openModalIndex, setOpenModalIndex] = useState<number | null>(null);
   const [deletingRouteId, setDeletingRouteId] = useState<string | null>(null);
+  const [editingRoute, setEditingRoute] = useState<IRoute | null>(null);
+  const [editRouteName, setEditRouteName] = useState("");
+  const [editAdditionalInfo, setEditAdditionalInfo] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   const modalRefs = React.useRef<Map<number, HTMLDivElement | null>>(new Map());
   const router = useRouter();
 
@@ -128,6 +133,43 @@ export default function RouteDashboardPage() {
     }
   };
 
+  const handleEditRoute = (route: IRoute) => {
+    setEditingRoute(route);
+    setEditRouteName(route.routeName);
+    setEditAdditionalInfo(route.additionalInfo === "-" ? "" : route.additionalInfo);
+    setOpenModalIndex(null);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingRoute || !editRouteName.trim()) return;
+
+    setIsSaving(true);
+    try {
+      const result = await updateRoute(
+        editingRoute._id.toString(),
+        editRouteName.trim(),
+        editAdditionalInfo.trim() || "-"
+      );
+      const updated = result ? JSON.parse(result) : null;
+
+      if (updated) {
+        setRoutes((prev) =>
+          prev.map((r) =>
+            r._id.toString() === editingRoute._id.toString()
+              ? { ...r, routeName: updated.routeName, additionalInfo: updated.additionalInfo }
+              : r
+          )
+        );
+      }
+      setEditingRoute(null);
+    } catch (error) {
+      console.error("Error updating route:", error);
+      alert("Failed to update route.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const getFilteredRoutes = () => {
     return routes.filter(route => 
       route.routeName.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -216,7 +258,13 @@ export default function RouteDashboardPage() {
                               modalRefs.current.set(index, el);
                             }}
                             className={styles.contextMenu}>
-                              <button 
+                              <button
+                                onClick={() => handleEditRoute(route)}
+                              >
+                                <FontAwesomeIcon icon={faPenToSquare}/>
+                                Edit Route
+                              </button>
+                              <button
                                 onClick={() => handleDuplicate(route)}
                               >
                                 <FontAwesomeIcon icon={faCopy}/>
@@ -241,6 +289,48 @@ export default function RouteDashboardPage() {
           </div>
         </div>
       </div>
+
+      {editingRoute && (
+        <div className={styles.editOverlay} onClick={() => setEditingRoute(null)}>
+          <div className={styles.editModal} onClick={(e) => e.stopPropagation()}>
+            <h2 className={styles.editModalTitle}>Edit Route</h2>
+            <label className={styles.editLabel}>
+              Route Name
+              <input
+                type="text"
+                className={styles.editInput}
+                value={editRouteName}
+                onChange={(e) => setEditRouteName(e.target.value)}
+              />
+            </label>
+            <label className={styles.editLabel}>
+              Additional Information
+              <textarea
+                className={styles.editTextarea}
+                value={editAdditionalInfo}
+                onChange={(e) => setEditAdditionalInfo(e.target.value)}
+                rows={3}
+              />
+            </label>
+            <div className={styles.editActions}>
+              <button
+                className={styles.editCancelButton}
+                onClick={() => setEditingRoute(null)}
+                disabled={isSaving}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.editSaveButton}
+                onClick={handleSaveEdit}
+                disabled={isSaving || !editRouteName.trim()}
+              >
+                {isSaving ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
