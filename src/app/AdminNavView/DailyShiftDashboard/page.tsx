@@ -176,6 +176,7 @@ function DailyShiftDashboardPage() {
                             month: "short",
                             day: "numeric",
                             year: "numeric",
+                            timeZone: "UTC",
                         })}
                         onOpenSidebar={() => handleShiftCardClick(shift)}
                     />

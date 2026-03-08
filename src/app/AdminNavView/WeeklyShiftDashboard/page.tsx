@@ -227,6 +227,14 @@ function WeeklyShiftDashboard() {
                     );
                     if (!shiftDate) return null;
 
+                    // ensure shift date is in the date range, not just in the week that overlaps with the date range
+                    const start = normalizeDate(new Date(shift.shiftStartDate));
+                    const end = normalizeDate(new Date(shift.shiftEndDate));
+
+                    if (shiftDate < start || shiftDate > end) {
+                        return null;
+                    }
+
                     if (
                         shift.canceledShifts
                             .map((canceledShift: Date) =>
@@ -265,6 +273,7 @@ function WeeklyShiftDashboard() {
                                 month: "short",
                                 day: "numeric",
                                 year: "numeric",
+                                timeZone: "UTC",
                             })}
                             onOpenSidebar={() =>
                                 handleShiftCardClick(shift, new Date(shiftDate))
