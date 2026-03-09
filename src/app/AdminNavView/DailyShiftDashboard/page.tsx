@@ -53,27 +53,7 @@ function DailyShiftDashboardPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [isDateReady, setIsDateReady] = useState(false);
 
-    const getDateFromStorage = (): Date => {
-        if (typeof window === "undefined") {
-            return getTodayDate();
-        }
-        const storedDate = localStorage.getItem(ADMIN_DASHBOARD_DATE);
-        if (!storedDate) {
-            return getTodayDate();
-        }
-        return new Date(storedDate);
-    };
     const [date, setDate] = useState<Date>(() => getTodayDate());
-
-    useEffect(() => {
-        if (typeof window === "undefined") return;
-        if (localStorage.getItem(ADMIN_DASHBOARD_VIEW) === "weekly") {
-            router.replace("/AdminNavView/WeeklyShiftDashboard");
-            return;
-        }
-        setDate(getDateFromStorage());
-        setIsDateReady(true);
-    }, [router]);
 
     const AddDays = (e: number) => {
         const newDate = new Date(date);
@@ -94,9 +74,37 @@ function DailyShiftDashboardPage() {
         }
     };
 
+    const getDateFromStorage = (): Date => {
+        if (typeof window === "undefined") {
+            return getTodayDate();
+        }
+        const storedDate = localStorage.getItem(ADMIN_DASHBOARD_DATE);
+        if (!storedDate) {
+            return getTodayDate();
+        }
+        const parsedDate = new Date(storedDate);
+        if (isNaN(parsedDate.getTime())) {
+            const today = getTodayDate();
+            localStorage.setItem(ADMIN_DASHBOARD_DATE, today.toISOString());
+            return today;
+        }
+
+        return parsedDate;
+    };
+
     useEffect(() => {
         setSelectedItem(null)
     }, [isLoading])
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        if (localStorage.getItem(ADMIN_DASHBOARD_VIEW) === "weekly") {
+            router.replace("/AdminNavView/WeeklyShiftDashboard");
+            return;
+        }
+        setDate(getDateFromStorage());
+        setIsDateReady(true);
+    }, [router]);
 
     useEffect(() => {
         const fetchDailyShifts = async (targetDate: Date) => {
@@ -218,17 +226,6 @@ function DailyShiftDashboardPage() {
     const openCount = dailyShiftData.filter(
         (shift: any) => shift.status === "open"
     ).length;
-
-    if (!isDateReady) {
-        return (
-            <div className="flex">
-                <AdminSidebar />
-                <div className="flex flex-1 items-center justify-center">
-                    <LoadingFallback />
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="flex">

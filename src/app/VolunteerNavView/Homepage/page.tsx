@@ -56,6 +56,8 @@ const MyShiftsPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isDateReady, setIsDateReady] = useState(false);
+  const [currentDate, setCurrentDate] = useState<Date>(() => getTodayDate());
+  const [viewMode, setViewMode] = useState<ViewMode>(() => "Day");
 
   const getDateFromStorage = (): Date => {
     if (typeof window === "undefined") {
@@ -65,9 +67,15 @@ const MyShiftsPage: React.FC = () => {
     if (!storedDate) {
       return getTodayDate();
     }
-    return new Date(storedDate);
+    const parsedDate = new Date(storedDate);
+    if (isNaN(parsedDate.getTime())) {
+        const today = getTodayDate();
+        localStorage.setItem(VOLUNTEER_DASHBOARD_DATE, today.toISOString());
+        return today;
+    }
+
+    return parsedDate;
   };
-  const [currentDate, setCurrentDate] = useState<Date>(() => getTodayDate());
 
   const getViewModeFromStorage = (): ViewMode => {
     if (typeof window === "undefined") {
@@ -76,7 +84,6 @@ const MyShiftsPage: React.FC = () => {
     const stored = localStorage.getItem(VOLUNTEER_DASHBOARD_VIEW);
     return (stored === "Week" ? "Week" : "Day");
   };
-  const [viewMode, setViewMode] = useState<ViewMode>(() => "Day");
 
   useEffect(() => {
     if (typeof window === "undefined") return;

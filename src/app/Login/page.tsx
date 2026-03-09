@@ -84,7 +84,7 @@ export default function LoginScreen() {
                 </div>
               )}
               <div className="flex justify-start w-[100%]">
-                <p className="text-left text-primary-text text-2xl font-bold font-opensans text-[#013779] text-4xl mb-2">
+                <p className="text-left text-primary-text font-bold font-opensans text-[#013779] text-4xl mb-2">
                   Sign in
                 </p>
               </div>
@@ -172,6 +172,7 @@ export default function LoginScreen() {
                     text={loading ? "" : "Continue"}
                     icon={loading ? <MiniSpinner /> : undefined}
                     label="Continue"
+                    disabled={loading}
                     onClick={async () => {
                       setLoading(true);
                       setErrorBannerMsg("");
@@ -202,16 +203,17 @@ export default function LoginScreen() {
                                 ? getAdminDashboardPath()
                                 : "/VolunteerNavView/Homepage"
                             );
+                            return;
                           }
                         } else {
                           setErrorBannerMsg(res.error);
+                          setLoading(false);
                         }
                       } catch (err) {
                         console.error(err);
                         setErrorBannerMsg(
                           "An unknown error occurred logging in. Please check your internet connection and try again."
                         );
-                      } finally {
                         setLoading(false);
                       }
                     }}
