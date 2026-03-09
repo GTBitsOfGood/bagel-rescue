@@ -19,6 +19,7 @@ import { handleAuthError } from "@/lib/authErrorHandler";
 import { auth } from "@/server/db/firebase";
 import { dateToString, getTodayDate } from "@/lib/dateHandler";
 import { findDayInRange } from "@/lib/dateRangeHandler";
+import LoadingFallback from "@/app/components/LoadingFallback";
 
 const DASHBOARD_VIEW = "volunteerDashboardView";
 const DASHBOARD_DATE = "volunteerDashboardDate";
@@ -56,18 +57,19 @@ const MyShiftsPage: React.FC = () => {
   const [openShifts, setOpenShifts] = useState<UserShiftData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDateReady, setIsDateReady] = useState(false);
 
   const getDateFromStorage = (): Date => {
     if (typeof window === "undefined") {
-      return new Date();
+      return getTodayDate();
     }
     const storedDate = localStorage.getItem(DASHBOARD_DATE);
     if (!storedDate) {
-      return new Date();
+      return getTodayDate();
     }
     return new Date(storedDate);
   };
-  const [currentDate, setCurrentDate] = useState<Date>(() => new Date());
+  const [currentDate, setCurrentDate] = useState<Date>(() => getTodayDate());
 
   const getViewModeFromStorage = (): ViewMode => {
     if (typeof window === "undefined") {
@@ -82,6 +84,7 @@ const MyShiftsPage: React.FC = () => {
     if (typeof window === "undefined") return;
     setCurrentDate(getDateFromStorage());
     setViewMode(getViewModeFromStorage());
+    setIsDateReady(true);
   }, []);
 
   const [activeTab, setActiveTab] = useState<"myShifts" | "openShifts">("myShifts");
@@ -140,7 +143,7 @@ const MyShiftsPage: React.FC = () => {
 
   //fetches open shifts during on tab change
   useEffect(() => {
-    if (!firebaseReady || activeTab !== "openShifts") return;
+    if (!firebaseReady || !isDateReady || activeTab !== "openShifts") return;
 
     const fetchOpenShifts = async () => {
       try {
@@ -177,7 +180,7 @@ const MyShiftsPage: React.FC = () => {
     };
 
     fetchOpenShifts();
-  }, [firebaseReady, activeTab, currentDate, viewMode, openShiftsPagination.page, refreshTrigger]);
+  }, [firebaseReady, isDateReady, activeTab, currentDate, viewMode, openShiftsPagination.page, refreshTrigger]);
 
   // Function to get start and end dates for day view
   const getDayRange = (date: Date) => {
@@ -245,7 +248,7 @@ const MyShiftsPage: React.FC = () => {
 
   // Fetch shifts when dependencies change
   useEffect(() => {
-    if (!firebaseReady) return;
+    if (!firebaseReady || !isDateReady) return;
     if (userEmail === null) return;
 
     const fetchShifts = async () => {
@@ -310,7 +313,23 @@ const MyShiftsPage: React.FC = () => {
     };
 
     fetchShifts();
-  }, [userEmail, firebaseReady, currentDate, viewMode, pagination.page, pagination.limit, refreshTrigger]);
+  }, [userEmail, firebaseReady, isDateReady, currentDate, viewMode, pagination.page, pagination.limit, refreshTrigger]);
+
+  if (!isDateReady) {
+    return (
+      <div className={styles.container}>
+        <Sidebar />
+        <div className={styles.mainContent}>
+          <div className={styles.header}>
+            <h1 className={styles.pageTitle}>My Shifts</h1>
+          </div>
+          <div className={styles.filterContainer}>
+            <LoadingFallback />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>

@@ -68,6 +68,7 @@ function WeeklyShiftDashboard() {
         Map<string, Location[]>
     >(new Map());
     const [isLoading, setIsLoading] = useState(false);
+    const [isDateReady, setIsDateReady] = useState(false);
 
     const DASHBOARD_DATE = "adminDashboardDate";
     
@@ -87,11 +88,12 @@ function WeeklyShiftDashboard() {
 
     useEffect(() => {
         if (typeof window === "undefined") return;
-        setDate(getDateFromStorage());
         if (localStorage.getItem(DASHBOARD_VIEW) === "daily") {
             router.replace("/AdminNavView/DailyShiftDashboard");
             return;
         }
+        setDate(getDateFromStorage());
+        setIsDateReady(true);
     }, [router]);
 
     const AddDays = (e: number) => {
@@ -154,9 +156,10 @@ function WeeklyShiftDashboard() {
     }, [isLoading])
 
     useEffect(() => {
+        if (!isDateReady) return;
         fetchShifts();
         fetchWeeklyShifts(startOfWeek, endOfWeek);
-    }, [date]);
+    }, [date, isDateReady]);
 
     useEffect(() => {
         const fetchVolunteers = async () => {
@@ -312,6 +315,18 @@ function WeeklyShiftDashboard() {
     const openCount = weeklyShiftData.filter(
         (shift: any) => shift.status === "open"
     ).length;
+
+
+    if (!isDateReady) {
+        return (
+            <div className="flex">
+                <AdminSidebar />
+                <div className="flex flex-1 items-center justify-center">
+                    <LoadingFallback />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex">

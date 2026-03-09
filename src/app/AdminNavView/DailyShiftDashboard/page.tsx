@@ -52,27 +52,29 @@ function DailyShiftDashboardPage() {
         Map<string, Location[]>
     >(new Map());
     const [isLoading, setIsLoading] = useState(false);
+    const [isDateReady, setIsDateReady] = useState(false);
     const DASHBOARD_DATE = "adminDashboardDate";
 
     const getDateFromStorage = (): Date => {
         if (typeof window === "undefined") {
-            return new Date();
+            return getTodayDate();
         }
         const storedDate = localStorage.getItem(DASHBOARD_DATE);
         if (!storedDate) {
-            return new Date();
+            return getTodayDate();
         }
         return new Date(storedDate);
     };
-    const [date, setDate] = useState<Date>(() => new Date());
+    const [date, setDate] = useState<Date>(() => getTodayDate());
 
     useEffect(() => {
         if (typeof window === "undefined") return;
-        setDate(getDateFromStorage());
         if (localStorage.getItem(DASHBOARD_VIEW) === "weekly") {
             router.replace("/AdminNavView/WeeklyShiftDashboard");
             return;
         }
+        setDate(getDateFromStorage());
+        setIsDateReady(true);
     }, [router]);
 
     const AddDays = (e: number) => {
@@ -100,6 +102,7 @@ function DailyShiftDashboardPage() {
 
     useEffect(() => {
         const fetchDailyShifts = async (targetDate: Date) => {
+            if (!isDateReady) return;
             try {
                 setIsLoading(true)
                 const dailyShiftResponse = await getShiftsByDay(targetDate);
@@ -120,7 +123,7 @@ function DailyShiftDashboardPage() {
         };
 
         fetchDailyShifts(date);
-    }, [date]);
+    }, [date, isDateReady]);
 
     // Function to handle shift card click
     const handleShiftCardClick = async (shift: any) => {
@@ -218,6 +221,17 @@ function DailyShiftDashboardPage() {
         (shift: any) => shift.status === "open"
     ).length;
 
+    if (!isDateReady) {
+        return (
+            <div className="flex">
+                <AdminSidebar />
+                <div className="flex flex-1 items-center justify-center">
+                    <LoadingFallback />
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="flex">
             <AdminSidebar />
@@ -260,9 +274,7 @@ function DailyShiftDashboardPage() {
                         </button>
                     </div>
                     {isLoading ? (
-                        <>
-                            <LoadingFallback/>
-                        </>
+                        <LoadingFallback />
                     ) : (
                         <div className="shift-container">{shiftCardsList()}</div>
                     )}
