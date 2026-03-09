@@ -14,14 +14,13 @@ import { getUserByEmail } from '../server/db/actions/User';
 import { FaPeopleLine } from "react-icons/fa6";
 import Image from 'next/image';
 import bagelsLogo from '@/app/icon.png';
+import { ADMIN_DASHBOARD_VIEW } from "@/lib/dashboardConstants";
 
 interface NavItem {
   name: string;
   href: string;
   icon: JSX.Element;
 }
-
-const DASHBOARD_VIEW = "adminDashboardView";
 
 const navItems: NavItem[] = [
   { name: 'Dashboard', href: '/AdminNavView/DailyShiftDashboard', icon: <FiHome size={20} strokeWidth={1.5} /> },
@@ -68,7 +67,7 @@ const AdminSidebar: React.FC = () => {
   const [dashboardLink, setDashboardLink] = useState('/AdminNavView/DailyShiftDashboard');
 
   useEffect(() => {
-    setDashboardLink(localStorage.getItem(DASHBOARD_VIEW) === 'weekly' ? '/AdminNavView/WeeklyShiftDashboard': '/AdminNavView/DailyShiftDashboard');
+    setDashboardLink(localStorage.getItem(ADMIN_DASHBOARD_VIEW) === 'weekly' ? '/AdminNavView/WeeklyShiftDashboard': '/AdminNavView/DailyShiftDashboard');
   }, []);
 
   return (

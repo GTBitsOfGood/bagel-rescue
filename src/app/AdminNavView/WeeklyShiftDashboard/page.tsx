@@ -27,8 +27,7 @@ import { findDayInRange, getWeekRange } from "@/lib/dateRangeHandler";
 import { dateToString, normalizeDate } from "@/lib/dateHandler";
 import styles from "@/app/VolunteerNavView/Homepage/page.module.css";
 import LoadingFallback from "@/app/components/LoadingFallback";
-
-const DASHBOARD_VIEW = "adminDashboardView";
+import { ADMIN_DASHBOARD_VIEW, ADMIN_DASHBOARD_DATE } from "@/lib/dashboardConstants";
 
 // Filter Icon Component
 const FilterIcon = () => (
@@ -70,13 +69,11 @@ function WeeklyShiftDashboard() {
     const [isLoading, setIsLoading] = useState(false);
     const [isDateReady, setIsDateReady] = useState(false);
 
-    const DASHBOARD_DATE = "adminDashboardDate";
-    
     const getDateFromStorage = (): Date => {
         if (typeof window === "undefined") {
             return new Date();
         }
-        const storedDate = localStorage.getItem(DASHBOARD_DATE);
+        const storedDate = localStorage.getItem(ADMIN_DASHBOARD_DATE);
         if (!storedDate) {
             return new Date();
         } 
@@ -88,7 +85,7 @@ function WeeklyShiftDashboard() {
 
     useEffect(() => {
         if (typeof window === "undefined") return;
-        if (localStorage.getItem(DASHBOARD_VIEW) === "daily") {
+        if (localStorage.getItem(ADMIN_DASHBOARD_VIEW) === "daily") {
             router.replace("/AdminNavView/DailyShiftDashboard");
             return;
         }
@@ -102,7 +99,7 @@ function WeeklyShiftDashboard() {
         setWeeklyShiftData([])
         newDate.setDate(newDate.getDate() + e);
         setDate(newDate);
-        localStorage.setItem(DASHBOARD_DATE, newDate.toISOString());
+        localStorage.setItem(ADMIN_DASHBOARD_DATE, newDate.toISOString());
     };
 
     const fetchWeeklyShifts = async (startDate: Date, endDate: Date) => {

@@ -18,8 +18,7 @@ import "../WeeklyShiftDashboard/stylesheet.css";
 import { dateToString, getTodayDate, normalizeDate } from "@/lib/dateHandler";
 import { Shift } from "@/server/db/models/shift";
 import LoadingFallback from "@/app/components/LoadingFallback";
-
-const DASHBOARD_VIEW = "adminDashboardView";
+import { ADMIN_DASHBOARD_VIEW, ADMIN_DASHBOARD_DATE } from "@/lib/dashboardConstants";
 
 // Filter Icon Component
 const FilterIcon = () => (
@@ -53,13 +52,12 @@ function DailyShiftDashboardPage() {
     >(new Map());
     const [isLoading, setIsLoading] = useState(false);
     const [isDateReady, setIsDateReady] = useState(false);
-    const DASHBOARD_DATE = "adminDashboardDate";
 
     const getDateFromStorage = (): Date => {
         if (typeof window === "undefined") {
             return getTodayDate();
         }
-        const storedDate = localStorage.getItem(DASHBOARD_DATE);
+        const storedDate = localStorage.getItem(ADMIN_DASHBOARD_DATE);
         if (!storedDate) {
             return getTodayDate();
         }
@@ -69,7 +67,7 @@ function DailyShiftDashboardPage() {
 
     useEffect(() => {
         if (typeof window === "undefined") return;
-        if (localStorage.getItem(DASHBOARD_VIEW) === "weekly") {
+        if (localStorage.getItem(ADMIN_DASHBOARD_VIEW) === "weekly") {
             router.replace("/AdminNavView/WeeklyShiftDashboard");
             return;
         }
@@ -83,7 +81,7 @@ function DailyShiftDashboardPage() {
             setDailyShiftData([]);
             newDate.setDate(newDate.getDate() + e);
             setDate(newDate);
-            localStorage.setItem(DASHBOARD_DATE, newDate.toISOString());
+            localStorage.setItem(ADMIN_DASHBOARD_DATE, newDate.toISOString());
         }
     };
 

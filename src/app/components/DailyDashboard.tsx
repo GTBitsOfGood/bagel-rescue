@@ -7,6 +7,7 @@ import {
   faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
+import { ADMIN_DASHBOARD_VIEW } from "@/lib/dashboardConstants";
 
 interface DashboardHeaderProps {
   date: Date;
@@ -17,16 +18,13 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ date, AddDays }) => {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [timeFrame, setTimeFrame] = useState("Day");
-  const DASHBOARD_VIEW = "adminDashboardView";
-
-
   const handleTimeFrameChange = (newTimeFrame: string) => {
     setTimeFrame(newTimeFrame);
     if (newTimeFrame === 'Day') {
-      localStorage.setItem(DASHBOARD_VIEW, 'daily');
+      localStorage.setItem(ADMIN_DASHBOARD_VIEW, 'daily');
       router.push('/AdminNavView/DailyShiftDashboard');
     } else {
-      localStorage.setItem(DASHBOARD_VIEW, 'weekly');
+      localStorage.setItem(ADMIN_DASHBOARD_VIEW, 'weekly');
       router.push('/AdminNavView/WeeklyShiftDashboard');
     }
   };

@@ -20,9 +20,7 @@ import { auth } from "@/server/db/firebase";
 import { dateToString, getTodayDate } from "@/lib/dateHandler";
 import { findDayInRange } from "@/lib/dateRangeHandler";
 import LoadingFallback from "@/app/components/LoadingFallback";
-
-const DASHBOARD_VIEW = "volunteerDashboardView";
-const DASHBOARD_DATE = "volunteerDashboardDate";
+import { VOLUNTEER_DASHBOARD_VIEW, VOLUNTEER_DASHBOARD_DATE } from "@/lib/dashboardConstants";
 
 // Filter Icon Component
 const FilterIcon = () => (
@@ -63,7 +61,7 @@ const MyShiftsPage: React.FC = () => {
     if (typeof window === "undefined") {
       return getTodayDate();
     }
-    const storedDate = localStorage.getItem(DASHBOARD_DATE);
+    const storedDate = localStorage.getItem(VOLUNTEER_DASHBOARD_DATE);
     if (!storedDate) {
       return getTodayDate();
     }
@@ -75,7 +73,7 @@ const MyShiftsPage: React.FC = () => {
     if (typeof window === "undefined") {
       return "Day";
     }
-    const stored = localStorage.getItem(DASHBOARD_VIEW);
+    const stored = localStorage.getItem(VOLUNTEER_DASHBOARD_VIEW);
     return (stored === "Week" ? "Week" : "Day");
   };
   const [viewMode, setViewMode] = useState<ViewMode>(() => "Day");
@@ -218,7 +216,7 @@ const MyShiftsPage: React.FC = () => {
       newDate.setDate(newDate.getDate() - 7);
     }
     setCurrentDate(newDate);
-    localStorage.setItem(DASHBOARD_DATE, newDate.toISOString());
+    localStorage.setItem(VOLUNTEER_DASHBOARD_DATE, newDate.toISOString());
   };
 
   // Navigate to next day/week
@@ -230,13 +228,13 @@ const MyShiftsPage: React.FC = () => {
       newDate.setDate(newDate.getDate() + 7);
     }
     setCurrentDate(newDate);
-    localStorage.setItem(DASHBOARD_DATE, newDate.toISOString());
+    localStorage.setItem(VOLUNTEER_DASHBOARD_DATE, newDate.toISOString());
   };
 
   // Handle view mode change
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode);
-    localStorage.setItem(DASHBOARD_VIEW, mode);
+    localStorage.setItem(VOLUNTEER_DASHBOARD_VIEW, mode);
     // Reset pagination when view changes
     setPagination(prev => ({ ...prev, page: 1 }));
   };

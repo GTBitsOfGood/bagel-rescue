@@ -22,12 +22,11 @@ import TextInput from "./TextInput";
 import ErrorBanner from "./ErrorBanner";
 import LoadingFallback from "../components/LoadingFallback";
 import MiniSpinner from "@/components/MiniSpinner";
-
-const DASHBOARD_VIEW = "adminDashboardView";
+import { ADMIN_DASHBOARD_VIEW } from "@/lib/dashboardConstants";
 
 const getAdminDashboardPath = () =>
   typeof window !== "undefined" &&
-  localStorage.getItem(DASHBOARD_VIEW) === "daily"
+  localStorage.getItem(ADMIN_DASHBOARD_VIEW) === "daily"
     ? "/AdminNavView/DailyShiftDashboard"
     : "/AdminNavView/WeeklyShiftDashboard";
 
