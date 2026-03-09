@@ -8,6 +8,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
 import { getWeekRange } from "@/lib/dateRangeHandler";
+import { ADMIN_DASHBOARD_VIEW } from "@/lib/dashboardConstants";
 
 interface WeeklyDashboardHeaderProps {
   date: Date;
@@ -17,11 +18,12 @@ interface WeeklyDashboardHeaderProps {
 const WeeklyDashboardHeader: React.FC<WeeklyDashboardHeaderProps> = ({ date, AddDays }) => {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
-
   const handleTimeFrameChange = (newTimeFrame: string) => {
     if (newTimeFrame === 'Day') {
+      localStorage.setItem(ADMIN_DASHBOARD_VIEW, 'daily');
       router.push('/AdminNavView/DailyShiftDashboard');
     } else {
+      localStorage.setItem(ADMIN_DASHBOARD_VIEW, 'weekly');
       router.push('/AdminNavView/WeeklyShiftDashboard');
     }
   };

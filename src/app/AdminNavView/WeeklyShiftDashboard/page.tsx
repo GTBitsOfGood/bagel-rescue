@@ -27,6 +27,7 @@ import { findDayInRange, getWeekRange } from "@/lib/dateRangeHandler";
 import { dateToString, normalizeDate } from "@/lib/dateHandler";
 import styles from "@/app/VolunteerNavView/Homepage/page.module.css";
 import LoadingFallback from "@/app/components/LoadingFallback";
+import { ADMIN_DASHBOARD_VIEW, ADMIN_DASHBOARD_DATE } from "@/lib/dashboardConstants";
 
 // Filter Icon Component
 const FilterIcon = () => (
@@ -57,7 +58,6 @@ function WeeklyShiftDashboard() {
         Map<string, string>
     >(new Map());
     const [weeklyShiftData, setWeeklyShiftData] = useState([]);
-    const [date, setDate] = useState<Date>(new Date());
     const [activeTab, setActiveTab] = useState<"assigned" | "open">("assigned");
 
     const [shiftToRouteMap, setShiftToRouteMap] = useState<Map<string, IRoute>>(
@@ -67,7 +67,9 @@ function WeeklyShiftDashboard() {
         Map<string, Location[]>
     >(new Map());
     const [isLoading, setIsLoading] = useState(false);
+    const [isDateReady, setIsDateReady] = useState(false);
 
+    const [date, setDate] = useState<Date>(() => new Date());
     const { startOfWeek, endOfWeek } = getWeekRange(date);
 
     const AddDays = (e: number) => {
@@ -76,6 +78,7 @@ function WeeklyShiftDashboard() {
         setWeeklyShiftData([])
         newDate.setDate(newDate.getDate() + e);
         setDate(newDate);
+        localStorage.setItem(ADMIN_DASHBOARD_DATE, newDate.toISOString());
     };
 
     const fetchWeeklyShifts = async (startDate: Date, endDate: Date) => {
@@ -124,14 +127,43 @@ function WeeklyShiftDashboard() {
         }
     };
 
+    const getDateFromStorage = (): Date => {
+        if (typeof window === "undefined") {
+            return new Date();
+        }
+        const storedDate = localStorage.getItem(ADMIN_DASHBOARD_DATE);
+        if (!storedDate) {
+            return new Date();
+        }
+        const parsedDate = new Date(storedDate);
+        if (isNaN(parsedDate.getTime())) {
+            const today = new Date();
+            localStorage.setItem(ADMIN_DASHBOARD_DATE, today.toISOString());
+            return today;
+        }
+
+        return parsedDate;
+    };
+
     useEffect(() => {
         setSelectedItem(null)
     }, [isLoading])
 
     useEffect(() => {
+        if (typeof window === "undefined") return;
+        if (localStorage.getItem(ADMIN_DASHBOARD_VIEW) === "daily") {
+            router.replace("/AdminNavView/DailyShiftDashboard");
+            return;
+        }
+        setDate(getDateFromStorage());
+        setIsDateReady(true);
+    }, [router]);
+
+    useEffect(() => {
+        if (!isDateReady) return;
         fetchShifts();
         fetchWeeklyShifts(startOfWeek, endOfWeek);
-    }, [date]);
+    }, [date, isDateReady]);
 
     useEffect(() => {
         const fetchVolunteers = async () => {
