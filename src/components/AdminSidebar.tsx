@@ -14,6 +14,7 @@ import { getUserByEmail } from '../server/db/actions/User';
 import { FaPeopleLine } from "react-icons/fa6";
 import Image from 'next/image';
 import bagelsLogo from '@/app/icon.png';
+import { ADMIN_DASHBOARD_VIEW } from "@/lib/dashboardConstants";
 
 interface NavItem {
   name: string;
@@ -63,9 +64,15 @@ const AdminSidebar: React.FC = () => {
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
+  const [dashboardLink, setDashboardLink] = useState('/AdminNavView/DailyShiftDashboard');
+
+  useEffect(() => {
+    setDashboardLink(localStorage.getItem(ADMIN_DASHBOARD_VIEW) === 'weekly' ? '/AdminNavView/WeeklyShiftDashboard': '/AdminNavView/DailyShiftDashboard');
+  }, []);
+
   return (
     <div className={`${styles.sidebar} ${isOpen ? styles.open : styles.closed}`}>
-      <Link href="/AdminNavView/DailyShiftDashboard">
+      <Link href={dashboardLink}>
       <div className={styles.navHeader}>
         <Image src={bagelsLogo} className={styles.navIcon} alt="Bagels Logo" />
         <div className={styles.navHeaderText}>Bagel Rescue</div>
@@ -76,18 +83,21 @@ const AdminSidebar: React.FC = () => {
       </Link>
       
       <nav className={styles.nav}>
-        {navItems.map((item) => (
-          <Link key={item.name} href={item.href}>
+        {navItems.map((item) => {
+          const href = item.name === 'Dashboard' ? dashboardLink : item.href;
+          return (
+          <Link key={item.name} href={href}>
             <div
               className={`${styles.navItem} ${
-                pathname === item.href ? styles.active : ''
+                (item.name === 'Dashboard' ? pathname === '/AdminNavView/DailyShiftDashboard' || pathname === '/AdminNavView/WeeklyShiftDashboard' : pathname === item.href) ? styles.active : ''
               }`}
             >
               <div className={styles.icon}>{item.icon}</div>
               {isOpen && <span className={styles.navText}>{item.name}</span>}
             </div>
           </Link>
-        ))}
+          );
+      })}
       </nav>
       <hr className={styles.line} />
       <Link href="/AdminNavView/AdminProfile">

@@ -8,6 +8,7 @@ import { signOut, verifyBeforeUpdateEmail, reauthenticateWithCredential, EmailAu
 import { getUserByEmail, updateUser } from '../server/db/actions/User';
 import location from '../lib/locations'
 import { IUser } from '@/server/db/models/User';
+import LoadingFallback from '@/app/components/LoadingFallback';
 
 interface EditProfileFormProps {
   togglePopup: () => void;
@@ -81,7 +82,11 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup }) => {
   };
 
   if (loading) {
-    return <div className={styles.container}>Loading profile...</div>;
+    return (
+      <div className={styles.container}>
+        <LoadingFallback />
+      </div>
+    );
   }
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {

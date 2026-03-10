@@ -20,6 +20,15 @@ import HalfScreen from "./HalfScreen";
 import Button from "./Button";
 import TextInput from "./TextInput";
 import ErrorBanner from "./ErrorBanner";
+import LoadingFallback from "../components/LoadingFallback";
+import MiniSpinner from "@/components/MiniSpinner";
+import { ADMIN_DASHBOARD_VIEW } from "@/lib/dashboardConstants";
+
+const getAdminDashboardPath = () =>
+  typeof window !== "undefined" &&
+  localStorage.getItem(ADMIN_DASHBOARD_VIEW) === "daily"
+    ? "/AdminNavView/DailyShiftDashboard"
+    : "/AdminNavView/WeeklyShiftDashboard";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -29,6 +38,7 @@ export default function LoginScreen() {
   }>();
   const [errorBannerMsg, setErrorBannerMsg] = useState("");
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Clear error when user starts typing
   const clearError = () => {
@@ -48,9 +58,7 @@ export default function LoginScreen() {
       if (isLoggedIn) {
         // Redirect to appropriate page based on user role
         router.push(
-          isAdmin
-            ? "/AdminNavView/WeeklyShiftDashboard"
-            : "/VolunteerNavView/Homepage"
+          isAdmin ? getAdminDashboardPath() : "/VolunteerNavView/Homepage"
         );
       }
     };
@@ -76,7 +84,7 @@ export default function LoginScreen() {
                 </div>
               )}
               <div className="flex justify-start w-[100%]">
-                <p className="text-left text-primary-text text-2xl font-bold font-opensans text-[#013779] text-4xl mb-2">
+                <p className="text-left text-primary-text font-bold font-opensans text-[#013779] text-4xl mb-2">
                   Sign in
                 </p>
               </div>
@@ -117,9 +125,7 @@ export default function LoginScreen() {
                   const res = await loginWithGoogle();
                   if (res.success) {
                     if ("user" in res && res.user && res.user.isAdmin) {
-                        router.push(
-                          "/AdminNavView/WeeklyShiftDashboard"
-                        );
+                        router.push(getAdminDashboardPath());
                       } else {
                         router.push(
                           "/VolunteerNavView/Homepage"
@@ -162,14 +168,21 @@ export default function LoginScreen() {
                   </button>
                 </div>
                 <div className="mb-3 sm:mb-1">
-                  <Button
-                    text="Continue"
+                    <Button
+                    text={loading ? "" : "Continue"}
+                    icon={loading ? <MiniSpinner /> : undefined}
+                    label="Continue"
+                    disabled={loading}
                     onClick={async () => {
+                      setLoading(true);
                       setErrorBannerMsg("");
                       const isValid = await trigger(undefined, {
                         shouldFocus: true,
                       });
-                      if (!isValid) return;
+                      if (!isValid) {
+                        setLoading(false);
+                        return;
+                      }
 
                       const { email, password } = getValues();
 
@@ -187,18 +200,21 @@ export default function LoginScreen() {
                           if ("isAdmin" in res) {
                             router.push(
                               res.isAdmin === "admin"
-                                ? "/AdminNavView/WeeklyShiftDashboard"
+                                ? getAdminDashboardPath()
                                 : "/VolunteerNavView/Homepage"
                             );
+                            return;
                           }
                         } else {
                           setErrorBannerMsg(res.error);
+                          setLoading(false);
                         }
                       } catch (err) {
                         console.error(err);
                         setErrorBannerMsg(
                           "An unknown error occurred logging in. Please check your internet connection and try again."
                         );
+                        setLoading(false);
                       }
                     }}
                   />

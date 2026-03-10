@@ -7,6 +7,7 @@ import { auth } from '../server/db/firebase';
 import { signOut } from 'firebase/auth';
 import { getUserByEmail } from '../server/db/actions/User';
 import { PiPencil } from "react-icons/pi";
+import LoadingFallback from '@/app/components/LoadingFallback';
 
 const ProfileForm: React.FC = () => {
   const router = useRouter();
@@ -72,7 +73,11 @@ const ProfileForm: React.FC = () => {
   };
 
   if (loading) {
-    return <div className={styles.container}>Loading profile...</div>;
+    return (
+      <div className={styles.container}>
+        <LoadingFallback />
+      </div>
+    );
   }
 
   return (

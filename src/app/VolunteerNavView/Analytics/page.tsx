@@ -13,6 +13,7 @@ import {
   UserRoute,
 } from "@/server/db/actions/userShifts";
 import { handleAuthError } from "@/lib/authErrorHandler";
+import LoadingFallback from "@/app/components/LoadingFallback";
 // import { auth } from "@/server/db/firebase"; // Import Firebase auth
 // import { onAuthStateChanged } from "firebase/auth";
 
@@ -153,7 +154,7 @@ function AnalyticsPage() {
 
         {loading ? (
           <div className="loading-container">
-            <p>Loading analytics data...</p>
+            <LoadingFallback />
           </div>
         ) : error ? (
           <div className="error-container">

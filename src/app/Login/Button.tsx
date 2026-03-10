@@ -9,6 +9,7 @@ interface Props {
     icon?: React.ReactNode;
     disabled?: boolean;
     width?: string | number;
+    label?: string
   }
   
   export default function Button({
@@ -19,6 +20,7 @@ interface Props {
     disabled = false,
     submit = false,
     icon = undefined,
+    label
   }: Props) {
     let styles = "";
   
@@ -37,7 +39,7 @@ interface Props {
           " pl-0 hover:bg-transparent hover:font-bold active:text-mbb-pink/60 active:bg-transparent";
       }
       
-      if (text === "Continue") {
+      if (text === "Continue" || label === "Continue") {
         styles += " bg-[#016ff3] text-white rounded-lg text-sm py-3"
       }
     }
@@ -45,7 +47,7 @@ interface Props {
     return (
       <button
         onClick={onClick}
-        className={`flex w-full items-center justify-center font-semibold ${styles}`}
+        className={`relative flex w-full items-center justify-center font-semibold ${styles}`}
         disabled={disabled}
         type={submit ? "submit" : "button"}
         style={{ width }}
