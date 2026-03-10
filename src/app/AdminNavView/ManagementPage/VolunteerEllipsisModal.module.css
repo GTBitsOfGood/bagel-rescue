@@ -1,0 +1,38 @@
+.modal {
+  position: fixed;
+  z-index: 50;
+  /* min-width: 240px; */
+  width: max-content;
+  background: white;
+  border: 2px solid #d3d8de;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  padding: 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.menuButton {
+  width: 100%;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  line-height: 20px;
+  padding: 12px 12px;
+  font-size: 16px;
+  color: #072b68;
+  cursor: pointer;
+  gap: 12px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap; /* prevents line wrapping */
+}
+
+.menuButton:hover {
+  background: #f5f7fa;
+}
+/* 
+.deleteButton {
+  color: #e60000;
+} */

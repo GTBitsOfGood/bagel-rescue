@@ -159,3 +159,47 @@
 .errorState {
   color: #bf1650;
 }
+
+.editButton {
+  border: 1px solid #D3D8DE;
+  background-color: #FFFFFF;
+  padding: 12px 16px;
+  height: 44px;
+  line-height: 20px;
+  border-radius: 8px;
+  color: #072B68;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.doneButton {
+  background-color: #0F7AFF;
+  cursor: pointer;
+  border: none;
+  color: #ECF2F9;
+  padding: 12px 16px;
+  height: 44px;
+  line-height: 20px;
+  border-radius: 8px;
+  font-weight: 400;
+}
+
+/* .editButton,
+.doneButton {
+  transition: 
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+} */
+
+.inputField {
+  background-color: #F9F9F9;
+  border: 1px solid #D3D8DE;
+  padding: 12px 16px;
+  color: #072B68;
+  font-size: 16px;
+  line-height: 20px;
+  border-radius: 8px;
+  height: 44px;
+}
