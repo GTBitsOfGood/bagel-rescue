@@ -1,19 +1,19 @@
 .container {
-    max-width: 1200px;
+    max-width: 120rem;
     margin: 0 auto;
   }
-  
+
   .newRouteButton {
-    background-color: #007bff;
-    color: #fff;
+    background-color: var(--Bagel-Rescue-Blue);
+    color: rgb(var(--background-rgb));
     border: none;
-    padding: 10px 15px;
-    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    border-radius: 0.8rem;
     cursor: pointer;
-    max-height: 44px;
-    
+    max-height: 4.4rem;
+
   }
-  
+
   .modal {
     position: relative;
     display: inline-block;
@@ -23,23 +23,23 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 2rem;
   }
-  
+
   .filterControls {
     display: flex;
-    gap: 10px;
+    gap: 1rem;
     align-items: center;
     color: var(--Bagel-Rescue-Dark-Blue);
   }
-  
+
   .sortSelect {
     background-color: rgb(var(--background-rgb));
     position: relative;
-    border: 1px solid #0F7AFF;
-    border-radius: 8px;
-    padding: 0 44px 0 16px;
-    font-size: 16px;
+    border: 1px solid var(--Bagel-Rescue-Blue);
+    border-radius: 0.8rem;
+    padding: 0 4.4rem 0 1.6rem;
+    font-size: 1.6rem;
     outline: none;
     color: var(--Bagel-Rescue-Dark-Blue);
     appearance: none;
@@ -47,89 +47,89 @@
     background-repeat: no-repeat;
     background-position: 90% center;
     width: auto;
-    min-width: 167px;
-    height: 44px;
+    min-width: 16.7rem;
+    height: 4.4rem;
   }
-  
+
   .filterButton {
     background-color: rgb(var(--background-rgb));
-    border: 1px solid #0F7AFF;
-    padding: 10px 15px;
-    border-radius: 8px;
+    border: 1px solid var(--Bagel-Rescue-Blue);
+    padding: 1rem 1.5rem;
+    border-radius: 0.8rem;
     cursor: pointer;
     color: var(--Bagel-Rescue-Dark-Blue);
   }
-  
+
   .tableContainer {
-    margin-top: 20px;
+    margin-top: 2rem;
     height: 72vh;
     overflow-y: auto;
   }
-  
+
   .tableHeader {
     display: grid;
     grid-template-columns: 2fr 1.5fr 1fr 3fr 0.5fr;
-    background-color: #C6E3FF;
-    border-radius: 8px;
-    padding: 16px;
+    background-color: var(--Bagel-Rescue-Light-Blue);
+    border-radius: 0.8rem;
+    padding: 1.6rem;
     font-weight: bold;
     color: var(--Bagel-Rescue-Dark-Blue);
-    margin-bottom: 10px;
-    padding-left: 20px;
+    margin-bottom: 1rem;
+    padding-left: 2rem;
   }
-  
+
   .columnHeader {
-    padding: 5px 10px;
+    padding: 0.5rem 1rem;
   }
-  
+
   .routeList {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 1rem;
   }
-  
+
   .routeCard {
     background-color: rgb(var(--background-rgb));
-    border: 1px solid #C6E3FF;
-    border-radius: 16px;
-    padding: 10px;
+    border: 1px solid var(--Bagel-Rescue-Light-Grey);
+    border-radius: 1.6rem;
+    padding: 1rem;
     color: var(--Bagel-Rescue-Dark-Blue);
   }
-  
+
   .routeDetails {
     display: grid;
     grid-template-columns: 2fr 1.5fr 1fr 3fr 0.5fr;
-    gap: 16px;
+    gap: 1.6rem;
     align-items: center;
   }
-  
+
   .routeInfo {
     display: flex;
     flex-direction: column;
-    padding-left: 20px;
+    padding-left: 2rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  
+
   .moreOptionsButton {
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 23px;
+    font-size: 2.3rem;
     transform: scaleX(0.9);
   }
-  
+
   .contextMenu {
     display: flex;
     flex-direction: column;
     position: absolute;
     top: 100%;
     background-color: rgb(var(--background-rgb));
-    border: 1px solid #0F7AFF;
-    border-radius: 12px;
-    gap: 6px;
-    padding: 15px 15px 9px 15px;
+    border: 1px solid var(--Bagel-Rescue-Blue);
+    border-radius: 1.2rem;
+    gap: 0.6rem;
+    padding: 1.5rem 1.5rem 0.9rem 1.5rem;
     width: 11em;
     right: 0;
     z-index: 10;
@@ -140,37 +140,37 @@
     align-items: center;
     cursor: pointer;
     display: flex;
-    gap: 8px;
+    gap: 0.8rem;
   }
 
   .modalDeleteRoute {
-    color: #810000;
+    color: var(--Bagel-Rescue-Error-Red);
   }
-  
+
   .searchInputContainer {
     display: flex;
     align-items: center;
-    padding-left: 20px;
-    width: 300px;
-    padding: 10px 15px; 
-    border: 1px solid #0F7AFF;
-    border-radius: 69px;
+    padding-left: 2rem;
+    width: 30rem;
+    padding: 1rem 1.5rem;
+    border: 1px solid var(--Bagel-Rescue-Blue);
+    border-radius: 6.9rem;
     overflow: hidden;
     background-color: rgb(var(--background-rgb));
   }
-  
+
   .searchIcon {
-    color: #0F7AFF;
-    font-size: 20px;
-    width: 20px; 
-    height: 20px; 
+    color: var(--Bagel-Rescue-Blue);
+    font-size: 2rem;
+    width: 2rem;
+    height: 2rem;
   }
-  
+
   .searchInput {
     border: none;
     outline: none;
     background-color: transparent;
-    padding-left: 10px;
+    padding-left: 1rem;
     flex-grow: 1;
   }
 
@@ -189,17 +189,19 @@
 
   .editModal {
     background-color: rgb(var(--background-rgb));
-    border-radius: 16px;
-    padding: 32px;
-    width: 480px;
+    border-radius: 1.6rem;
+    padding: 3.2rem;
+    width: 48rem;
     max-width: 90vw;
+    max-height: 85vh;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 2rem;
   }
 
   .editModalTitle {
-    font-size: 20px;
+    font-size: 2rem;
     font-weight: 600;
     color: var(--Bagel-Rescue-Dark-Blue);
     margin: 0;
@@ -208,30 +210,30 @@
   .editLabel {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    font-size: 14px;
+    gap: 0.6rem;
+    font-size: 1.4rem;
     font-weight: 500;
     color: var(--Bagel-Rescue-Dark-Blue);
   }
 
   .editInput {
-    border: 1px solid #C6E3FF;
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 14px;
+    border: 1px solid var(--Bagel-Rescue-Light-Grey);
+    border-radius: 0.8rem;
+    padding: 1rem 1.4rem;
+    font-size: 1.4rem;
     outline: none;
     color: var(--Bagel-Rescue-Dark-Blue);
   }
 
   .editInput:focus {
-    border-color: #0F7AFF;
+    border-color: var(--Bagel-Rescue-Blue);
   }
 
   .editTextarea {
-    border: 1px solid #C6E3FF;
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 14px;
+    border: 1px solid var(--Bagel-Rescue-Light-Grey);
+    border-radius: 0.8rem;
+    padding: 1rem 1.4rem;
+    font-size: 1.4rem;
     outline: none;
     resize: vertical;
     font-family: inherit;
@@ -239,37 +241,167 @@
   }
 
   .editTextarea:focus {
-    border-color: #0F7AFF;
+    border-color: var(--Bagel-Rescue-Blue);
   }
 
   .editActions {
     display: flex;
     justify-content: flex-end;
-    gap: 12px;
-    margin-top: 4px;
+    gap: 1.2rem;
+    margin-top: 0.4rem;
   }
 
   .editCancelButton {
-    padding: 10px 20px;
-    border: 1px solid #C6E3FF;
-    border-radius: 8px;
+    padding: 1rem 2rem;
+    border: 1px solid var(--Bagel-Rescue-Light-Grey);
+    border-radius: 0.8rem;
     background: none;
     cursor: pointer;
     color: var(--Bagel-Rescue-Dark-Blue);
-    font-size: 14px;
+    font-size: 1.4rem;
   }
 
   .editSaveButton {
-    padding: 10px 20px;
+    padding: 1rem 2rem;
     border: none;
-    border-radius: 8px;
-    background-color: #007bff;
-    color: #fff;
+    border-radius: 0.8rem;
+    background-color: var(--Bagel-Rescue-Blue);
+    color: rgb(var(--background-rgb));
     cursor: pointer;
-    font-size: 14px;
+    font-size: 1.4rem;
   }
 
   .editSaveButton:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  /* Location editing in modal */
+
+  .editLocationsBox {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    border: 1px solid var(--Bagel-Rescue-Light-Grey);
+    border-radius: 0.8rem;
+    padding: 1rem;
+    max-height: 25rem;
+    overflow-y: auto;
+  }
+
+  .editLocationCard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--Bagel-Rescue-Light-Grey);
+    border-radius: 0.8rem;
+    background-color: rgb(var(--background-rgb));
+  }
+
+  .editLocationInfo {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    overflow: hidden;
+  }
+
+  .editLocationNumber {
+    font-weight: 600;
+    color: var(--Bagel-Rescue-Blue);
+    min-width: 2rem;
+  }
+
+  .editLocationName {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .editLocationActions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-shrink: 0;
+  }
+
+  .editPickUpToggle {
+    border: none;
+    border-radius: 0.4rem;
+    padding: 0.3rem 0.8rem;
+    font-size: 1.2rem;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .editRemoveBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.8rem;
+    color: var(--Bagel-Rescue-Light-Text);
+    padding: 0 0.4rem;
+    line-height: 1;
+  }
+
+  .editRemoveBtn:hover {
+    color: var(--Bagel-Rescue-Error-Red);
+  }
+
+  .editAddLocationBtn {
+    border: 1px dashed var(--Bagel-Rescue-Blue);
+    border-radius: 0.8rem;
+    padding: 0.8rem;
+    background: none;
+    color: var(--Bagel-Rescue-Blue);
+    cursor: pointer;
+    font-size: 1.4rem;
+    text-align: center;
+  }
+
+  .editAddLocationBtn:hover {
+    background-color: var(--Bagel-Rescue-Light-Blue);
+  }
+
+  .editAddLocationSearch {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .editSearchRow {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+  }
+
+  .editSearchRow .editInput {
+    flex: 1;
+  }
+
+  .editSearchResults {
+    display: flex;
+    flex-direction: column;
+    max-height: 15rem;
+    overflow-y: auto;
+  }
+
+  .editSearchItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    border-radius: 0.4rem;
+  }
+
+  .editSearchItem:hover {
+    background-color: var(--Bagel-Rescue-Light-Blue);
+  }
+
+  .editSearchItemType {
+    border-radius: 0.4rem;
+    padding: 0.2rem 0.6rem;
+    font-size: 1.2rem;
+    white-space: nowrap;
   }
