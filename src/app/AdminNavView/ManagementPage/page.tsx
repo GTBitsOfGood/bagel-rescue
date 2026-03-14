@@ -224,7 +224,7 @@ function ManagementPage() {
               <p className="w-[10rem]">Volunteer Time</p>
             </div>
 
-            <div className="w-full h-full flex flex-col gap-4">
+            <div className="w-full h-full flex flex-col gap-4 mb-10">
               {filteredVolunteers.map((volunteer, index) => (
                 <div
                   key={volunteer._id?.toString() ?? index}

@@ -38,7 +38,7 @@ const VolunteerEllipsisModal: React.FC<VolunteerEllipsisModalProps> = ({
         style={{
           left: `${position.x}px`,
           top: `${position.y}px`,
-          transform: "translate(-92%, 0px)",
+          transform: "translate(-80%, -2.8rem)",
         }}
         onClick={(e) => e.stopPropagation()}
         onMouseDown={(e) => e.stopPropagation()}
