@@ -17,13 +17,13 @@
   width: 100%;
   border: none;
   background: transparent;
-  border-radius: 8px;
-  line-height: 20px;
-  padding: 12px 12px;
-  font-size: 16px;
+  border-radius: 0.5rem;
+  line-height: 1.25rem;
+  padding: 0.75rem 0.75rem;
+  font-size: 1rem;
   color: #072b68;
   cursor: pointer;
-  gap: 12px;
+  gap: 0.75rem;
   display: flex;
   align-items: center;
   white-space: nowrap; /* prevents line wrapping */
@@ -32,7 +32,7 @@
 .menuButton:hover {
   background: #f5f7fa;
 }
-/* 
+
 .deleteButton {
   color: #e60000;
-} */
+}
