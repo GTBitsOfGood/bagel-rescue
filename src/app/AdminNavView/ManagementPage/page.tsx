@@ -19,7 +19,7 @@ import {
 import UserSidebar from "@/app/components/UserSidebar";
 import { errorToast, successToast } from "@/lib/toastConfig";
 import VolunteerEllipsisModal from "./VolunteerEllipsisModal";
-import VolunteerDeletionModal from "./VolunterDeletionModal";
+import VolunteerDeletionModal from "./VolunteerDeletionModal";
 
 function ManagementPage() {
   const [search, setSearch] = useState<string>("");
