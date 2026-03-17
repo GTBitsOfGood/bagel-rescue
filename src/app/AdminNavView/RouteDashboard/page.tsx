@@ -143,6 +143,12 @@ export default function RouteDashboardPage() {
 
   const handleEditRoute = async (route: IRoute) => {
     setEditingRoute(route);
+
+    setEditLocations([]);
+    setEditSearchLocations([]);
+    setEditLocationsIsPickUp(new Map());
+    setEditRouteArea({});
+
     setEditRouteName(route.routeName);
     setEditAdditionalInfo(route.additionalInfo === "-" ? "" : route.additionalInfo);
     setOpenModalIndex(null);
