@@ -95,16 +95,16 @@ export async function updateRouteName(
 ): Promise<IRoute | null> {
   try {
     await requireAdmin();
-    
+
     // Validate inputs
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       throw new Error("Invalid route ID format");
     }
-    
+
     if (!newRouteName || typeof newRouteName !== "string" || newRouteName.trim() === "") {
       throw new Error("newRouteName must be a non-empty string");
     }
-    
+
     return await RouteModel.findByIdAndUpdate(
       id,
       { routeName: newRouteName },
@@ -114,6 +114,66 @@ export async function updateRouteName(
     const err = error as Error;
     console.error("Error updating route name:", err);
     throw new Error(`Failed to update route name: ${err.message}`);
+  }
+}
+
+export async function updateRoute(
+  id: string,
+  routeName: string,
+  additionalInfo: string,
+  locationsJson?: string,
+  locationDescription?: string
+): Promise<string | null> {
+  try {
+    await requireAdmin();
+    await dbConnect();
+
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      throw new Error("Invalid route ID format");
+    }
+
+    if (!routeName || typeof routeName !== "string" || routeName.trim() === "") {
+      throw new Error("routeName must be a non-empty string");
+    }
+
+    if (typeof additionalInfo !== "string") {
+      throw new Error("additionalInfo must be a string");
+    }
+
+    const updateData: Record<string, unknown> = {
+      routeName: routeName.trim(),
+      additionalInfo,
+    };
+
+    if (locationsJson !== undefined) {
+      const locations = JSON.parse(locationsJson);
+      if (!Array.isArray(locations)) {
+        throw new Error("locations must be an array");
+      }
+      for (const loc of locations) {
+        if (!loc.location || !mongoose.Types.ObjectId.isValid(loc.location)) {
+          throw new Error("Each location must have a valid ObjectId");
+        }
+        if (!["dropoff", "pickup"].includes(loc.type)) {
+          throw new Error("Each location type must be 'dropoff' or 'pickup'");
+        }
+      }
+      updateData.locations = locations;
+    }
+
+    if (locationDescription !== undefined) {
+      updateData.locationDescription = locationDescription;
+    }
+
+    const updated = await RouteModel.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true }
+    ).lean();
+    return JSON.stringify(updated);
+  } catch (error) {
+    const err = error as Error;
+    throw new Error(`Failed to update route: ${err.message}`);
   }
 }
 
