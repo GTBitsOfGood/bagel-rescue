@@ -17,7 +17,7 @@ export type UserStats = {
 
 async function createUser(
   newUser: IUser,
-  session?: ClientSession
+  session?: ClientSession,
 ): Promise<IUser> {
   // if (!newUser.bagelsDelivered) {
   //   newUser.bagelsDelivered = 0;
@@ -36,9 +36,60 @@ async function createUser(
   return userDocument;
 }
 
+async function deleteUser(
+  id: string,
+  session?: ClientSession,
+): Promise<{ success: boolean; deletedUserId: string }> {
+  await requireAdmin();
+  await dbConnect();
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new Error("Invalid user ID format");
+  }
+
+  // Get current user and verify authorization
+  const currentUserId = await getCurrentUserId();
+  if (!currentUserId) {
+    throw new Error("User not authenticated");
+  }
+  const currentUser = await User.findById(currentUserId);
+  if (!currentUser) {
+    throw new Error("Current user not found");
+  }
+  // Only allow users to view their own data, or admins to view any user's data
+  if (!currentUser.isAdmin) {
+    throw new Error("You do not have permission to delete this user");
+  }
+  if (currentUserId.toString() === id) {
+    throw new Error("You cannot delete your own account");
+  }
+
+  const userObjectId = new mongoose.Types.ObjectId(id);
+  const userToDelete = await User.findById(userObjectId);
+  if (!userToDelete) {
+    throw new Error(`User with id ${id} does not exist`);
+  }
+
+  if (userToDelete.isAdmin) {
+    throw new Error("Admin users cannot be deleted");
+  }
+
+  const result = await User.deleteOne(
+    { _id: new mongoose.Types.ObjectId(id) },
+    { session },
+  );
+  if (result.deletedCount === 0) {
+    throw new Error("User with that id " + id + " does not exist");
+  }
+  return {
+    success: true,
+    deletedUserId: id,
+  };
+}
+
 async function getUser(
   id: string,
-  session?: ClientSession
+  session?: ClientSession,
 ): Promise<IUser | null> {
   await requireAdmin();
   await dbConnect();
@@ -53,12 +104,12 @@ async function getUser(
   if (!currentUserId) {
     throw new Error("User not authenticated");
   }
-  
+
   const currentUser = await User.findById(currentUserId);
   if (!currentUser) {
     throw new Error("Current user not found");
   }
-  
+
   // Only allow users to view their own data, or admins to view any user's data
   if (currentUserId !== id && !currentUser.isAdmin) {
     throw new Error("You do not have permission to view this user's data");
@@ -71,7 +122,7 @@ async function getUser(
     { __v: 0 },
     {
       session: session,
-    }
+    },
   ).lean<IUser>();
   if (!document) {
     throw new Error("User with that id " + id + " does not exist");
@@ -81,7 +132,7 @@ async function getUser(
 
 async function getUserById(
   id: string,
-  session?: ClientSession
+  session?: ClientSession,
 ): Promise<IUser | null> {
   await requireAdmin();
   await dbConnect();
@@ -95,7 +146,7 @@ async function getUserById(
     { __v: 0 },
     {
       session: session,
-    }
+    },
   ).lean();
 
   if (!document) {
@@ -107,7 +158,7 @@ async function getUserById(
 
 async function getUserByEmail(
   email: string,
-  session?: ClientSession
+  session?: ClientSession,
 ): Promise<IUser | null> {
   // await requireUser();
   await dbConnect();
@@ -117,7 +168,7 @@ async function getUserByEmail(
     { __v: 0 },
     {
       session: session,
-    }
+    },
   ).lean();
   if (!document) {
     const doc = await User.findOne(
@@ -125,7 +176,7 @@ async function getUserByEmail(
       { __v: 0 },
       {
         session: session,
-      }
+      },
     ).lean();
 
     if (!doc) {
@@ -139,7 +190,7 @@ async function getUserByEmail(
 
 async function getUserByActivationToken(
   token: string,
-  session?: ClientSession
+  session?: ClientSession,
 ): Promise<IUser | null> {
   // await requireUser();
   await dbConnect();
@@ -149,11 +200,11 @@ async function getUserByActivationToken(
     { __v: 0 },
     {
       session: session,
-    }
+    },
   ).lean<IUser>();
   if (!document) {
     throw new Error(
-      "User with that activation token " + token + " does not exist"
+      "User with that activation token " + token + " does not exist",
     );
   }
   return JSON.parse(JSON.stringify(document));
@@ -162,20 +213,24 @@ async function getUserByActivationToken(
 async function updateUser(
   id: string,
   updated: UpdateQuery<IUser>,
-  session?: ClientSession
+  session?: ClientSession,
 ) {
   await requireUser();
   await dbConnect();
 
   const userId = await getCurrentUserId();
-  if (userId !== id) {
+  if (userId !== id && !(await User.findById(userId))?.isAdmin) {
     throw new Error("You are not authorized to update this user");
   }
 
-  const document = await User.findByIdAndUpdate(new mongoose.Types.ObjectId(id), { $set: updated }, {
-    projection: { __v: 0 },
-    session: session,
-  });
+  const document = await User.findByIdAndUpdate(
+    new mongoose.Types.ObjectId(id),
+    { $set: updated },
+    {
+      projection: { __v: 0 },
+      session: session,
+    },
+  );
   if (!document) {
     throw new Error("User with that id " + id + " does not exist");
   }
@@ -183,7 +238,7 @@ async function updateUser(
 
 async function getUsersPerShift(
   shiftId: string,
-  session?: ClientSession
+  session?: ClientSession,
 ): Promise<IUser[]> {
   await requireUser();
   await dbConnect();
@@ -192,34 +247,36 @@ async function getUsersPerShift(
     if (!shiftId || !mongoose.Types.ObjectId.isValid(shiftId)) {
       throw new Error("Invalid shiftId format");
     }
-    
+
     // Get current user and verify authorization
     const currentUserId = await getCurrentUserId();
     if (!currentUserId) {
       throw new Error("User not authenticated");
     }
-    
+
     const currentUser = await User.findById(currentUserId);
     if (!currentUser) {
       throw new Error("Current user not found");
     }
-    
+
     // For non-admins, verify they have access to this shift
     if (!currentUser.isAdmin) {
       // Check if user is assigned to this shift
       const userShift = await UserShiftModel.findOne({
         userId: new mongoose.Types.ObjectId(currentUserId),
-        shiftId: new mongoose.Types.ObjectId(shiftId)
+        shiftId: new mongoose.Types.ObjectId(shiftId),
       });
-      
+
       // Also check if shift is open
       const shift = await ShiftModel.findById(shiftId);
-      
+
       if (!userShift && shift?.status !== "open") {
-        throw new Error("You do not have permission to view users for this shift");
+        throw new Error(
+          "You do not have permission to view users for this shift",
+        );
       }
     }
-    
+
     const documents = await UserShiftModel.aggregate([
       {
         $match: { shiftId: new mongoose.Types.ObjectId(shiftId) }, // filter by the specific shift
@@ -249,7 +306,7 @@ async function getUsersPerShift(
 
 async function getUserStats(
   id: mongoose.Types.ObjectId,
-  session?: ClientSession
+  session?: ClientSession,
 ): Promise<UserStats | null> {
   await requireUser();
   await dbConnect();
@@ -259,12 +316,12 @@ async function getUserStats(
   if (!currentUserId) {
     throw new Error("User not authenticated");
   }
-  
+
   const currentUser = await User.findById(currentUserId);
   if (!currentUser) {
     throw new Error("Current user not found");
   }
-  
+
   // Only allow users to view their own stats, or admins to view any user's stats
   if (currentUserId !== id.toString() && !currentUser.isAdmin) {
     throw new Error("You do not have permission to view this user's stats");
@@ -275,7 +332,7 @@ async function getUserStats(
     { __v: 0 },
     {
       session: session,
-    }
+    },
   );
   if (!document) {
     throw new Error("User with that id " + id.toString() + " does not exist");
@@ -292,7 +349,7 @@ async function getAllUserStats(): Promise<string | null> {
 
   const documents = await User.find(
     {},
-    { firstName: 1, lastName: 1, bagelsDelivered: 1, totalDeliveries: 1 }
+    { firstName: 1, lastName: 1, bagelsDelivered: 1, totalDeliveries: 1 },
   );
   return JSON.stringify(documents);
 }
@@ -329,7 +386,7 @@ async function getCurrentUserId(): Promise<string | null> {
     // Get the auth token from cookies
     const cookieStore = cookies();
     const authToken = cookieStore.get("authToken");
-    
+
     if (!authToken) {
       console.warn("No auth token found in cookies");
       return null;
@@ -348,13 +405,13 @@ async function getCurrentUserId(): Promise<string | null> {
     await dbConnect();
     const mongoUser = await getUserByEmail(userEmail);
 
-    if (!mongoUser || !('_id' in mongoUser)) {
+    if (!mongoUser || !("_id" in mongoUser)) {
       console.warn(`No MongoDB user found for email: ${userEmail}`);
       return null;
     }
 
     // Return the MongoDB user ID as a string
-    return (mongoUser._id!).toString();
+    return mongoUser._id!.toString();
   } catch (error) {
     console.error("Error getting current user ID:", error);
     return null;
@@ -374,7 +431,7 @@ async function getVolunteerManagementData(): Promise<string> {
         status: 1,
         locations: 1,
         monthlyShifts: 1,
-      }
+      },
     ).lean();
 
     return JSON.stringify(volunteers);
@@ -384,22 +441,34 @@ async function getVolunteerManagementData(): Promise<string> {
   }
 }
 
-async function setMonthlyShifts(userId: string, monthlyShifts: Map<string, { shiftTime: number; bagelsDelivered: number; bagelsReceived: number; totalShifts: number }>): Promise<void> {
+async function setMonthlyShifts(
+  userId: string,
+  monthlyShifts: Map<
+    string,
+    {
+      shiftTime: number;
+      bagelsDelivered: number;
+      bagelsReceived: number;
+      totalShifts: number;
+    }
+  >,
+): Promise<void> {
   await dbConnect();
   await requireUser();
 
-  if (await getCurrentUserId() !== userId) {
+  if ((await getCurrentUserId()) !== userId) {
     throw new Error("You are not authorized to update this user");
   }
 
   await User.updateOne(
     { _id: new mongoose.Types.ObjectId(userId) },
-    { $set: { monthlyShifts: monthlyShifts } }
+    { $set: { monthlyShifts: monthlyShifts } },
   );
 }
 
 export {
   createUser,
+  deleteUser,
   getUser,
   getUserById,
   getUserByEmail,
@@ -412,5 +481,5 @@ export {
   getCurrentUserId,
   getUsersPerShift,
   getVolunteerManagementData,
-  setMonthlyShifts
+  setMonthlyShifts,
 };
