@@ -358,13 +358,13 @@ const MyShiftsPage: React.FC = () => {
             className={`${styles.tabButton} ${activeTab === "myShifts" ? styles.activeTab : ""}`}
             onClick={() => setActiveTab("myShifts")}
           >
-            My Shifts ({shifts.length})
+            {loading ? "Loading..." : `My Shifts (${shifts.length})`}
           </button>
           <button 
             className={`${styles.tabButton} ${activeTab === "openShifts" ? styles.activeTab : ""}`}
             onClick={() => setActiveTab("openShifts")}
           >
-            Open Shifts ({openShifts.length})
+            {loading ? "Loading..." : `Open Shifts (${openShifts.length})`}
           </button>
         </div>
 

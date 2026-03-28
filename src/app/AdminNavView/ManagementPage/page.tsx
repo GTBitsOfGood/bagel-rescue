@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faSearch,
+  faMagnifyingGlass,
   faArrowUpShortWide,
   faChevronDown,
   faEllipsisH,
@@ -20,10 +20,15 @@ import UserSidebar from "@/app/components/UserSidebar";
 import { errorToast, successToast } from "@/lib/toastConfig";
 import VolunteerEllipsisModal from "./VolunteerEllipsisModal";
 import VolunteerDeletionModal from "./VolunteerDeletionModal";
+import { useRouter } from "next/navigation";
+import { handleAuthError } from "@/lib/authErrorHandler";
+import LoadingFallback from "@/app/components/LoadingFallback";
 
 function ManagementPage() {
+  const router = useRouter();
   const [search, setSearch] = useState<string>("");
   const [volunteers, setVolunteers] = useState<IUser[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedVolunteer, setSelectedVolunteer] = useState<string | null>(
     null,
   );
@@ -48,18 +53,23 @@ function ManagementPage() {
   );
 
   useEffect(() => {
+    const fetchVolunteerData = async () => {
+      setIsLoading(true);
+      try {
+        const data = await getVolunteerManagementData();
+        setVolunteers(JSON.parse(data));
+      } catch (error) {
+        if (handleAuthError(error, router)) {
+          return;
+        }
+        console.error("Failed to fetch volunteers:", error);
+        setVolunteers([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     fetchVolunteerData();
-  }, []);
-
-  async function fetchVolunteerData() {
-    try {
-      const data = await getVolunteerManagementData();
-      setVolunteers(JSON.parse(data));
-    } catch (error) {
-      console.error("Failed to fetch volunteers:", error);
-      setVolunteers([]);
-    }
-  }
+  }, [router]);
 
   function formatStatus(status: string) {
     return status
@@ -167,22 +177,40 @@ function ManagementPage() {
   });
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex flex-col flex-1 min-w-0">
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col bg-white">
         <ManagementBar />
 
-        <div className="bg-[#ECF2F9] flex flex-col pl-9 pr-9 gap-6 min-h-screen">
-          <div className="flex justify-between text-[#6C7D93] mt-6">
-            <div className="px-5 py-[.6rem] rounded-xl space-x-2 border bg-white">
-              <FontAwesomeIcon icon={faArrowUpShortWide} />
+        <div className="flex min-h-0 flex-1 flex-col gap-6 bg-[#ECF2F9] pl-9 pr-9">
+          <div className="mt-6 flex min-w-0 flex-wrap items-center justify-between gap-4 text-[#6C7D93]">
+            <div className="flex shrink-0 items-center gap-2 rounded-xl border bg-white px-5 py-[0.6rem]">
+              <FontAwesomeIcon
+                icon={faArrowUpShortWide}
+                className="h-4 w-4 shrink-0"
+                style={{
+                  width: "1rem",
+                  height: "1rem",
+                  maxWidth: "1rem",
+                  maxHeight: "1rem",
+                }}
+              />
               <span>Sort by</span>
             </div>
 
-            <div className="flex min-w-96 border px-5 py-[.6rem] justify-start gap-2 rounded-[2.5rem] bg-white">
-              <FontAwesomeIcon icon={faSearch} className="mt-1" />
+            <div className="flex min-w-0 max-w-full flex-1 basis-[min(100%,24rem)] items-center gap-2 rounded-[2.5rem] border bg-white px-5 py-[0.6rem] sm:min-w-[min(100%,24rem)] sm:flex-initial sm:basis-auto">
+              <FontAwesomeIcon
+                icon={faMagnifyingGlass}
+                className="h-4 w-4 shrink-0 text-[#6C7D93]"
+                style={{
+                  width: "1rem",
+                  height: "1rem",
+                  maxWidth: "1rem",
+                  maxHeight: "1rem",
+                }}
+              />
               <input
-                className="min-w-96 outline-none"
+                className="min-w-0 flex-1 outline-none"
                 type="search"
                 value={search}
                 onChange={(e) => {
@@ -192,13 +220,22 @@ function ManagementPage() {
               />
             </div>
 
-            <div className="flex flex-row gap-4 justify-center items-center text-[var(--Bagel-Rescue-Dark-Blue-2,#072b68)]">
+            <div className="flex shrink-0 flex-row flex-wrap items-center justify-center gap-4 text-[var(--Bagel-Rescue-Dark-Blue-2,#072b68)]">
               <div className="mr-[-0.4rem]">Sorted: </div>
-              <button className="px-5 py-[.6rem] rounded-lg space-x-2 border bg-white">
+              <button
+                type="button"
+                className="flex items-center gap-2 rounded-lg border bg-white px-5 py-[0.6rem]"
+              >
                 <span>Alphabetically</span>
-                <FontAwesomeIcon icon={faChevronDown} />
+                <FontAwesomeIcon
+                  icon={faChevronDown}
+                  className="h-3 w-3 shrink-0"
+                />
               </button>
-              <button className="px-5 py-[.6rem] rounded-lg space-x-2 border bg-white">
+              <button
+                type="button"
+                className="rounded-lg border bg-white px-5 py-[0.6rem]"
+              >
                 <span>Filter</span>
               </button>
             </div>
@@ -215,8 +252,14 @@ function ManagementPage() {
             />
           )}
 
-          <div className="w-full h-full flex flex-col gap-4 pb-4">
-            <div className="w-full flex flex-row items-center py-4 px-[2rem] gap-x-12 bg-blue-200 rounded-lg text-[var(--Bagel-Rescue-Dark-Blue-2,#072b68)]">
+          <div className="flex min-h-0 w-full flex-1 flex-col gap-4 pb-4">
+            {isLoading ? (
+              <div className="flex min-h-[12rem] flex-1 flex-col items-center justify-center py-12">
+                <LoadingFallback />
+              </div>
+            ) : (
+              <>
+            <div className="flex w-full flex-row items-center gap-x-12 rounded-lg bg-blue-200 px-[2rem] py-4 text-[var(--Bagel-Rescue-Dark-Blue-2,#072b68)]">
               <p className="w-[10rem]">Name</p>
               <p className="w-[17rem]">Locations</p>
               <p className="w-[14.5rem]">Status</p>
@@ -224,7 +267,7 @@ function ManagementPage() {
               <p className="w-[10rem]">Volunteer Time</p>
             </div>
 
-            <div className="w-full h-full flex flex-col gap-4 mb-10">
+            <div className="mb-10 flex h-full w-full flex-col gap-4">
               {filteredVolunteers.map((volunteer, index) => (
                 <div
                   key={volunteer._id?.toString() ?? index}
@@ -363,15 +406,20 @@ function ManagementPage() {
                         handleEllipsisClick(e, volunteer._id.toString());
                       }}
                       onMouseDown={(e) => e.stopPropagation()}
-                      className="px-2 py-[1px] rounded-md hover:bg-gray-100 transition-colors duration-150"
+                      className="rounded-md px-2 py-[1px] transition-colors duration-150 hover:bg-gray-100"
                       aria-label="More options"
                     >
-                      <FontAwesomeIcon icon={faEllipsisH} />
+                      <FontAwesomeIcon
+                        icon={faEllipsisH}
+                        className="h-4 w-4 shrink-0"
+                      />
                     </button>
                   </div>
                 </div>
               ))}
             </div>
+              </>
+            )}
           </div>
 
           <VolunteerEllipsisModal

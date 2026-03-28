@@ -21,9 +21,11 @@ import AdminSidebar from "../../../components/AdminSidebar";
 import styles from "./page.module.css";
 import "./stylesheet.css";
 import { handleAuthError } from "@/lib/authErrorHandler";
+import LoadingFallback from "@/app/components/LoadingFallback";
 
 export default function RouteDashboardPage() {
   const [routes, setRoutes] = useState<IRoute[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [sortOption, setSortOption] = useState<string>('alphabetically');
   const [searchText, setSearchText] = useState<string>("");
   const [openModalIndex, setOpenModalIndex] = useState<number | null>(null);
@@ -43,6 +45,7 @@ export default function RouteDashboardPage() {
 
   useEffect(() => {
     const fetchRoutes = async () => {
+      setIsLoading(true);
       try {
         const response = await getAllRoutes();
         const data = JSON.parse(response || "[]");
@@ -59,10 +62,12 @@ export default function RouteDashboardPage() {
         }
         console.error("Error fetching routes:", error);
         setRoutes([]);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchRoutes();
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -291,25 +296,37 @@ export default function RouteDashboardPage() {
   };
 
   return (
-    <div className="flex">
+    <div className="flex min-h-screen">
       <AdminSidebar />
-      <div className="flex flex-col flex-1">
-        <div className="route-dash-header">
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col bg-white">
+        <div className="route-dash-header shrink-0 bg-white">
             <p className="header-text">Routes</p>
             <button 
-              className={styles.newRouteButton} 
+              type="button"
+              className="inline-flex shrink-0 flex-nowrap items-center gap-2 whitespace-nowrap rounded-xl bg-[#0F7AFF] px-5 py-[0.8rem] font-bold text-white hover:bg-[#005bb5] min-w-max"
               onClick={() => router.push("/AdminNavView/RouteCreationPage")}
             >
-              <FontAwesomeIcon icon={faPlus} className="mr-2" />
-              New Route
+              <FontAwesomeIcon icon={faPlus} className="h-4 w-4 shrink-0" />
+              <span>New Route</span>
             </button>
         </div>
-        <hr className="route-dash-separator" />
-        <div className="route-dash-container">
-          <div className={styles.container}>
+        <hr className="route-dash-separator shrink-0" />
+        <div className="route-dash-container flex min-h-0 flex-1 flex-col">
+          <div
+            className={`${styles.container} flex min-h-0 w-full flex-1 flex-col`}
+          >
             <div className={styles.searchAndSort}>
               <div className={styles.searchInputContainer}>
-                <FontAwesomeIcon icon={faMagnifyingGlass} className={styles.searchIcon} />
+                <FontAwesomeIcon
+                  icon={faMagnifyingGlass}
+                  className={`${styles.searchIcon} h-4 w-4 shrink-0`}
+                  style={{
+                    width: "1rem",
+                    height: "1rem",
+                    maxWidth: "1rem",
+                    maxHeight: "1rem",
+                  }}
+                />
                 <input
                   type="text"
                   placeholder="Search for route"
@@ -328,6 +345,7 @@ export default function RouteDashboardPage() {
                   <option value="byArea">By Area</option>
                 </select>
                 <button 
+                  type="button"
                   className={styles.filterButton} 
                   onClick={handleSortChange}
                 >
@@ -335,6 +353,11 @@ export default function RouteDashboardPage() {
                 </button>
               </div>
             </div>
+            {isLoading ? (
+              <div className="route-dash-loading flex-1">
+                <LoadingFallback />
+              </div>
+            ) : (
             <div className={styles.tableContainer}>
               <div className={styles.tableHeader}>
                 <div className={styles.columnHeader}>Route Name</div>
@@ -399,6 +422,7 @@ export default function RouteDashboardPage() {
                 ))}
               </div>
             </div>
+            )}
           </div>
         </div>
       </div>
