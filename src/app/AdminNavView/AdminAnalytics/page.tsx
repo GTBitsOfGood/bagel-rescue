@@ -101,7 +101,7 @@ export default function AdminAnalytics() {
             <h1 className="text-4xl font-bold text-[#072B68]">Analytics</h1>
         </div>
         {loading ? (
-          <div className="flex min-h-[60vh] flex-1 flex-col items-center justify-center bg-[#F6F9FC] px-9 py-16">
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center bg-[#F6F9FC] px-9 py-16">
             <LoadingFallback />
           </div>
         ) : !analyticsData || !volunteerData || !overViewData ? (

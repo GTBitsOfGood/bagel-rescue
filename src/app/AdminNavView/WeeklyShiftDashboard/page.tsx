@@ -3,7 +3,7 @@
 import "./stylesheet.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Shift } from "@/server/db/models/shift";
@@ -70,7 +70,10 @@ function WeeklyShiftDashboard() {
     const [isDateReady, setIsDateReady] = useState(false);
 
     const [date, setDate] = useState<Date>(() => new Date());
-    const { startOfWeek, endOfWeek } = getWeekRange(date);
+    const { startOfWeek, endOfWeek } = useMemo(
+        () => getWeekRange(date),
+        [date]
+    );
 
     const AddDays = (e: number) => {
         const newDate = new Date(date);
@@ -81,21 +84,24 @@ function WeeklyShiftDashboard() {
         localStorage.setItem(ADMIN_DASHBOARD_DATE, newDate.toISOString());
     };
 
-    const fetchWeeklyShifts = async (startDate: Date, endDate: Date) => {
-        try {
-            const weeklyShiftResponse = await getShiftsByWeek(
-                startDate,
-                endDate
-            );
-            const weeklyShiftData = JSON.parse(weeklyShiftResponse || "[]");
-            // canceledShift logic is done in routesList function
-            setWeeklyShiftData(weeklyShiftData);
-        } catch (error) {
-            console.error("Error fetching shifts:", error);
-        }
-    };
+    const fetchWeeklyShifts = useCallback(
+        async (startDate: Date, endDate: Date) => {
+            try {
+                const weeklyShiftResponse = await getShiftsByWeek(
+                    startDate,
+                    endDate
+                );
+                const weeklyShiftData = JSON.parse(weeklyShiftResponse || "[]");
+                // canceledShift logic is done in routesList function
+                setWeeklyShiftData(weeklyShiftData);
+            } catch (error) {
+                console.error("Error fetching shifts:", error);
+            }
+        },
+        []
+    );
 
-    const fetchShifts = async () => {
+    const fetchShifts = useCallback(async () => {
         try {
             const shift_response = await getAllShifts();
             const shift_data: Shift[] = JSON.parse(shift_response || "[]");
@@ -114,7 +120,7 @@ function WeeklyShiftDashboard() {
             }
             console.error("Error fetching shifts:", error);
         }
-    };
+    }, [router]);
 
     const handleDeleteShift = async (shift: Shift) => {
         console.log("Delete shift:", shift);
@@ -173,7 +179,14 @@ function WeeklyShiftDashboard() {
         return () => {
             cancelled = true;
         };
-    }, [date, isDateReady]);
+    }, [
+        date,
+        isDateReady,
+        fetchShifts,
+        fetchWeeklyShifts,
+        startOfWeek,
+        endOfWeek,
+    ]);
 
     useEffect(() => {
         const fetchVolunteers = async () => {
