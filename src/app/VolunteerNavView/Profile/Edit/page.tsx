@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import EditProfileForm from '../../../../components/EditProfileForm';
 import Sidebar from "../../../../components/Sidebar";
 import styles from "./page.module.css";
 import BackButton from '@/app/components/BackButton';
 
 const EditProfile: React.FC = () => {
+  const router = useRouter();
   const [popup, setPopup] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
@@ -30,13 +32,13 @@ const EditProfile: React.FC = () => {
       setPendingNavigation(path);
       setPopup(true);
     } else {
-      window.location.href = path;
+      router.push(path);
     }
   }
 
   const handleLoseChanges = () => {
     if (pendingNavigation) {
-      window.location.href = pendingNavigation;
+      router.push(pendingNavigation);
     } else {
       window.history.back();
     }
