@@ -12,9 +12,10 @@ import LoadingFallback from '@/app/components/LoadingFallback';
 
 interface EditProfileFormProps {
   togglePopup: () => void;
+  setHasChanges: (hasChanges: boolean) => void;
 }
 
-const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup }) => {
+const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup, setHasChanges }) => {
   const router = useRouter();
   const [initialName, setInitialName] = useState('');
   const [locations, setLocations] = useState<string[]>([]);
@@ -91,6 +92,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup }) => {
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
+    setHasChanges(true);
     setUserData((prev) => ({
       ...prev,
       [name]: value,
@@ -99,6 +101,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup }) => {
 
   const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = event.target;
+    setHasChanges(true);
     setUserData((prev) => ({
       ...prev,
       [name]: checked,
@@ -107,11 +110,13 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup }) => {
 
   const addLocation = (loc: string) => {
     if (!locations.includes(loc)) {
+      setHasChanges(true);
       setLocations((prev) => [...prev, loc]);
     }
   }
 
   const removeLocation = (loc: string) => {
+    setHasChanges(true);
     setLocations((prev) => prev.filter((location) => location !== loc));
   }
 

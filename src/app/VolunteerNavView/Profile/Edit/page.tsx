@@ -8,9 +8,18 @@ import BackButton from '@/app/components/BackButton';
 
 const EditProfile: React.FC = () => {
   const [popup, setPopup] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
 
   const togglePopup = () => {
     setPopup(!popup);
+  }
+
+  const handleCancel = () => {
+    if (hasChanges) {
+      togglePopup();
+    } else {
+      window.history.back();
+    }
   }
 
   return (
@@ -19,13 +28,13 @@ const EditProfile: React.FC = () => {
 
       <div className={styles.layout}>
         <div className={styles.mainContent}>
-          <BackButton onClick={togglePopup}/>
+          <BackButton onClick={handleCancel}/>
           <div className={styles.header}>
             <h1 className={styles.pageTitle}>Account</h1>
           </div>
         </div>
         <div className={styles.backDrop}>
-          <EditProfileForm togglePopup={togglePopup} />
+          <EditProfileForm togglePopup={handleCancel} setHasChanges={setHasChanges} />
         </div>
       </div>
       
