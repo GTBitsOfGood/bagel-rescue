@@ -8,9 +8,38 @@ import BackButton from '@/app/components/BackButton';
 
 const EditProfile: React.FC = () => {
   const [popup, setPopup] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
 
   const togglePopup = () => {
     setPopup(!popup);
+    if (popup) setPendingNavigation(null);
+  }
+
+  const handleCancel = () => {
+    if (hasChanges) {
+      setPendingNavigation(null);
+      togglePopup();
+    } else {
+      window.history.back();
+    }
+  }
+
+  const handleNavigate = (path: string) => {
+    if (hasChanges) {
+      setPendingNavigation(path);
+      setPopup(true);
+    } else {
+      window.location.href = path;
+    }
+  }
+
+  const handleLoseChanges = () => {
+    if (pendingNavigation) {
+      window.location.href = pendingNavigation;
+    } else {
+      window.history.back();
+    }
   }
 
   return (
@@ -19,23 +48,23 @@ const EditProfile: React.FC = () => {
 
       <div className={styles.layout}>
         <div className={styles.mainContent}>
-          <BackButton onClick={togglePopup}/>
+          <BackButton onClick={handleCancel}/>
           <div className={styles.header}>
             <h1 className={styles.pageTitle}>Account</h1>
           </div>
         </div>
         <div className={styles.backDrop}>
-          <EditProfileForm togglePopup={togglePopup} />
+          <EditProfileForm togglePopup={handleCancel} setHasChanges={setHasChanges} onNavigate={handleNavigate} />
         </div>
       </div>
-      
+
       {popup && (
         <div className={styles.popupBack}>
           <div className={styles.popup}>
             <h1 className={styles.question}>Are you sure you want to return?</h1>
             <p className={styles.unsaved}>Your unsaved changes will be lost.</p>
             <div className={styles.popupButtons}>
-              <button className={styles.loseChanges} onClick={() => window.history.back()}>Lose Changes</button>
+              <button className={styles.loseChanges} onClick={handleLoseChanges}>Lose Changes</button>
               <button className={styles.continueEdit} onClick={togglePopup}>Continue editing</button>
             </div>
           </div>
