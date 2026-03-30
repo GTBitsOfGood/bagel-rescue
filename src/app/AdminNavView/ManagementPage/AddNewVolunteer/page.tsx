@@ -93,6 +93,16 @@ export default function AddNewVolunteer() {
                             alignItems: "center",
                             height: "60px"
                         }),
+                        valueContainer: (baseStyles) => ({
+                            ...baseStyles,
+                            padding: "0",
+                            display: "flex",
+                            alignItems: "center",
+                        }),
+                        placeholder: (baseStyles) => ({
+                            ...baseStyles,
+                            margin: "0",
+                        }),
                         indicatorSeparator: (baseStyles) => ({
                             ...baseStyles,
                             display: "none"
