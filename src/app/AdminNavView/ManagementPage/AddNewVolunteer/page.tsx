@@ -89,19 +89,20 @@ export default function AddNewVolunteer() {
                             border: "solid 2px #0F7AFF",
                             borderRadius: "0.5rem",
                             color: "#072B68",
-                            display: "flex",
-                            alignItems: "center",
-                            height: "60px"
+                            minHeight: "unset",
                         }),
                         valueContainer: (baseStyles) => ({
                             ...baseStyles,
                             padding: "0",
-                            display: "flex",
-                            alignItems: "center",
                         }),
                         placeholder: (baseStyles) => ({
                             ...baseStyles,
                             margin: "0",
+                        }),
+                        input: (baseStyles) => ({
+                            ...baseStyles,
+                            margin: "0",
+                            padding: "0",
                         }),
                         indicatorSeparator: (baseStyles) => ({
                             ...baseStyles,
