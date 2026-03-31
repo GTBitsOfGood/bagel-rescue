@@ -202,12 +202,6 @@ function ManagementPage() {
               <FontAwesomeIcon
                 icon={faMagnifyingGlass}
                 className="h-4 w-4 shrink-0 text-[#6C7D93]"
-                style={{
-                  width: "1rem",
-                  height: "1rem",
-                  maxWidth: "1rem",
-                  maxHeight: "1rem",
-                }}
               />
               <input
                 className="min-w-0 flex-1 outline-none"

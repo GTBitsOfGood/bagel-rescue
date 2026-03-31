@@ -255,12 +255,6 @@ function DailyShiftDashboardPage() {
                                 <FontAwesomeIcon
                                     icon={faMagnifyingGlass}
                                     className="shift-search-icon"
-                                    style={{
-                                        width: "1rem",
-                                        height: "1rem",
-                                        maxWidth: "1rem",
-                                        maxHeight: "1rem",
-                                    }}
                                 />
                             </div>
 

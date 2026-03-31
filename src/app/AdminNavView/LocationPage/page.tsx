@@ -136,12 +136,6 @@ function LocationDashboardPage() {
                 <FontAwesomeIcon
                   icon={faMagnifyingGlass}
                   className={`${styles.searchIcon} h-4 w-4 shrink-0`}
-                  style={{
-                    width: "1rem",
-                    height: "1rem",
-                    maxWidth: "1rem",
-                    maxHeight: "1rem",
-                  }}
                 />
                 <input
                   type="text"
