@@ -13,9 +13,10 @@ import LoadingFallback from '@/app/components/LoadingFallback';
 interface EditProfileFormProps {
   togglePopup: () => void;
   setHasChanges: (hasChanges: boolean) => void;
+  onNavigate: (path: string) => void;
 }
 
-const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup, setHasChanges }) => {
+const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup, setHasChanges, onNavigate }) => {
   const router = useRouter();
   const [initialName, setInitialName] = useState('');
   const [locations, setLocations] = useState<string[]>([]);
@@ -187,11 +188,13 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup, setHasCh
       <div className={styles.sidebar}>
         <ul className={styles.menu}>
           <li className={`${styles.menuItem} ${styles.active}`}>Profile</li>
-          <li className={styles.menuItem}>Password</li>
+          <li
+            className={styles.menuItem}
+            onClick={() => onNavigate('/VolunteerNavView/Profile/Password')}
+          >Password</li>
           <li 
             className={`${styles.menuItem} ${styles.signOut}`}
             onClick={handleSignOut}
-            style={{ cursor: 'pointer' }}
           >
             Sign Out
           </li>
