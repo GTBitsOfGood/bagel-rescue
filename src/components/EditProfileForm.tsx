@@ -191,12 +191,10 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup, setHasCh
           <li
             className={styles.menuItem}
             onClick={() => onNavigate('/VolunteerNavView/Profile/Password')}
-            style={{ cursor: 'pointer' }}
           >Password</li>
           <li 
             className={`${styles.menuItem} ${styles.signOut}`}
             onClick={handleSignOut}
-            style={{ cursor: 'pointer' }}
           >
             Sign Out
           </li>
