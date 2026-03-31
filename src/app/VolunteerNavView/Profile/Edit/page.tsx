@@ -44,6 +44,14 @@ const EditProfile: React.FC = () => {
     }
   }
 
+  const handleCancel = () => {
+    if (hasChanges) {
+      togglePopup();
+    } else {
+      window.history.back();
+    }
+  }
+
   return (
     <div className={styles.container}>
       <Sidebar />
