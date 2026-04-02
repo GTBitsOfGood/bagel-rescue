@@ -8,7 +8,7 @@ import { RecurrenceModel, Shift, ShiftModel } from "../models/shift";
 import { UserShiftModel } from "../models/userShift";
 import { requireAdmin, requireUser } from "../auth/auth";
 import { Types } from "mongoose";
-import { normalizeDate } from "@/lib/dateHandler";
+import { normalizeDate, toUTCStartOfDay } from "@/lib/dateHandler";
 import { getCurrentUserId } from "./userShifts";
 import User from "../models/User";
 
@@ -554,9 +554,11 @@ export async function getShiftsByWeek(
   endDate: Date
 ): Promise<string | null> {
   await requireAdmin();
-
-  startDate = normalizeDate(startDate);
-  endDate = normalizeDate(endDate);
+  // Note: this actually just checks if the week overlaps with the date range at all: 
+  // e.g. if the start date is Friday of week 1 and the end date is Friday of week 2, and the recurrence day is Monday, 
+  // it returns the shift for both Monday week 1 and Monday week 2, but it should just be Monday week 2
+  const normalizedStartDate = toUTCStartOfDay(startDate);
+  const normalizedEndDate = toUTCStartOfDay(endDate);
 
   try {
     await dbConnect();
@@ -564,28 +566,30 @@ export async function getShiftsByWeek(
     // 1. Filter by week (example: get shifts for a specific week)
     {
       $match: {
-        $expr: {
-          $or: [
-            {
-              $and: [
-                { $lte: ["$shiftStartDate", endDate] },     // shift starts before the week ends
-                { $gte: ["$shiftEndDate", startDate] } // shift ends after the week starts
-              ]
-            },
-            {
-              $and: [
-                { $lte: ["$shiftEndDate", endDate] },     // shift ends before the week ends
-                { $gte: ["$shiftEndDate", startDate] } // shift starts after the week starts
-              ]
-            },
-            {
-              $and: [
-                { $lte: ["$shiftStartDate", endDate] },     // shift ends before the week ends
-                { $gte: ["$shiftStartDate", startDate] } // shift starts after the week starts
-              ]
-            }
-          ]
-      }
+        shiftStartDate: { $lte: normalizedEndDate },
+        shiftEndDate: { $gte: normalizedStartDate }
+      //   $expr: {
+      //     $or: [
+      //       {
+      //         $and: [
+      //           { $lte: ["$shiftStartDate", endDate] },     // shift starts before the week ends
+      //           { $gte: ["$shiftEndDate", startDate] } // shift ends after the week starts
+      //         ]
+      //       },
+      //       {
+      //         $and: [
+      //           { $lte: ["$shiftEndDate", endDate] },     // shift ends before the week ends
+      //           { $gte: ["$shiftEndDate", startDate] } // shift starts after the week starts
+      //         ]
+      //       },
+      //       {
+      //         $and: [
+      //           { $lte: ["$shiftStartDate", endDate] },     // shift ends before the week ends
+      //           { $gte: ["$shiftStartDate", startDate] } // shift starts after the week starts
+      //         ]
+      //       }
+      //     ]
+      // }
     }
     },
     
@@ -810,11 +814,10 @@ export async function getShiftsByDay(
   try {
     await dbConnect();
     
-    // Set targetDate to start and end of day for comparison
-    const startOfDay = new Date(targetDate);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(targetDate);
-    endOfDay.setHours(23, 59, 59, 999);
+    // Note: targetDate is in local time
+    // Set targetDate to UTC start and end of day for to match how shiftStartDate/shiftEndDate are stored (UTC midnight)
+    const startOfDay = toUTCStartOfDay(targetDate)
+    const endOfDay = new Date(Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 23, 59, 59, 999));
     
     // Get day abbreviation (e.g., "Mo", "Tu", etc.)
     const dayNames = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];

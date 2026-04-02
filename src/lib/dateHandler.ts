@@ -28,6 +28,14 @@ export const normalizeDate = (date: Date) => {
     return normalizedDate;
 };
 
+export const toUTCStartOfDay = (date: Date) => {
+  return new Date(Date.UTC(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate()
+  ));
+};
+
 export const formattedDateMDY = (date: Date) => {
     const year = date.getUTCFullYear();
     const month = (date.getUTCMonth() + 1).toString().padStart(2, "0");

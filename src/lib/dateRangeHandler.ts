@@ -1,4 +1,5 @@
 import { dayToThree } from "./dayHandler";
+import { toUTCStartOfDay } from "./dateHandler";
 
 const getWeekRange = (date: Date) => {
     const startOfWeek = new Date(date);
@@ -13,6 +14,8 @@ const getWeekRange = (date: Date) => {
 };
 
 const findDayInRange = (day: string, startDate: Date, endDate: Date) => {
+    // Note: startDate and endDate are local time
+
     if (!day || !startDate || !endDate) {
         return null;
     }
@@ -24,14 +27,16 @@ const findDayInRange = (day: string, startDate: Date, endDate: Date) => {
     const current = dayToThree[day.toLowerCase()];
 
     // Iterate through each day in the range
-    const currentDate = new Date(startDate.getTime());
-    const lastDate = new Date(endDate);
+    // const currentDate = new Date(startDate);
+    // const lastDate = new Date(endDate);
+    const currentDate = toUTCStartOfDay(startDate)
+    const lastDate = toUTCStartOfDay(endDate)
 
     while (currentDate <= lastDate) {
         const currentDay = currentDate.toUTCString().split(",")[0];
 
         if (currentDay === current) {
-            return new Date(currentDate);
+            return new Date(currentDate); // this is UTC
         }
 
         currentDate.setDate(currentDate.getDate() + 1);
