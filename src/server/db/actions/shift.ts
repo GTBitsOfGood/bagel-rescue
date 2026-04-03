@@ -554,8 +554,8 @@ export async function getShiftsByWeek(
   endDate: Date
 ): Promise<string | null> {
   await requireAdmin();
-  // Note: this actually just checks if the week overlaps with the date range at all: 
-  // e.g. if the start date is Friday of week 1 and the end date is Friday of week 2, and the recurrence day is Monday, 
+  // Note: this actually just checks if the week overlaps with the shift date range at all: 
+  // e.g. if the shift start date is Friday of week 1 and the shift end date is Friday of week 2, and the recurrence day is Monday, 
   // it returns the shift for both Monday week 1 and Monday week 2, but it should just be Monday week 2
   const normalizedStartDate = toUTCStartOfDay(startDate);
   const normalizedEndDate = toUTCStartOfDay(endDate);
@@ -568,28 +568,6 @@ export async function getShiftsByWeek(
       $match: {
         shiftStartDate: { $lte: normalizedEndDate },
         shiftEndDate: { $gte: normalizedStartDate }
-      //   $expr: {
-      //     $or: [
-      //       {
-      //         $and: [
-      //           { $lte: ["$shiftStartDate", endDate] },     // shift starts before the week ends
-      //           { $gte: ["$shiftEndDate", startDate] } // shift ends after the week starts
-      //         ]
-      //       },
-      //       {
-      //         $and: [
-      //           { $lte: ["$shiftEndDate", endDate] },     // shift ends before the week ends
-      //           { $gte: ["$shiftEndDate", startDate] } // shift starts after the week starts
-      //         ]
-      //       },
-      //       {
-      //         $and: [
-      //           { $lte: ["$shiftStartDate", endDate] },     // shift ends before the week ends
-      //           { $gte: ["$shiftStartDate", startDate] } // shift starts after the week starts
-      //         ]
-      //       }
-      //     ]
-      // }
     }
     },
     
@@ -816,8 +794,7 @@ export async function getShiftsByDay(
     
     // Note: targetDate is in local time
     // Set targetDate to UTC start and end of day for to match how shiftStartDate/shiftEndDate are stored (UTC midnight)
-    const startOfDay = toUTCStartOfDay(targetDate)
-    const endOfDay = new Date(Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate(), 23, 59, 59, 999));
+    const normalizedDay = toUTCStartOfDay(targetDate)
     
     // Get day abbreviation (e.g., "Mo", "Tu", etc.)
     const dayNames = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
@@ -834,8 +811,8 @@ export async function getShiftsByDay(
                 $and: [
                   { $ne: [{ $size: { $ifNull: ["$recurrenceDates", []] } }, 0] },
                   { $in: [dayAbbr.toLowerCase(), { $map: { input: "$recurrenceDates", as: "day", in: { $toLower: "$$day" } } } ] },
-                  { $lte: ["$shiftStartDate", endOfDay] },
-                  { $gte: ["$shiftEndDate", startOfDay] }
+                  { $lte: ["$shiftStartDate", normalizedDay] },
+                  { $gte: ["$shiftEndDate", normalizedDay] }
                 ]
               }
             ]

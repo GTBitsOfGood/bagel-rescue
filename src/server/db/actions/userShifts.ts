@@ -10,10 +10,11 @@ import { requireUser, requireAdmin } from "../auth/auth";
 import { Shift, ShiftModel } from "../models/shift";
 import { getAllLocationsById } from "./location";
 import { getDaysInRange } from '@/lib/dayHandler';
-import { combineDateAndTime, dateToString } from "@/lib/dateHandler";
+import { combineDateAndTime, dateToString, toUTCStartOfDay } from "@/lib/dateHandler";
 import { getShift } from "./shift";
 import { cookies } from "next/headers";
 import { adminAuth } from "../firebase/admin/firebaseAdmin";
+import { start } from "repl";
 
 export type UserRoute = {
   name: string;
@@ -26,6 +27,8 @@ export type UserShiftData = {
   area: string;
   startTime: Date;
   endTime: Date;
+  shiftStartDate?: Date;
+  shiftEndDate?: Date;
   confirmationForms: { [date: string] : string};
   occurrenceDate?: Date;
   canceledShifts?: string[];
@@ -169,6 +172,10 @@ export async function getUserShiftsByDateRange(
   page: number = 1,
   limit: number = 10
 ): Promise<PaginatedResult> {
+  // Note: when used with week start / end date, this actually just checks if the week overlaps with the shift date range at all: 
+  // e.g. if the shift start date is Friday of week 1 and the shift end date is Friday of week 2, and the recurrence day is Monday, 
+  // it returns the shift for both Monday week 1 and Monday week 2, but it should just be Monday week 2
+
   await requireUser();
   await dbConnect();
 
@@ -210,28 +217,14 @@ export async function getUserShiftsByDateRange(
     
     const skip = (page - 1) * limit;
 
-    const startAbsDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
-    const endAbsDate = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate() + 1);
+    const startAbsDate = toUTCStartOfDay(startDate);
+    const endAbsDate = toUTCStartOfDay(endDate);
 
     // Get UserShift documents within date range
     const userShifts = await UserShiftModel.find({
       userId: new mongoose.Types.ObjectId(userId),
-      $or: [
-        { 
-          shiftDate: { $gte: startAbsDate, $lte: endAbsDate }
-        },
-        { 
-          shiftEndDate: { $gte: startAbsDate, $lte: endAbsDate }
-        },
-        { 
-          shiftDate: { $lte: startAbsDate },
-          shiftEndDate: { $gte: endAbsDate }
-        },
-        {
-          shiftDate: { $gte: startAbsDate },
-          shiftEndDate: { $lte: endAbsDate }
-        }
-      ],
+      shiftDate: { $lte: endAbsDate },
+      shiftEndDate: { $gte: startAbsDate },
       recurrenceDates: { $in: getDaysInRange(startDate, endDate) }
     })
       .skip(skip)
@@ -243,7 +236,9 @@ export async function getUserShiftsByDateRange(
     // Get total count for pagination
     const total = await UserShiftModel.countDocuments({
       userId: new mongoose.Types.ObjectId(userId),
-      shiftDate: { $gte: startDate, $lte: endDate }
+      shiftDate: { $lte: endAbsDate },
+      shiftEndDate: { $gte: startAbsDate },
+      recurrenceDates: { $in: getDaysInRange(startDate, endDate) }
     });
     
     // Get unique route and shift IDs
@@ -305,6 +300,8 @@ export async function getUserShiftsByDateRange(
           area: route.locationDescription,
           startTime: new Date(shift.shiftStartTime),
           endTime: new Date(shift.shiftEndTime),
+          shiftStartDate: new Date(shift.shiftStartDate),
+          shiftEndDate: new Date(shift.shiftEndDate),
           confirmationForms: confirmationForms,
           canceledShifts: usershift.canceledShifts,
           recurrenceDates: usershift.recurrenceDates,
