@@ -256,6 +256,17 @@ function WeeklyShiftDashboard() {
         });
     };
 
+    const searchShiftLocation = (shift: any) => {
+        const query = shiftSearchText.trim().toLowerCase();
+        if (!query) {
+            return true;
+        }
+        const routeName = String(shift["routeName"] ?? "").toLowerCase();
+        const locationDescription = String(shift["locationDescription"] ?? "").toLowerCase();
+        return routeName.includes(query) || locationDescription.includes(query);
+    };
+
+
     // TODO: Can definitely be made more efficient - probably not need
     // to pass entire volunteersPerShift into every Route card
     const routesList = () => {
@@ -266,6 +277,7 @@ function WeeklyShiftDashboard() {
                     ? shift.status === "open"
                     : shift.status === "assigned";
             if (!matchesStatus) return null;
+            if (!searchShiftLocation(shift)) return null;
 
             // Early return if no recurrence dates
             if (!shift["recurrenceDates"]?.length) {
@@ -337,10 +349,11 @@ function WeeklyShiftDashboard() {
 
     // Calculate counts for tabs
     const assignedCount = weeklyShiftData.filter(
-        (shift: any) => shift.status === "assigned"
+        (shift: any) =>
+            shift.status === "assigned" && searchShiftLocation(shift)
     ).length;
     const openCount = weeklyShiftData.filter(
-        (shift: any) => shift.status === "open"
+        (shift: any) => shift.status === "open" && searchShiftLocation(shift)
     ).length;
 
     return (
@@ -363,7 +376,8 @@ function WeeklyShiftDashboard() {
                                 <input
                                     className="shift-search-input"
                                     type="text"
-                                    placeholder="Search for a shift"
+                                    placeholder="Search for shift by location"
+                                    value={shiftSearchText}
                                     onChange={(e) =>
                                         setShiftSearchText(e.target.value)
                                     }

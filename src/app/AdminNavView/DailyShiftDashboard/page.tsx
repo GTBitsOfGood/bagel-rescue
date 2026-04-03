@@ -176,6 +176,16 @@ function DailyShiftDashboardPage() {
         });
     };
 
+    const searchShiftLocation = (shift: any) => {
+        const query = shiftSearchText.trim().toLowerCase();
+        if (!query) {
+            return true;
+        }
+        const routeName = String(shift["routeName"] ?? "").toLowerCase();
+        const locationDescription = String(shift["locationDescription"] ?? "").toLowerCase();
+        return routeName.includes(query) || locationDescription.includes(query);
+    };
+
     const shiftCardsList = () => {
         return dailyShiftData
             .map((shift: any, shiftIndex) => {
@@ -185,6 +195,7 @@ function DailyShiftDashboardPage() {
                         ? shift.status === "open"
                         : shift.status === "assigned";
                 if (!matchesStatus) return null;
+                if (!searchShiftLocation(shift)) return null;
 
                 return (
                     <ShiftCard
@@ -221,10 +232,11 @@ function DailyShiftDashboardPage() {
 
     // Calculate counts for tabs
     const assignedCount = dailyShiftData.filter(
-        (shift: any) => shift.status === "assigned"
+        (shift: any) =>
+            shift.status === "assigned" && searchShiftLocation(shift)
     ).length;
     const openCount = dailyShiftData.filter(
-        (shift: any) => shift.status === "open"
+        (shift: any) => shift.status === "open" && searchShiftLocation(shift)
     ).length;
 
     return (
@@ -247,7 +259,8 @@ function DailyShiftDashboardPage() {
                                 <input
                                     className="shift-search-input"
                                     type="text"
-                                    placeholder="Search for a shift"
+                                    placeholder="Search for shift by location"
+                                    value={shiftSearchText}
                                     onChange={(e) =>
                                         setShiftSearchText(e.target.value)
                                     }
