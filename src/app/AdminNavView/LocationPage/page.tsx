@@ -14,15 +14,16 @@ import {
   faSearch,
 } from "@fortawesome/free-solid-svg-icons";
 
-import { deleteLocation, getAllLocations } from "@/server/db/actions/location";
-import { Location } from "@/server/db/models/location";
+import { deleteLocation, getAllLocations, updateLocation } from "@/server/db/actions/location";
+import { Location, Address } from "@/server/db/models/location";
+import locationOptions from "@/lib/locations";
 
 import AdminSidebar from "../../../components/AdminSidebar";
 import { useRouter } from "next/navigation";
 import { handleAuthError } from "@/lib/authErrorHandler";
 import ThreeDotModal from "@/app/components/ThreeDotModal";
 import { ObjectId } from "mongoose";
-import { errorToast } from "@/lib/toastConfig";
+import { errorToast, successToast } from "@/lib/toastConfig";
 
 function LocationDashboardPage() {
   const [locations, setLocations] = useState<Location[]>([]);
@@ -31,6 +32,20 @@ function LocationDashboardPage() {
   const [activeLocationId, setActiveLocationId] = useState<string | null>(null);
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
   const [searchValue, setSearchValue] = useState("");
+
+  // Edit modal state
+  const [editingLocation, setEditingLocation] = useState<Location | null>(null);
+  const [editLocName, setEditLocName] = useState("");
+  const [editStreet, setEditStreet] = useState("");
+  const [editCity, setEditCity] = useState("");
+  const [editState, setEditState] = useState("");
+  const [editZipCode, setEditZipCode] = useState<number>(0);
+  const [editArea, setEditArea] = useState("");
+  const [editType, setEditType] = useState<"Pick-Up" | "Drop-Off">("Drop-Off");
+  const [editBags, setEditBags] = useState<number>(0);
+  const [editContact, setEditContact] = useState("");
+  const [editNotes, setEditNotes] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   const router = useRouter();
 
@@ -62,6 +77,87 @@ function LocationDashboardPage() {
       );
     } else {
       errorToast(deleted.message || "Error deleting location");
+    }
+  };
+
+  const handleEditLocation = (location: Location) => {
+    setEditingLocation(location);
+    setEditLocName(location.locationName);
+    setEditStreet(location.address.street);
+    setEditCity(location.address.city);
+    setEditState(location.address.state);
+    setEditZipCode(location.address.zipCode);
+    setEditArea(location.area);
+    setEditType(location.type);
+    setEditBags(typeof location.bags === "number" ? location.bags : 0);
+    setEditContact(location.contact || "");
+    setEditNotes(location.notes || "");
+    setIsModalOpen(false);
+    setActiveLocationId(null);
+  };
+
+  const formatContact = (contact: string) => {
+    let formatted = contact.replace(/[^\d]/g, "");
+    if (formatted.length > 10) formatted = formatted.slice(0, 10);
+    formatted = formatted.replace(/^(\d{3})(\d{1})/, "$1-$2");
+    formatted = formatted.replace(/^(\d{3})-(\d{3})(\d{1})/, "$1-$2-$3");
+    return formatted;
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingLocation) return;
+
+    if (
+      !editLocName.trim() ||
+      !editStreet.trim() ||
+      !editCity.trim() ||
+      !editState.trim() ||
+      editZipCode <= 0 ||
+      !editArea || editArea === "None" ||
+      editBags <= 0
+    ) {
+      errorToast("Please fill in all required fields.");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const updatedData: Location = {
+        locationName: editLocName.trim(),
+        address: {
+          street: editStreet.trim(),
+          city: editCity.trim(),
+          state: editState.trim(),
+          zipCode: editZipCode,
+        },
+        type: editType,
+        area: editArea,
+        bags: editBags,
+        contact: editContact,
+        notes: editNotes.trim(),
+      };
+
+      const result = await updateLocation(
+        editingLocation._id!.toString(),
+        JSON.stringify(updatedData)
+      );
+
+      if (result.success && result.data) {
+        const updated = JSON.parse(result.data);
+        setLocations((prev) =>
+          prev.map((loc) =>
+            loc._id?.toString() === editingLocation._id?.toString() ? updated : loc
+          )
+        );
+        successToast("Location updated successfully!");
+        setEditingLocation(null);
+      } else {
+        errorToast(result.message || "Failed to update location.");
+      }
+    } catch {
+      errorToast("An unexpected error occurred while updating.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -217,6 +313,7 @@ function LocationDashboardPage() {
                               setIsModalOpen(false);
                               setActiveLocationId(null);
                             }}
+                            onEdit={() => handleEditLocation(location)}
                             onDelete={() => {
                               handleDeleteLocation(location._id?.toString()!);
                               setIsModalOpen(false);
@@ -234,6 +331,134 @@ function LocationDashboardPage() {
           </div>
         </div>
       </div>
+      {editingLocation && (
+        <div className={styles.editOverlay} onClick={() => setEditingLocation(null)}>
+          <div className={styles.editModal} onClick={(e) => e.stopPropagation()}>
+            <h2 className={styles.editModalTitle}>Edit Location</h2>
+            <div className={styles.editFormGrid}>
+              <div className={styles.editFormColumn}>
+                <label className={styles.editLabel}>
+                  Location Name<span className={styles.required}>*</span>
+                  <input
+                    type="text"
+                    className={styles.editInput}
+                    value={editLocName}
+                    onChange={(e) => setEditLocName(e.target.value)}
+                  />
+                </label>
+                <label className={styles.editLabel}>
+                  Street Address<span className={styles.required}>*</span>
+                  <input
+                    type="text"
+                    className={styles.editInput}
+                    value={editStreet}
+                    onChange={(e) => setEditStreet(e.target.value)}
+                  />
+                </label>
+                <label className={styles.editLabel}>
+                  Area<span className={styles.required}>*</span>
+                  <select
+                    className={styles.editInput}
+                    value={editArea}
+                    onChange={(e) => setEditArea(e.target.value)}
+                  >
+                    <option value="None">---</option>
+                    {locationOptions.map((loc) => (
+                      <option key={loc} value={loc}>{loc}</option>
+                    ))}
+                  </select>
+                </label>
+                <div className={styles.editInlineFields}>
+                  <label className={styles.editLabel}>
+                    City<span className={styles.required}>*</span>
+                    <input
+                      type="text"
+                      className={styles.editInput}
+                      value={editCity}
+                      onChange={(e) => setEditCity(e.target.value)}
+                    />
+                  </label>
+                  <label className={styles.editLabel}>
+                    State<span className={styles.required}>*</span>
+                    <input
+                      type="text"
+                      className={styles.editInput}
+                      value={editState}
+                      onChange={(e) => setEditState(e.target.value)}
+                    />
+                  </label>
+                </div>
+                <label className={styles.editLabel}>
+                  Zip Code<span className={styles.required}>*</span>
+                  <input
+                    type="number"
+                    className={styles.editInput}
+                    value={editZipCode || ""}
+                    onChange={(e) => setEditZipCode(Number(e.target.value))}
+                  />
+                </label>
+              </div>
+              <div className={styles.editFormColumn}>
+                <label className={styles.editLabel}>
+                  Drop Off or Pick Up?<span className={styles.required}>*</span>
+                  <select
+                    className={styles.editInput}
+                    value={editType}
+                    onChange={(e) => setEditType(e.target.value as "Pick-Up" | "Drop-Off")}
+                  >
+                    <option value="Drop-Off">Drop Off</option>
+                    <option value="Pick-Up">Pick Up</option>
+                  </select>
+                </label>
+                <label className={styles.editLabel}>
+                  Delivery Amount<span className={styles.required}>*</span>
+                  <input
+                    type="number"
+                    className={styles.editInput}
+                    min="0"
+                    value={editBags || ""}
+                    onChange={(e) => setEditBags(Number(e.target.value))}
+                  />
+                </label>
+                <label className={styles.editLabel}>
+                  Contact
+                  <input
+                    type="text"
+                    className={styles.editInput}
+                    value={editContact}
+                    onChange={(e) => setEditContact(formatContact(e.target.value))}
+                  />
+                </label>
+                <label className={styles.editLabel}>
+                  Additional Information
+                  <textarea
+                    className={styles.editTextarea}
+                    value={editNotes}
+                    onChange={(e) => setEditNotes(e.target.value)}
+                    rows={3}
+                  />
+                </label>
+              </div>
+            </div>
+            <div className={styles.editActions}>
+              <button
+                className={styles.editCancelButton}
+                onClick={() => setEditingLocation(null)}
+                disabled={isSaving}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.editSaveButton}
+                onClick={handleSaveEdit}
+                disabled={isSaving}
+              >
+                {isSaving ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -6,6 +6,7 @@ interface ThreeDotModalProps {
   isOpen: boolean;
   onClose: () => void;
   onDelete: () => void;
+  onEdit?: () => void;
   position: { x: number; y: number };
 }
 
@@ -13,6 +14,7 @@ const ThreeDotModal: React.FC<ThreeDotModalProps> = ({
   isOpen,
   onClose,
   onDelete,
+  onEdit,
   position,
 }) => {
   if (!isOpen) return null;
@@ -22,6 +24,13 @@ const ThreeDotModal: React.FC<ThreeDotModalProps> = ({
     onClose();
   };
 
+  const handleEdit = () => {
+    if (onEdit) {
+      onEdit();
+      onClose();
+    }
+  };
+
   return (
     <>
       {/* Backdrop */}
@@ -29,7 +38,7 @@ const ThreeDotModal: React.FC<ThreeDotModalProps> = ({
         className="fixed inset-0 z-40"
         onClick={onClose}
       />
-      
+
       {/* Modal */}
       <div
         className={styles.modal}
@@ -39,6 +48,17 @@ const ThreeDotModal: React.FC<ThreeDotModalProps> = ({
           transform: 'translate(-94%, 0px)',
         }}
       >
+        {onEdit && (
+          <button
+            onClick={handleEdit}
+            className={styles.editButton}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2 11.5V14H4.5L11.8733 6.62667L9.37333 4.12667L2 11.5ZM13.8067 4.69333C14.0667 4.43333 14.0667 4.01333 13.8067 3.75333L12.2467 2.19333C11.9867 1.93333 11.5667 1.93333 11.3067 2.19333L10.0867 3.41333L12.5867 5.91333L13.8067 4.69333Z" fill="#0F7AFF"/>
+            </svg>
+            Edit Location
+          </button>
+        )}
         <button
           onClick={handleDelete}
           className={styles.deleteButton}
