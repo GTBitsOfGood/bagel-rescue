@@ -24,7 +24,7 @@ import { getAllLocationsById } from "@/server/db/actions/location";
 import { Location } from "@/server/db/models/location";
 import { IRoute } from "@/server/db/models/Route";
 import { findDayInRange, getWeekRange } from "@/lib/dateRangeHandler";
-import { dateToString, normalizeDate } from "@/lib/dateHandler";
+import { dateToString, normalizeDate, toUTCStartOfDay } from "@/lib/dateHandler";
 import styles from "@/app/VolunteerNavView/Homepage/page.module.css";
 import LoadingFallback from "@/app/components/LoadingFallback";
 import { ADMIN_DASHBOARD_VIEW, ADMIN_DASHBOARD_DATE } from "@/lib/dashboardConstants";
@@ -277,10 +277,15 @@ function WeeklyShiftDashboard() {
                 .map((day: string, dateIndex: number) => {
                     const shiftDate = findDayInRange(
                         day,
-                        normalizeDate(startOfWeek),
-                        normalizeDate(endOfWeek)
-                    );
+                        startOfWeek,
+                        endOfWeek
+                    ); // shiftDate is UTC normalized
                     if (!shiftDate) return null;
+
+                    // ensure shift date is in the date range, not just in the week that overlaps with the date range
+                    if (shiftDate < new Date(shift.shiftStartDate) || shiftDate > new Date(shift.shiftEndDate)) {
+                        return null;
+                    }
 
                     if (
                         shift.canceledShifts
@@ -320,6 +325,7 @@ function WeeklyShiftDashboard() {
                                 month: "short",
                                 day: "numeric",
                                 year: "numeric",
+                                timeZone: "UTC",
                             })}
                             onOpenSidebar={() =>
                                 handleShiftCardClick(shift, new Date(shiftDate))
