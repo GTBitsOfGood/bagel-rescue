@@ -310,7 +310,7 @@ const MyShiftsPage: React.FC = () => {
             })
 
             if (numKeptShifts > 0) { // if this shift has shift dates actually in the range
-              totalShifts++;
+              totalShifts += numKeptShifts;
             }
             
             return shift;

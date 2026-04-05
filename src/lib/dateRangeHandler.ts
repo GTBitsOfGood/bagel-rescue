@@ -27,8 +27,6 @@ const findDayInRange = (day: string, startDate: Date, endDate: Date) => {
     const current = dayToThree[day.toLowerCase()];
 
     // Iterate through each day in the range
-    // const currentDate = new Date(startDate);
-    // const lastDate = new Date(endDate);
     const currentDate = toUTCStartOfDay(startDate)
     const lastDate = toUTCStartOfDay(endDate)
 

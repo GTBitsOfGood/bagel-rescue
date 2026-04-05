@@ -22,12 +22,27 @@ export const combineDateAndTime = (date: Date, time: Date) => {
     return combinedDate;
 };
 
+/**
+ * Normalize a Date to UTC midnight WITHOUT changing its calendar day.
+ * Use for:
+ * - Dates coming from the database (UTC timestamps)
+ * Do NOT use for:
+ * - User-selected dates (will not convert from local time)
+ */
+
 export const normalizeDate = (date: Date) => {
     const normalizedDate = new Date(date);
     normalizedDate.setUTCHours(0, 0, 0, 0);
     return normalizedDate;
 };
 
+/**
+ * Convert a local date (user/browser) to UTC midnight.
+ * Use for:
+ * - Dates selected via date pickers or user input
+* Do NOT use for:
+ * - Dates already in UTC (e.g., from DB) — will cause off-by-one-day bugs
+ */
 export const toUTCStartOfDay = (date: Date) => {
   return new Date(Date.UTC(
     date.getFullYear(),

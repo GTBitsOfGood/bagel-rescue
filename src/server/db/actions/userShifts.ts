@@ -14,7 +14,6 @@ import { combineDateAndTime, dateToString, toUTCStartOfDay } from "@/lib/dateHan
 import { getShift } from "./shift";
 import { cookies } from "next/headers";
 import { adminAuth } from "../firebase/admin/firebaseAdmin";
-import { start } from "repl";
 
 export type UserRoute = {
   name: string;
