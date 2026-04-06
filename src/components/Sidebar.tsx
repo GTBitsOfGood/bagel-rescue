@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import styles from "./Sidebar.module.css";
 import { FiHome, FiUser } from "react-icons/fi";
 import { TbBrandGoogleAnalytics } from "react-icons/tb";
+import { onAuthStateChanged, type User } from 'firebase/auth';
 import { auth } from '../server/db/firebase';
 import { getUserByEmail } from '../server/db/actions/User';
 import Image from 'next/image';
@@ -36,25 +37,31 @@ const Sidebar: React.FC = () => {
   });
 
   useEffect(() => {
-    const fetchUserData = async () => {
+    async function loadProfileFromMongo(email: string) {
       try {
-        const currentUser = auth.currentUser;
-        if (currentUser && currentUser.email) {
-          const mongoUser = await getUserByEmail(currentUser.email);
-          if (mongoUser) {
-            setUserData({
-              firstName: mongoUser.firstName || '',
-              lastName: mongoUser.lastName || '',
-              role: mongoUser.isAdmin ? 'Admin' : 'Volunteer'
-            });
-          }
-        }
+        const mongoUser = await getUserByEmail(email);
+        if (!mongoUser) return;
+
+        setUserData({
+          firstName: mongoUser.firstName || '',
+          lastName: mongoUser.lastName || '',
+          role: mongoUser.isAdmin ? 'Admin' : 'Volunteer',
+        });
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
-    };
+    }
 
-    fetchUserData();
+    function handleAuthUser(firebaseUser: User | null) {
+      const email = firebaseUser?.email;
+      if (!email) {
+        setUserData({ firstName: '', lastName: '', role: 'Volunteer' });
+        return;
+      }
+      void loadProfileFromMongo(email);
+    }
+
+    return onAuthStateChanged(auth, handleAuthUser);
   }, []);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
