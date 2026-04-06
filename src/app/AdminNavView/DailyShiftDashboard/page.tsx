@@ -50,7 +50,7 @@ function DailyShiftDashboardPage() {
     const [routeToLocationsMap, setRouteToLocationsMap] = useState<
         Map<string, Location[]>
     >(new Map());
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [isDateReady, setIsDateReady] = useState(false);
 
     const [date, setDate] = useState<Date>(() => getTodayDate());
@@ -230,48 +230,70 @@ function DailyShiftDashboardPage() {
     return (
         <div className="flex">
             <AdminSidebar />
-            <div className="flex flex-col flex-1 relative">
-                <DashboardHeader date={date} AddDays={AddDays} />
+            <div className="flex flex-col flex-1 min-w-0 relative">
+                <DashboardHeader date={date} AddDays={AddDays} isDateReady={isDateReady} />
                 <div className="container">
-                    <div className="search-settings">
-                        <button className="sort-by-btn">
-                            <FilterIcon />
-                            <p>Sort by</p>
-                        </button>
-                        <input
-                            className="shift-search-input"
-                            type="text"
-                            placeholder="Search for a shift"
-                            onChange={(e) => setShiftSearchText(e.target.value)}
-                        />
-                        <FontAwesomeIcon
-                            icon={faMagnifyingGlass}
-                            className="shift-search-icon"
-                        />
-                    </div>
-
-                    <div className="flex mt-6">
-                        <button
-                            className={`${styles.tabButton} ${
-                                activeTab === "assigned" ? styles.activeTab : ""
-                            }`}
-                            onClick={() => setActiveTab("assigned")}
-                        >
-                            Shifts ({assignedCount})
-                        </button>
-                        <button
-                            className={`${styles.tabButton} ${
-                                activeTab === "open" ? styles.activeTab : ""
-                            }`}
-                            onClick={() => setActiveTab("open")}
-                        >
-                            Open Shifts ({openCount})
-                        </button>
-                    </div>
-                    {isLoading ? (
-                        <LoadingFallback />
+                    {!isDateReady ? (
+                        <div className="admin-dashboard-loading">
+                            <LoadingFallback />
+                        </div>
                     ) : (
-                        <div className="shift-container">{shiftCardsList()}</div>
+                        <>
+                            <div className="search-settings">
+                                <button className="sort-by-btn">
+                                    <FilterIcon />
+                                    <p>Sort by</p>
+                                </button>
+                                <input
+                                    className="shift-search-input"
+                                    type="text"
+                                    placeholder="Search for a shift"
+                                    onChange={(e) =>
+                                        setShiftSearchText(e.target.value)
+                                    }
+                                />
+                                <FontAwesomeIcon
+                                    icon={faMagnifyingGlass}
+                                    className="shift-search-icon"
+                                />
+                            </div>
+
+                            <div className="flex mt-6">
+                                <button
+                                    className={`${styles.tabButton} ${
+                                        activeTab === "assigned"
+                                            ? styles.activeTab
+                                            : ""
+                                    }`}
+                                    onClick={() => setActiveTab("assigned")}
+                                >
+                                    {isLoading
+                                        ? "Loading..."
+                                        : `Shifts (${assignedCount})`}
+                                </button>
+                                <button
+                                    className={`${styles.tabButton} ${
+                                        activeTab === "open"
+                                            ? styles.activeTab
+                                            : ""
+                                    }`}
+                                    onClick={() => setActiveTab("open")}
+                                >
+                                    {isLoading
+                                        ? "Loading..."
+                                        : `Open Shifts (${openCount})`}
+                                </button>
+                            </div>
+                            {isLoading ? (
+                                <div className="admin-dashboard-loading">
+                                    <LoadingFallback />
+                                </div>
+                            ) : (
+                                <div className="shift-container">
+                                    {shiftCardsList()}
+                                </div>
+                            )}
+                        </>
                     )}
                     {selectedItem && (
                         <ShiftSidebar
