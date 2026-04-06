@@ -230,3 +230,130 @@
 .threeDotButton:hover {
   color: var(--Bagel-Rescue-Dark-Blue);
 }
+
+/* Edit Location Modal */
+
+.editOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.editModal {
+  background-color: rgb(var(--background-rgb));
+  border-radius: 16px;
+  padding: 32px;
+  width: 680px;
+  max-width: 90vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.editModalTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--Bagel-Rescue-Dark-Blue);
+  margin: 0;
+}
+
+.editFormGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.editFormColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.editLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--Bagel-Rescue-Dark-Blue);
+}
+
+.required {
+  color: #dc2626;
+  margin-left: 2px;
+}
+
+.editInput {
+  border: 1px solid #C6E3FF;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  outline: none;
+  color: var(--Bagel-Rescue-Dark-Blue);
+}
+
+.editInput:focus {
+  border-color: var(--Bagel-Rescue-Blue);
+}
+
+.editTextarea {
+  border: 1px solid #C6E3FF;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  outline: none;
+  resize: vertical;
+  font-family: inherit;
+  color: var(--Bagel-Rescue-Dark-Blue);
+}
+
+.editTextarea:focus {
+  border-color: var(--Bagel-Rescue-Blue);
+}
+
+.editInlineFields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.editActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.editCancelButton {
+  padding: 10px 20px;
+  border: 1px solid #C6E3FF;
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+  color: var(--Bagel-Rescue-Dark-Blue);
+  font-size: 14px;
+}
+
+.editSaveButton {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background-color: var(--Bagel-Rescue-Blue);
+  color: rgb(var(--background-rgb));
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.editSaveButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
