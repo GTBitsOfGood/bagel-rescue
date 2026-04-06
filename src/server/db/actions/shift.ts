@@ -11,6 +11,7 @@ import { Types } from "mongoose";
 import { normalizeDate } from "@/lib/dateHandler";
 import { getCurrentUserId } from "./userShifts";
 import User from "../models/User";
+import { fullToDay, getDaysInRange } from "@/lib/dayHandler";
 
 // Validation helper for shift data
 function validateShiftData(data: any): void {
@@ -48,13 +49,23 @@ function validateShiftData(data: any): void {
   }
 
   // Validate capacity
-  if (data.capacity !== undefined && (typeof data.capacity !== "number" || data.capacity < 0)) {
-    throw new Error("Invalid shift data: capacity must be a non-negative number");
+  if (
+    data.capacity !== undefined &&
+    (typeof data.capacity !== "number" || data.capacity < 0)
+  ) {
+    throw new Error(
+      "Invalid shift data: capacity must be a non-negative number",
+    );
   }
 
   // Validate currSignedUp
-  if (data.currSignedUp !== undefined && (typeof data.currSignedUp !== "number" || data.currSignedUp < 0)) {
-    throw new Error("Invalid shift data: currSignedUp must be a non-negative number");
+  if (
+    data.currSignedUp !== undefined &&
+    (typeof data.currSignedUp !== "number" || data.currSignedUp < 0)
+  ) {
+    throw new Error(
+      "Invalid shift data: currSignedUp must be a non-negative number",
+    );
   }
 
   // Validate recurrenceDates if provided
@@ -63,11 +74,17 @@ function validateShiftData(data: any): void {
   }
 
   // Validate recurrenceRule if provided
-  if (data.recurrenceRule && typeof data.recurrenceRule === "string" && data.recurrenceRule !== "") {
+  if (
+    data.recurrenceRule &&
+    typeof data.recurrenceRule === "string" &&
+    data.recurrenceRule !== ""
+  ) {
     try {
       RRule.fromString(data.recurrenceRule);
     } catch (e) {
-      throw new Error("Invalid shift data: recurrenceRule must be a valid RRule string");
+      throw new Error(
+        "Invalid shift data: recurrenceRule must be a valid RRule string",
+      );
     }
   }
 }
@@ -76,7 +93,7 @@ export async function createShift(shiftObject: string): Promise<string | null> {
   await requireAdmin();
   try {
     await dbConnect();
-    
+
     // Parse and validate the shift data
     let parsedData;
     try {
@@ -84,9 +101,9 @@ export async function createShift(shiftObject: string): Promise<string | null> {
     } catch (e) {
       throw new Error("Invalid JSON format for shift data");
     }
-    
+
     validateShiftData(parsedData);
-    
+
     const newShift = new ShiftModel(parsedData);
     return JSON.stringify(await newShift.save());
   } catch (error) {
@@ -95,48 +112,53 @@ export async function createShift(shiftObject: string): Promise<string | null> {
   }
 }
 
-export async function getShift(shiftId: string | Types.ObjectId): Promise<Shift | null> {
+export async function getShift(
+  shiftId: string | Types.ObjectId,
+): Promise<Shift | null> {
   await requireUser();
   try {
     await dbConnect();
-    
+
     // Validate ObjectId format
-    const objectId = typeof shiftId === "string" ? new mongoose.Types.ObjectId(shiftId) : shiftId;
+    const objectId =
+      typeof shiftId === "string"
+        ? new mongoose.Types.ObjectId(shiftId)
+        : shiftId;
     if (!mongoose.Types.ObjectId.isValid(objectId.toString())) {
       throw new Error("Invalid shift ID format");
     }
-    
+
     const data = await ShiftModel.findById(objectId);
     if (!data) {
       return null;
     }
-    
+
     // Get current user to check permissions
     const userId = await getCurrentUserId();
     if (!userId) {
       throw new Error("User not authenticated");
     }
-    
+
     const user = await User.findById(userId);
     if (!user) {
       throw new Error("User not found");
     }
-    
+
     // If user is admin, allow access
     if (user.isAdmin) {
       return data;
     }
-    
+
     // For non-admins, only allow access if user is assigned to this shift
     const userShift = await UserShiftModel.findOne({
       userId: new mongoose.Types.ObjectId(userId),
-      shiftId: objectId
+      shiftId: objectId,
     });
-    
+
     if (!userShift) {
       throw new Error("You do not have permission to access this shift");
     }
-    
+
     return data;
   } catch (error) {
     const err = error as Error;
@@ -157,11 +179,13 @@ export async function deleteShift(shiftId: Types.ObjectId): Promise<void> {
 }
 
 export async function getShiftFromString(id: string) {
-  return JSON.parse(JSON.stringify(await getShift(new mongoose.Types.ObjectId(id))));
+  return JSON.parse(
+    JSON.stringify(await getShift(new mongoose.Types.ObjectId(id))),
+  );
 }
 
 export async function updateComment(data: string): Promise<any> {
-  await requireAdmin(); 
+  await requireAdmin();
   try {
     await dbConnect();
 
@@ -172,40 +196,40 @@ export async function updateComment(data: string): Promise<any> {
     } catch (e) {
       throw new Error("Invalid JSON format for comment data");
     }
-    
+
     const { shiftId, date, comment } = parsed;
-    
+
     if (!shiftId) {
       throw new Error("shiftId is required");
     }
-    
+
     if (!mongoose.Types.ObjectId.isValid(shiftId)) {
       throw new Error("Invalid shiftId format");
     }
-    
+
     if (!date || typeof date !== "string") {
       throw new Error("date must be a valid string");
     }
-    
+
     if (comment !== undefined && typeof comment !== "string") {
       throw new Error("comment must be a string");
     }
 
     const foundShift = await ShiftModel.findById(shiftId);
-    
+
     if (!foundShift) {
       throw new Error(`Shift not found with ID: ${shiftId}`);
     }
-    
+
     const updateResult = await ShiftModel.updateOne(
       { _id: foundShift._id },
-      { $set: { [`comments.${date}`]: comment } }
+      { $set: { [`comments.${date}`]: comment } },
     );
-    
+
     if (updateResult.matchedCount === 0) {
       throw new Error("Update failed - no document matched");
     }
-    
+
     return null;
   } catch (error) {
     const err = error as Error;
@@ -214,10 +238,9 @@ export async function updateComment(data: string): Promise<any> {
   }
 }
 
-
 export async function updateRoute(
   shiftId: ObjectId,
-  routeId: ObjectId
+  routeId: ObjectId,
 ): Promise<Shift | null> {
   await requireAdmin();
   try {
@@ -226,7 +249,7 @@ export async function updateRoute(
     const data = await ShiftModel.findByIdAndUpdate(
       shiftId,
       { routeId: routeId },
-      { new: true }
+      { new: true },
     );
     return data;
   } catch (error) {
@@ -249,7 +272,7 @@ When a shift's date changes, all associated UserShift records need to be updated
 */
 export async function updateDate(
   shiftId: Types.ObjectId,
-  newDate: Date
+  newDate: Date,
 ): Promise<Shift | null> {
   await requireAdmin();
   try {
@@ -264,7 +287,7 @@ export async function updateDate(
       const data = await ShiftModel.findByIdAndUpdate(
         shiftId,
         { shiftDate: newDate },
-        { new: true }
+        { new: true },
       );
       return data;
     }
@@ -292,7 +315,7 @@ export async function updateDate(
         recurrences: newRecurrences,
         recurrenceRule: newRule.toString(),
       },
-      { new: true }
+      { new: true },
     );
     return data;
   } catch (error) {
@@ -304,7 +327,7 @@ export async function updateDate(
 // updates the capacity of a shift and all its recurrences
 export async function updateCapacity(
   shiftId: Types.ObjectId,
-  newCapacity: number
+  newCapacity: number,
 ): Promise<Shift | null> {
   await requireAdmin();
   try {
@@ -317,13 +340,13 @@ export async function updateCapacity(
     const data = await ShiftModel.findByIdAndUpdate(
       shiftId,
       { capacity: newCapacity, "recurrences.$[].capacity": newCapacity },
-      { new: true }
+      { new: true },
     );
     return data;
   } catch (error) {
     const err = error as Error;
     throw new Error(
-      `Error has occurred when updating capacity: ${err.message}`
+      `Error has occurred when updating capacity: ${err.message}`,
     );
   }
 }
@@ -333,7 +356,7 @@ export async function updateCapacity(
 The current implementation clears all recurrences without handling existing UserShift records */
 export async function updateRecurrenceRule(
   shiftId: ObjectId,
-  newRule: string
+  newRule: string,
 ): Promise<Shift | null> {
   await requireAdmin();
   try {
@@ -342,13 +365,13 @@ export async function updateRecurrenceRule(
     const data = await ShiftModel.findByIdAndUpdate(
       shiftId,
       { recurrenceRule: newRule, recurrences: [] },
-      { new: true }
+      { new: true },
     );
     return data;
   } catch (error) {
     const err = error as Error;
     throw new Error(
-      `Error has occurred when updating recurrence rule: ${err.message}`
+      `Error has occurred when updating recurrence rule: ${err.message}`,
     );
   }
 }
@@ -366,7 +389,7 @@ export async function updateRecurrenceRule(
 export async function newSignUp(
   shiftId: Types.ObjectId,
   userId: ObjectId,
-  shiftDate?: Date
+  shiftDate?: Date,
 ): Promise<boolean> {
   await requireAdmin();
   try {
@@ -382,7 +405,7 @@ export async function newSignUp(
     } else if (data.capacity > data.currSignedUp) {
       data.currSignedUp += 1;
       await ShiftModel.findByIdAndUpdate(shiftId, data);
-      
+
       // Create a new UserShift document
       const userShift = new UserShiftModel({
         userId: userId,
@@ -390,10 +413,10 @@ export async function newSignUp(
         routeId: data.routeId,
         shiftDate: data.shiftDate,
         shiftEndDate: data.shiftEndDate,
-        status: "Incomplete"
+        status: "Incomplete",
       });
       await userShift.save();
-      
+
       return true;
     }
 
@@ -413,11 +436,11 @@ export async function newSignUp(
 async function recurrenceSignup(
   data: Shift,
   userId: ObjectId,
-  shiftDate: Date
+  shiftDate: Date,
 ): Promise<boolean> {
   const ocurrenceDate = RRule.fromString(data.recurrenceRule).after(
     shiftDate,
-    true
+    true,
   );
   if (
     !ocurrenceDate ||
@@ -437,7 +460,7 @@ async function recurrenceSignup(
         date: shiftDate,
         capacity: data.capacity,
         currSignedUp: 1,
-      })
+      }),
     );
   } else {
     if (recurrences[0].capacity <= recurrences[0].currSignedUp) {
@@ -447,20 +470,20 @@ async function recurrenceSignup(
   }
 
   await ShiftModel.findByIdAndUpdate(data._id, data);
-  
+
   const durationMs = data.shiftEndDate.getTime() - data.shiftDate.getTime();
   const endDate = new Date(shiftDate.getTime() + durationMs);
-  
+
   const userShift = new UserShiftModel({
     userId: userId,
     shiftId: data._id,
     routeId: data.routeId,
     shiftDate: shiftDate,
     shiftEndDate: endDate,
-    status: "Incomplete"
+    status: "Incomplete",
   });
   await userShift.save();
-  
+
   return true;
 }
 
@@ -524,7 +547,7 @@ interface TempRecentShift {
 }
 
 export async function getRecentShifts(
-  numRecentShifts: number
+  numRecentShifts: number,
 ): Promise<string | null> {
   await requireAdmin();
   try {
@@ -535,11 +558,11 @@ export async function getRecentShifts(
         s.recurrences.map((r) => ({
           routeId: s.routeId.toString(),
           date: new Date(r.date),
-        }))
+        })),
       )
       .sort(
         (a: TempRecentShift, b: TempRecentShift) =>
-          new Date(b.date).getTime() - new Date(a.date).getTime()
+          new Date(b.date).getTime() - new Date(a.date).getTime(),
       )
       .slice(0, numRecentShifts);
     return JSON.stringify(shiftRecurrences);
@@ -548,10 +571,9 @@ export async function getRecentShifts(
     throw new Error(`Error getting all shifts: ${err.message}`);
   }
 }
-
 export async function getShiftsByWeek(
   startDate: Date,
-  endDate: Date
+  endDate: Date,
 ): Promise<string | null> {
   await requireAdmin();
 
@@ -560,127 +582,136 @@ export async function getShiftsByWeek(
 
   try {
     await dbConnect();
-    const shifts = await ShiftModel.aggregate([
-    // 1. Filter by week (example: get shifts for a specific week)
-    {
-      $match: {
-        $expr: {
-          $or: [
-            {
-              $and: [
-                { $lte: ["$shiftStartDate", endDate] },     // shift starts before the week ends
-                { $gte: ["$shiftEndDate", startDate] } // shift ends after the week starts
-              ]
-            },
-            {
-              $and: [
-                { $lte: ["$shiftEndDate", endDate] },     // shift ends before the week ends
-                { $gte: ["$shiftEndDate", startDate] } // shift starts after the week starts
-              ]
-            },
-            {
-              $and: [
-                { $lte: ["$shiftStartDate", endDate] },     // shift ends before the week ends
-                { $gte: ["$shiftStartDate", startDate] } // shift starts after the week starts
-              ]
-            }
-          ]
-      }
-    }
-    },
-    
-    // 2. Join with routes to get route information
-    {
-      $lookup: {
-        from: "routes",
-        localField: "routeId",
-        foreignField: "_id",
-        as: "route"
-      }
-    },
-    { $unwind: { path: "$route", preserveNullAndEmptyArrays: true } },
-    
-    // 3. Join with userShifts to get volunteers for this shift
-    {
-      $lookup: {
-        from: "usershifts",
-        localField: "_id",
-        foreignField: "shiftId",
-        as: "usershifts"
-      }
-    },
-    
-    // 4. Join with users to get volunteer details
-    {
-      $lookup: {
-        from: "users",
-        localField: "usershifts.userId",
-        foreignField: "_id",
-        as: "volunteers"
-      }
-    },
-    
-    // 5. Project only the fields you need for the dashboard
-    {
-      $project: {
-        shiftStartTime: 1,
-        shiftEndTime: 1,
-        recurrenceDates: 1,
-        shiftStartDate: 1,
-        shiftEndDate: 1,
-        capacity: 1,
-        currSignedUp: 1,
-        additionalInfo: 1,
-        canceledShifts: 1,
-        status: 1,
-        routeName: "$route.routeName",
-        routeId: "$route._id",
-        locationDescription: "$route.locationDescription",
-        confirmationForm: 1,
-        comments: 1,
-        volunteers: {
-          $map: {
-            input: "$volunteers",
-            as: "volunteer",
-            in: {
-              userId: "$$volunteer._id",
-              firstName: "$$volunteer.firstName",
-              lastName: "$$volunteer.lastName",
-              email: "$$volunteer.email",
-              status: {
-                $arrayElemAt: [
-                  "$usershifts.status",
-                  { $indexOfArray: ["$usershifts.userId", "$$volunteer._id"] }
-                ]
-              }
-            }
-          }
-        }
-      }
-    },
-    
-    // 6. Sort by shift date
-    { $sort: { shiftDate: 1 } }
-]);
 
-return JSON.stringify(shifts);
+    const weekDaysArray = getDaysInRange(startDate, endDate);
 
-} catch (error) {
+    const commonPipeline = [
+      {
+        $lookup: {
+          from: "routes",
+          localField: "routeId",
+          foreignField: "_id",
+          as: "route",
+        },
+      },
+      { $unwind: { path: "$route", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "usershifts",
+          localField: "_id",
+          foreignField: "shiftId",
+          as: "usershifts",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "usershifts.userId",
+          foreignField: "_id",
+          as: "volunteers",
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          isRecurring: 1,
+          shiftStartTime: 1,
+          shiftEndTime: 1,
+          recurrenceDates: 1,
+          shiftStartDate: 1,
+          shiftEndDate: 1,
+          capacity: 1,
+          currSignedUp: 1,
+          additionalInfo: 1,
+          canceledShifts: 1,
+          status: 1,
+          routeName: "$route.routeName",
+          routeId: "$route._id",
+          locationDescription: "$route.locationDescription",
+          confirmationForm: 1,
+          comments: 1,
+          volunteers: {
+            $map: {
+              input: "$volunteers",
+              as: "volunteer",
+              in: {
+                userId: "$$volunteer._id",
+                firstName: "$$volunteer.firstName",
+                lastName: "$$volunteer.lastName",
+                email: "$$volunteer.email",
+                status: {
+                  $arrayElemAt: [
+                    "$usershifts.status",
+                    {
+                      $indexOfArray: ["$usershifts.userId", "$$volunteer._id"],
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
+      },
+    ];
+
+    // 1) Non-recurring shifts only
+    const nonRecurringShifts = await ShiftModel.aggregate([
+      {
+        $match: {
+          isRecurring: { $ne: true },
+          shiftStartDate: { $lte: endDate },
+          shiftEndDate: { $gte: startDate },
+        },
+      },
+      ...commonPipeline,
+    ]);
+
+    // 2) Recurring shifts only, but only if one of their recurrenceDates
+    // falls on a day that exists inside this week
+    const recurringShifts = await ShiftModel.aggregate([
+      {
+        $match: {
+          isRecurring: true,
+          shiftStartDate: { $lte: endDate },
+          recurrenceDates: { $in: weekDaysArray },
+        },
+      },
+      ...commonPipeline,
+    ]);
+
+    // 3) Merge + dedupe by _id
+    const mergedMap = new Map<string, any>();
+
+    [...nonRecurringShifts, ...recurringShifts].forEach((shift) => {
+      mergedMap.set(String(shift._id), shift);
+    });
+
+    const shifts = Array.from(mergedMap.values()).sort((a, b) => {
+      return (
+        new Date(a.shiftStartTime).getTime() -
+        new Date(b.shiftStartTime).getTime()
+      );
+    });
+    return JSON.stringify(shifts);
+  } catch (error) {
     const err = error as Error;
     throw new Error(`Error getting shifts by week: ${err.message}`);
   }
 }
 
-export async function updateShift(shiftId: string, shiftUpdatePayload: string): Promise<string | null> {
+export async function updateShift(
+  shiftId: string,
+  shiftUpdatePayload: string,
+): Promise<string | null> {
   await requireAdmin();
   try {
     await dbConnect();
-    
+
     // Validate shiftId
     if (!shiftId || !mongoose.Types.ObjectId.isValid(shiftId)) {
       throw new Error("Invalid shiftId format");
     }
-    
+
     // Parse and validate update data
     let updateData;
     try {
@@ -688,58 +719,92 @@ export async function updateShift(shiftId: string, shiftUpdatePayload: string): 
     } catch (e) {
       throw new Error("Invalid JSON format for shift update data");
     }
-    
+
     // Validate ObjectId if routeId is provided
-    if (updateData.routeId && !mongoose.Types.ObjectId.isValid(updateData.routeId)) {
+    if (
+      updateData.routeId &&
+      !mongoose.Types.ObjectId.isValid(updateData.routeId)
+    ) {
       throw new Error("Invalid routeId format");
     }
-    
+
     // Validate dates if provided
-    if (updateData.shiftStartDate && isNaN(new Date(updateData.shiftStartDate).getTime())) {
+    if (
+      updateData.shiftStartDate &&
+      isNaN(new Date(updateData.shiftStartDate).getTime())
+    ) {
       throw new Error("Invalid shiftStartDate");
     }
-    if (updateData.shiftEndDate && isNaN(new Date(updateData.shiftEndDate).getTime())) {
+    if (
+      updateData.shiftEndDate &&
+      isNaN(new Date(updateData.shiftEndDate).getTime())
+    ) {
       throw new Error("Invalid shiftEndDate");
     }
-    if (updateData.shiftStartTime && isNaN(new Date(updateData.shiftStartTime).getTime())) {
+    if (
+      updateData.shiftStartTime &&
+      isNaN(new Date(updateData.shiftStartTime).getTime())
+    ) {
       throw new Error("Invalid shiftStartTime");
     }
-    if (updateData.shiftEndTime && isNaN(new Date(updateData.shiftEndTime).getTime())) {
+    if (
+      updateData.shiftEndTime &&
+      isNaN(new Date(updateData.shiftEndTime).getTime())
+    ) {
       throw new Error("Invalid shiftEndTime");
     }
-    
+
     // Validate currSignedUp if provided
-    if (updateData.currSignedUp !== undefined && (typeof updateData.currSignedUp !== "number" || updateData.currSignedUp < 0)) {
+    if (
+      updateData.currSignedUp !== undefined &&
+      (typeof updateData.currSignedUp !== "number" ||
+        updateData.currSignedUp < 0)
+    ) {
       throw new Error("currSignedUp must be a non-negative number");
     }
-    
+
     // Validate recurrenceDates if provided
-    if (updateData.recurrenceDates !== undefined && !Array.isArray(updateData.recurrenceDates)) {
+    if (
+      updateData.recurrenceDates !== undefined &&
+      !Array.isArray(updateData.recurrenceDates)
+    ) {
       throw new Error("recurrenceDates must be an array");
     }
-    
+
     // Validate timeSpecific if provided
-    if (updateData.timeSpecific !== undefined && typeof updateData.timeSpecific !== "boolean") {
+    if (
+      updateData.timeSpecific !== undefined &&
+      typeof updateData.timeSpecific !== "boolean"
+    ) {
       throw new Error("timeSpecific must be a boolean");
     }
-    
+
     // Build update object with only provided fields
     const updateFields: any = {};
-    if (updateData.routeId !== undefined) updateFields.routeId = updateData.routeId;
-    if (updateData.shiftStartTime !== undefined) updateFields.shiftStartTime = updateData.shiftStartTime;
-    if (updateData.shiftEndTime !== undefined) updateFields.shiftEndTime = updateData.shiftEndTime;
-    if (updateData.shiftStartDate !== undefined) updateFields.shiftStartDate = updateData.shiftStartDate;
-    if (updateData.shiftEndDate !== undefined) updateFields.shiftEndDate = updateData.shiftEndDate;
-    if (updateData.recurrenceDates !== undefined) updateFields.recurrenceDates = updateData.recurrenceDates;
-    if (updateData.timeSpecific !== undefined) updateFields.timeSpecific = updateData.timeSpecific;
-    if (updateData.additionalInfo !== undefined) updateFields.additionalInfo = updateData.additionalInfo;
-    if (updateData.currSignedUp !== undefined) updateFields.currSignedUp = updateData.currSignedUp;
-    
+    if (updateData.routeId !== undefined)
+      updateFields.routeId = updateData.routeId;
+    if (updateData.shiftStartTime !== undefined)
+      updateFields.shiftStartTime = updateData.shiftStartTime;
+    if (updateData.shiftEndTime !== undefined)
+      updateFields.shiftEndTime = updateData.shiftEndTime;
+    if (updateData.shiftStartDate !== undefined)
+      updateFields.shiftStartDate = updateData.shiftStartDate;
+    if (updateData.shiftEndDate !== undefined)
+      updateFields.shiftEndDate = updateData.shiftEndDate;
+    if (updateData.recurrenceDates !== undefined)
+      updateFields.recurrenceDates = updateData.recurrenceDates;
+    if (updateData.timeSpecific !== undefined)
+      updateFields.timeSpecific = updateData.timeSpecific;
+    if (updateData.additionalInfo !== undefined)
+      updateFields.additionalInfo = updateData.additionalInfo;
+    if (updateData.currSignedUp !== undefined)
+      updateFields.currSignedUp = updateData.currSignedUp;
+
     // Find and update the shift
     const updatedShift = await ShiftModel.findByIdAndUpdate(
       shiftId,
       { $set: updateFields },
-      { new: true } // Return the updated document
+      { new: true }, // Return the updated document
     );
 
     if (!updatedShift) {
@@ -753,24 +818,24 @@ export async function updateShift(shiftId: string, shiftUpdatePayload: string): 
   }
 }
 
-
 export async function updateShiftConfirmation(
   shiftId: string,
   dateKey: string,
-  confirmationId: string): Promise<boolean> {
+  confirmationId: string,
+): Promise<boolean> {
   await requireUser();
   try {
     await dbConnect();
-    
+
     // Validate inputs
     if (!shiftId || !mongoose.Types.ObjectId.isValid(shiftId)) {
       throw new Error("Invalid shiftId format");
     }
-    
+
     if (!dateKey || typeof dateKey !== "string") {
       throw new Error("dateKey must be a valid string");
     }
-    
+
     if (!confirmationId || !mongoose.Types.ObjectId.isValid(confirmationId)) {
       throw new Error("Invalid confirmationId format");
     }
@@ -780,7 +845,7 @@ export async function updateShiftConfirmation(
     if (!userId) {
       throw new Error("User not authenticated");
     }
-    
+
     const user = await User.findById(userId);
     if (!user) {
       throw new Error("User not found");
@@ -789,7 +854,7 @@ export async function updateShiftConfirmation(
     const result = await ShiftModel.findByIdAndUpdate(
       shiftId,
       { $set: { [`confirmationForm.${dateKey}`]: confirmationId } },
-      { new: true, upsert: false }
+      { new: true, upsert: false },
     );
 
     if (!result) {
@@ -802,78 +867,58 @@ export async function updateShiftConfirmation(
     throw new Error(`Error updating shift confirmation: ${err.message}`);
   }
 }
-  
-export async function getShiftsByDay(
-  targetDate: Date
-): Promise<string | null> {
+
+export async function getShiftsByDay(targetDate: Date): Promise<string | null> {
   await requireAdmin();
   try {
     await dbConnect();
-    
-    // Set targetDate to start and end of day for comparison
+
     const startOfDay = new Date(targetDate);
     startOfDay.setHours(0, 0, 0, 0);
+
     const endOfDay = new Date(targetDate);
     endOfDay.setHours(23, 59, 59, 999);
-    
-    // Get day abbreviation (e.g., "Mo", "Tu", etc.)
-    const dayNames = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-    const dayAbbr = dayNames[targetDate.getDay()];
-    
-    const shifts = await ShiftModel.aggregate([
-      // 1. Filter by day - check if shift occurs on the target date
-      {
-        $match: {
-          $expr: {
-            $or: [
-              // For shifts with recurrenceDates, check if they occur on this day
-              {
-                $and: [
-                  { $ne: [{ $size: { $ifNull: ["$recurrenceDates", []] } }, 0] },
-                  { $in: [dayAbbr.toLowerCase(), { $map: { input: "$recurrenceDates", as: "day", in: { $toLower: "$$day" } } } ] },
-                  { $lte: ["$shiftStartDate", endOfDay] },
-                  { $gte: ["$shiftEndDate", startOfDay] }
-                ]
-              }
-            ]
-          }
-        }
-      },
-      
-      // 2. Join with routes to get route information
+
+    const dayName =
+      fullToDay[
+        targetDate
+          .toLocaleDateString("en-US", { weekday: "long" })
+          .toLowerCase()
+      ];
+
+    const commonPipeline = [
       {
         $lookup: {
           from: "routes",
           localField: "routeId",
           foreignField: "_id",
-          as: "route"
-        }
+          as: "route",
+        },
       },
       { $unwind: { path: "$route", preserveNullAndEmptyArrays: true } },
-      
-      // 3. Join with userShifts to get volunteers for this shift
+
       {
         $lookup: {
           from: "usershifts",
           localField: "_id",
           foreignField: "shiftId",
-          as: "usershifts"
-        }
+          as: "usershifts",
+        },
       },
-      
-      // 4. Join with users to get volunteer details
+
       {
         $lookup: {
           from: "users",
           localField: "usershifts.userId",
           foreignField: "_id",
-          as: "volunteers"
-        }
+          as: "volunteers",
+        },
       },
-      
-      // 5. Project only the fields you need for the dashboard
+
       {
         $project: {
+          _id: 1,
+          isRecurring: 1,
           shiftStartTime: 1,
           shiftEndTime: 1,
           recurrenceDates: 1,
@@ -901,18 +946,54 @@ export async function getShiftsByDay(
                 status: {
                   $arrayElemAt: [
                     "$usershifts.status",
-                    { $indexOfArray: ["$usershifts.userId", "$$volunteer._id"] }
-                  ]
-                }
-              }
-            }
-          }
-        }
+                    {
+                      $indexOfArray: ["$usershifts.userId", "$$volunteer._id"],
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        },
       },
-      
-      // 6. Sort by shift time
-      { $sort: { shiftStartTime: 1 } }
+    ];
+
+    const nonRecurringShifts = await ShiftModel.aggregate([
+      {
+        $match: {
+          isRecurring: { $ne: true },
+          shiftStartDate: { $lte: endOfDay },
+          shiftEndDate: { $gte: startOfDay },
+        },
+      },
+      ...commonPipeline,
     ]);
+
+    const recurringShifts = await ShiftModel.aggregate([
+      {
+        $match: {
+          isRecurring: true,
+          shiftStartDate: { $lte: endOfDay },
+          recurrenceDates: {
+            $in: [dayName],
+          },
+        },
+      },
+      ...commonPipeline,
+    ]);
+
+    const mergedMap = new Map<string, any>();
+
+    [...nonRecurringShifts, ...recurringShifts].forEach((shift) => {
+      mergedMap.set(String(shift._id), shift);
+    });
+
+    const shifts = Array.from(mergedMap.values()).sort((a, b) => {
+      return (
+        new Date(a.shiftStartTime).getTime() -
+        new Date(b.shiftStartTime).getTime()
+      );
+    });
 
     return JSON.stringify(shifts);
   } catch (error) {

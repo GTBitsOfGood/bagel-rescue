@@ -14,7 +14,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import dayToNumber, { dayList } from "@/lib/dayHandler";
-import { combineDateAndTime, dateToString, normalizeDate, stringToDate } from "@/lib/dateHandler";
+import {
+  combineDateAndTime,
+  dateToString,
+  normalizeDate,
+  stringToDate,
+} from "@/lib/dateHandler";
 import { errorToast, successToast } from "@/lib/toastConfig";
 import BackButton from "@/app/components/BackButton";
 
@@ -36,6 +41,7 @@ export default function NewShiftPage() {
   const [endTime, setEndTime] = useState<string>("");
   const [timeSpecific, setTimeSpecific] = useState<boolean>(false);
   const [dateRange, setDateRange] = useState<boolean>(false);
+  const [recurringShift, setRecurringShift] = useState<boolean>(false);
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [additionalInfo, setAdditionalInfo] = useState<string>("");
@@ -65,7 +71,7 @@ export default function NewShiftPage() {
     const fetchLocations = async () => {
       if (routes.length === 0) return;
       const response = await getAllLocationsById(
-        routes[0].locations.map((loc) => String(loc.location))
+        routes[0].locations.map((loc) => String(loc.location)),
       );
       const data = JSON.parse(response || "[]");
       setLocations(data || []);
@@ -328,8 +334,16 @@ export default function NewShiftPage() {
     if (!(startTime.trim() && endTime.trim())) {
       return false;
     }
-    if (dateRange && (!startDate.trim() || !endDate.trim())) {
-      return false;
+    if (dateRange) {
+      if (recurringShift) {
+        if (!startDate.trim()) {
+          return false;
+        }
+      } else {
+        if (!startDate.trim() || !endDate.trim()) {
+          return false;
+        }
+      }
     }
     if (routes.length === 0) {
       return false;
@@ -341,7 +355,7 @@ export default function NewShiftPage() {
       return false;
     }
     return true;
-  }
+  };
 
   async function saveEdits() {
     // Prevent duplicate submissions
@@ -370,11 +384,12 @@ export default function NewShiftPage() {
         setIsSubmitting(false);
         return;
       }
-
-      if (!endDate.trim()) {
-        errorToast("Please enter an end date.");
-        setIsSubmitting(false);
-        return;
+      if (!recurringShift) {
+        if (!endDate.trim()) {
+          errorToast("Please enter an end date.");
+          setIsSubmitting(false);
+          return;
+        }
       }
     }
 
@@ -413,6 +428,7 @@ export default function NewShiftPage() {
     const targetDay = selectedDays.map((day) => day.toLowerCase());
     let finalStartDay = new Date();
     let finalEndDay = new Date();
+    let isRecurring = false;
 
     if (
       (startHour === 0 && startMinute === 0) ||
@@ -427,11 +443,21 @@ export default function NewShiftPage() {
 
     if (!dateRange) {
       finalStartDay = findFirstDateAfterToday(targetDay)!;
-      finalEndDay = new Date(finalStartDay);
-      finalEndDay.setFullYear(finalEndDay.getFullYear() + 5);
+      isRecurring = true;
     } else {
       finalStartDay = stringToDate(startDate);
-      finalEndDay = stringToDate(endDate);
+      isRecurring = recurringShift;
+      if (!isRecurring) {
+        finalEndDay = stringToDate(endDate);
+        if (finalEndDay < finalStartDay) {
+          errorToast("End date cannot be before start date.");
+          setIsSubmitting(false);
+          return;
+        }
+      } else {
+        finalEndDay = new Date(finalStartDay);
+        finalEndDay.setFullYear(finalEndDay.getFullYear() + 5);
+      }
     }
 
     const newShift = {
@@ -449,6 +475,7 @@ export default function NewShiftPage() {
       creationDate: new Date(),
       additionalInfo: additionalInfo ?? "",
       currSignedUp: volunteers.length,
+      isRecurring,
     };
 
     var shiftCreationComplete = false;
@@ -472,6 +499,7 @@ export default function NewShiftPage() {
           recurrenceDates: targetDay,
           shiftDate: finalStartDay,
           shiftEndDate: finalEndDay,
+          isRecurring: isRecurring,
         });
       }
 
@@ -498,7 +526,9 @@ export default function NewShiftPage() {
       <div className="flex flex-col w-full min-h-screen">
         {/* this is the top bar */}
         <div className="flex flex-col p-4 space-y-2 border border-b-[#D3D8DE]">
-          <BackButton onClick={() => router.push("/AdminNavView/DailyShiftDashboard")}/>
+          <BackButton
+            onClick={() => router.push("/AdminNavView/DailyShiftDashboard")}
+          />
           <div className="flex justify-between text-center align-middle">
             <div className="text-[#072B68] font-bold text-4xl content-center">
               New Shift
@@ -509,7 +539,11 @@ export default function NewShiftPage() {
                 disabled={isSubmitting}
                 className="font-bold text-white px-6 py-[.8rem] rounded-xl text-base"
                 style={{
-                  backgroundColor: isSubmitting ? "#CCCCCC" : checkFormIncomplete() ? "#0F7AFF" : "#A3A3A3",
+                  backgroundColor: isSubmitting
+                    ? "#CCCCCC"
+                    : checkFormIncomplete()
+                      ? "#0F7AFF"
+                      : "#A3A3A3",
                   cursor: isSubmitting ? "not-allowed" : "pointer",
                 }}
               >
@@ -588,6 +622,19 @@ export default function NewShiftPage() {
                     onChange={() => setDateRange(!dateRange)}
                   ></input>
                 </div>
+                <div className="flex flex-row gap-2 items-center">
+                  <p className="text-[#072B68] font-bold text-lg">
+                    Recurring Shift
+                  </p>
+                  <input
+                    type="checkbox"
+                    id="recurringShift"
+                    disabled={!dateRange}
+                    className="w-5 h-5 border-2 border-blue-500 rounded"
+                    checked={recurringShift}
+                    onChange={() => setRecurringShift(!recurringShift)}
+                  ></input>
+                </div>
                 <div className="flex space-x-12">
                   <div className="flex flex-col space-y-2 flex-1">
                     <p
@@ -604,7 +651,7 @@ export default function NewShiftPage() {
                       type="date"
                       placeholder="Enter additional information here"
                       value={startDate}
-                      disabled = {!dateRange}
+                      disabled={!dateRange}
                       onChange={(e) =>
                         dateRange ? setStartDate(e.target.value) : null
                       }
@@ -614,19 +661,23 @@ export default function NewShiftPage() {
                   <div className="flex flex-col space-y-2 flex-1">
                     <p
                       className={`font-bold text-lg ${
-                        dateRange ? "label-enabled" : "label-disabled"
+                        dateRange && !recurringShift
+                          ? "label-enabled"
+                          : "label-disabled"
                       }`}
                     >
                       End Date <span className="text-red-500">*</span>
                     </p>
                     <input
                       className={`px-4 py-[.8rem] rounded-lg h-full ${
-                        dateRange ? "date-input-enabled" : "date-input-disabled"
+                        dateRange && !recurringShift
+                          ? "date-input-enabled"
+                          : "date-input-disabled"
                       }`}
                       type="date"
                       placeholder="Enter additional information here"
                       value={endDate}
-                      disabled = {!dateRange}
+                      disabled={!dateRange || recurringShift}
                       onChange={(e) =>
                         dateRange ? setEndDate(e.target.value) : null
                       }
@@ -653,7 +704,7 @@ export default function NewShiftPage() {
                         onClick={() => {
                           if (isSelected) {
                             setSelectedDays(
-                              selectedDays.filter((d) => d !== day)
+                              selectedDays.filter((d) => d !== day),
                             );
                           } else {
                             setSelectedDays([...selectedDays, day]);
