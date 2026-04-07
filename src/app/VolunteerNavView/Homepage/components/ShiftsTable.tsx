@@ -58,6 +58,7 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({
       weekday: "long",
       month: "long",
       day: "numeric",
+      timeZone: "UTC",
     }) :
     "";
   }

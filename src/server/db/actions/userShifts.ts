@@ -10,7 +10,11 @@ import { requireUser, requireAdmin } from "../auth/auth";
 import { Shift, ShiftModel } from "../models/shift";
 import { getAllLocationsById } from "./location";
 import { getDaysInRange } from "@/lib/dayHandler";
-import { combineDateAndTime, dateToString } from "@/lib/dateHandler";
+import {
+  combineDateAndTime,
+  dateToString,
+  toUTCStartOfDay,
+} from "@/lib/dateHandler";
 import { getShift } from "./shift";
 import { cookies } from "next/headers";
 import { adminAuth } from "../firebase/admin/firebaseAdmin";
@@ -26,6 +30,8 @@ export type UserShiftData = {
   area: string;
   startTime: Date;
   endTime: Date;
+  shiftStartDate?: Date;
+  shiftEndDate?: Date;
   confirmationForms: { [date: string]: string };
   occurrenceDate?: Date;
   canceledShifts?: string[];
@@ -198,26 +204,8 @@ export async function getUserShiftsByDateRange(
 
     const skip = (page - 1) * limit;
 
-    const startAbsDate = new Date(
-      startDate.getFullYear(),
-      startDate.getMonth(),
-      startDate.getDate(),
-      0,
-      0,
-      0,
-      0,
-    );
-
-    const endAbsDate = new Date(
-      endDate.getFullYear(),
-      endDate.getMonth(),
-      endDate.getDate(),
-      23,
-      59,
-      59,
-      999,
-    );
-
+    const startAbsDate = toUTCStartOfDay(startDate);
+    const endAbsDate = toUTCStartOfDay(endDate);
     const daysInRange = getDaysInRange(startDate, endDate);
 
     const baseQuery = {
@@ -227,24 +215,9 @@ export async function getUserShiftsByDateRange(
     const nonRecurringUserShifts = await UserShiftModel.find({
       ...baseQuery,
       isRecurring: { $ne: true },
-      $or: [
-        {
-          shiftDate: { $gte: startAbsDate, $lte: endAbsDate },
-        },
-        {
-          shiftEndDate: { $gte: startAbsDate, $lte: endAbsDate },
-        },
-        {
-          shiftDate: { $lte: startAbsDate },
-          shiftEndDate: { $gte: endAbsDate },
-        },
-        {
-          shiftDate: { $gte: startAbsDate },
-          shiftEndDate: { $lte: endAbsDate },
-        },
-      ],
+      shiftDate: { $lte: endAbsDate },
+      shiftEndDate: { $gte: startAbsDate },
     }).lean();
-    console.log("nonRecurringUserShifts:", nonRecurringUserShifts);
 
     const recurringUserShifts = await UserShiftModel.find({
       ...baseQuery,
@@ -255,8 +228,8 @@ export async function getUserShiftsByDateRange(
 
     const mergedMap = new Map<string, any>();
 
-    [...nonRecurringUserShifts, ...recurringUserShifts].forEach((shift) => {
-      mergedMap.set(shift._id.toString(), shift);
+    [...nonRecurringUserShifts, ...recurringUserShifts].forEach((usershift) => {
+      mergedMap.set(usershift._id.toString(), usershift);
     });
 
     const mergedUserShifts = Array.from(mergedMap.values()).sort(
@@ -264,14 +237,14 @@ export async function getUserShiftsByDateRange(
         new Date(a.shiftDate).getTime() - new Date(b.shiftDate).getTime(),
     );
 
-    const paginatedUserShifts = mergedUserShifts.slice(skip, skip + limit);
     const total = mergedUserShifts.length;
+    const userShifts = mergedUserShifts.slice(skip, skip + limit);
 
     const routeIds = Array.from(
-      new Set(paginatedUserShifts.map((shift) => shift.routeId)),
+      new Set(userShifts.map((shift) => shift.routeId)),
     );
     const shiftIds = Array.from(
-      new Set(paginatedUserShifts.map((shift) => shift.shiftId)),
+      new Set(userShifts.map((shift) => shift.shiftId)),
     );
 
     const routes = await RouteModel.find({
@@ -303,7 +276,7 @@ export async function getUserShiftsByDateRange(
 
     const transformedShifts = (
       await Promise.all(
-        paginatedUserShifts.map(async (usershift) => {
+        userShifts.map(async (usershift) => {
           const route = routeMap.get(usershift.routeId.toString()) || {
             routeName: "Unknown Route",
             locationDescription: "",
@@ -312,7 +285,6 @@ export async function getUserShiftsByDateRange(
           const shift = (
             await getShift(usershift.shiftId.toString())
           )?.toObject();
-
           if (!shift) {
             return null;
           }
@@ -326,12 +298,14 @@ export async function getUserShiftsByDateRange(
             id: usershift._id.toString(),
             routeName: route.routeName,
             area: route.locationDescription,
-            startTime: new Date(usershift.shiftDate),
-            endTime: new Date(usershift.shiftEndDate),
+            startTime: new Date(shift.shiftStartTime),
+            endTime: new Date(shift.shiftEndTime),
+            shiftStartDate: new Date(shift.shiftStartDate),
+            shiftEndDate: new Date(shift.shiftEndDate),
             confirmationForms,
             canceledShifts: usershift.canceledShifts,
             recurrenceDates: usershift.recurrenceDates,
-            isRecurring: usershift.isRecurring,
+            isRecurring: !!usershift.isRecurring,
             hasComment: Object.keys(
               shiftCommentsMap.get(usershift.shiftId.toString()) || {},
             ),

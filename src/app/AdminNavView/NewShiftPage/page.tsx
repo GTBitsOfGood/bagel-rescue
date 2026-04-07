@@ -18,6 +18,7 @@ import {
   combineDateAndTime,
   dateToString,
   normalizeDate,
+  toUTCStartOfDay,
   stringToDate,
 } from "@/lib/dateHandler";
 import { errorToast, successToast } from "@/lib/toastConfig";
@@ -294,8 +295,7 @@ export default function NewShiftPage() {
   const findFirstDateAfterToday = (days: string[]): Date | null => {
     if (days.length === 0) return null;
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize to start of day
+    const today = toUTCStartOfDay(new Date()); // Normalize to UTC start of day
     const currentDay = today.getDay();
 
     // Remove duplicates and convert to numbers

@@ -1,10 +1,10 @@
 'use client'
 import AdminSidebar from '@/components/AdminSidebar';
-import Spinner from '@/components/Spinner';
+import LoadingFallback from '@/app/components/LoadingFallback';
 import { getAdminAnalytics } from '@/server/db/actions/adminAnalytics';
 import { handleAuthError } from '@/lib/authErrorHandler';
-import { redirect, useRouter } from 'next/navigation';
-import react, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function AdminAnalytics() {
   const router = useRouter();
@@ -22,61 +22,35 @@ export default function AdminAnalytics() {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const response = await getAdminAnalytics();
         if (!response) {
           console.error('Failed to fetch admin analytics data');
+          setAnalyticsData(null);
           return;
         }
 
-      const data = JSON.parse(response || "[]");
+        const data = JSON.parse(response || "[]");
 
-      if (!data) {
-        console.error('No data found for admin analytics');
-        return;
-      }
-      setAnalyticsData(data); 
+        if (!data) {
+          console.error('No data found for admin analytics');
+          setAnalyticsData(null);
+          return;
+        }
+        setAnalyticsData(data);
       } catch (error) {
         if (handleAuthError(error, router)) {
-          return; // Auth error handled, user redirected
+          return;
         }
         console.error('Error fetching admin analytics:', error);
+        setAnalyticsData(null);
       } finally {
         setLoading(false);
       }
-    }
+    };
     fetchData();
-  }
-  , []);
-  const viewData = {
-    monthly: {
-      periodLabel: 'This Month',
-      averageLabel: 'Monthly Average',
-      totalShifts:   analyticsData ? analyticsData.shiftsThisMonth : 'loading..', 
-      averageShifts: analyticsData ? Math.round(analyticsData.monthlyShiftAverage) : 'loading...',
-      totalDuration: analyticsData ? `${analyticsData.totalShiftDurationThisMonth /60} hr  ${analyticsData.totalShiftDurationThisMonth % 60} min` : 'loading...', 
-      averageDuration: analyticsData ? `${Math.floor((analyticsData.averageShiftDurationThisMonth || 0) / 60)} hr ${Math.round((analyticsData.averageShiftDurationThisMonth || 0) % 60)} min` : 'loading...'
-    },
-    yearly: {
-      periodLabel: 'This Year',
-      averageLabel: 'Yearly Average',
-      totalShifts: analyticsData ? analyticsData.shiftsThisYear : 'loading..',
-      averageShifts: analyticsData ? Math.round(analyticsData.yearlyShiftsAverage) : 'loading...', 
-      totalDuration: analyticsData ? `${Math.floor((analyticsData.totalShiftDurationThisYear || 0) / 60)} hr ${Math.round((analyticsData.totalShiftDurationThisYear || 0) % 60)} min` : 'loading...',
-      averageDuration: analyticsData ? `${Math.floor((analyticsData.averageShiftDurationThisYear || 0) / 60)} hr ${Math.round((analyticsData.averageShiftDurationThisYear || 0) % 60)} min` : 'loading...'
-    }
-    
-  };
-
-  const volunteerData = {
-    totalVolunteers: analyticsData ? analyticsData.totalVolunteers : 'loading...',
-    activeVolunteers: analyticsData ? analyticsData.activeVolunteers : 'loading...',
-    numberOfNewVolunteers: analyticsData ? analyticsData.numberOfNewVolunteers : 'loading...',
-    newVolunteers: analyticsData ? analyticsData.newVolunteers : [],
-    volunteersWithMultipleShifts: analyticsData ? analyticsData.volunteersWithMultipleShifts : [],
-    lastUpdatedAt: analyticsData ? analyticsData.lastUpdatedAt : null
-  }
-
+  }, [router]);
 
   const statusColors: {[key: string]: string} = {
     'Complete': 'bg-[var(--Green-Green-100,#E3FCEF)] text-[var(--Green-Green-900,#084C29)]',
@@ -84,22 +58,63 @@ export default function AdminAnalytics() {
     'Late': 'bg-[var(--Orange-Orange-100,#FEBF98)] text-[#622500]',
     'Sub Request': 'bg-[#FFE3B3] text-[var(--Yellow-Yellow-900,#59431B)]'
   };
-  
-  const overViewData = viewData[timeView];
+
+  const viewData = analyticsData
+    ? {
+        monthly: {
+          periodLabel: 'This Month',
+          averageLabel: 'Monthly Average',
+          totalShifts: analyticsData.shiftsThisMonth,
+          averageShifts: Math.round(analyticsData.monthlyShiftAverage),
+          totalDuration: `${analyticsData.totalShiftDurationThisMonth / 60} hr  ${analyticsData.totalShiftDurationThisMonth % 60} min`,
+          averageDuration: `${Math.floor((analyticsData.averageShiftDurationThisMonth || 0) / 60)} hr ${Math.round((analyticsData.averageShiftDurationThisMonth || 0) % 60)} min`,
+        },
+        yearly: {
+          periodLabel: 'This Year',
+          averageLabel: 'Yearly Average',
+          totalShifts: analyticsData.shiftsThisYear,
+          averageShifts: Math.round(analyticsData.yearlyShiftsAverage),
+          totalDuration: `${Math.floor((analyticsData.totalShiftDurationThisYear || 0) / 60)} hr ${Math.round((analyticsData.totalShiftDurationThisYear || 0) % 60)} min`,
+          averageDuration: `${Math.floor((analyticsData.averageShiftDurationThisYear || 0) / 60)} hr ${Math.round((analyticsData.averageShiftDurationThisYear || 0) % 60)} min`,
+        },
+      }
+    : null;
+
+  const volunteerData = analyticsData
+    ? {
+        totalVolunteers: analyticsData.totalVolunteers,
+        activeVolunteers: analyticsData.activeVolunteers,
+        numberOfNewVolunteers: analyticsData.numberOfNewVolunteers,
+        newVolunteers: analyticsData.newVolunteers ?? [],
+        volunteersWithMultipleShifts: analyticsData.volunteersWithMultipleShifts ?? [],
+        lastUpdatedAt: analyticsData.lastUpdatedAt,
+      }
+    : null;
+
+  const overViewData = viewData ? viewData[timeView] : null;
+
   return (
     <div className='flex w-full min-h-screen bg-[#F6F9FC]'>
       <AdminSidebar/>
-      <div className="flex flex-col w-full bg-[#F6F9FC]">
-        <div className="flex flex-col p-9 justify-start space-y-6 bg-white border-b">
+      <div className="flex min-w-0 flex-1 flex-col bg-[#F6F9FC]">
+        <div className="flex flex-col space-y-6 border-b bg-white p-9">
             <h1 className="text-4xl font-bold text-[#072B68]">Analytics</h1>
         </div>
-        <div className='flex flex-col bg-[#F6F9FC] gap-6 w-full pb-9'>
+        {loading ? (
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center bg-[#F6F9FC] px-9 py-16">
+            <LoadingFallback />
+          </div>
+        ) : !analyticsData || !volunteerData || !overViewData ? (
+          <div className="px-9 py-12 text-center text-[#072B68]">
+            Unable to load analytics. Please try again later.
+          </div>
+        ) : (
+        <div className='flex w-full flex-1 flex-col gap-6 bg-[#F6F9FC] pb-9'>
             <div className='px-9 pt-6'>
-                
-                <p>{loading || !volunteerData.lastUpdatedAt 
-                    ? "loading..." 
-                    : `Last updated on ${new Date(volunteerData.lastUpdatedAt).toLocaleDateString('en-US', {
-                        month: 'numeric', 
+                <p>
+                  {volunteerData.lastUpdatedAt
+                    ? `Last updated on ${new Date(volunteerData.lastUpdatedAt).toLocaleDateString('en-US', {
+                        month: 'numeric',
                         day: 'numeric',
                         year: '2-digit'
                       }).replace(/\//g, '-')} ${new Date(volunteerData.lastUpdatedAt).toLocaleTimeString('en-US', {
@@ -108,7 +123,8 @@ export default function AdminAnalytics() {
                         second: '2-digit',
                         hour12: false
                       })}`
-                  }</p>
+                    : ''}
+                </p>
             </div>
             <div className='flex px-9 items-start gap-6 self-stretch'>
                 <div className='max-w-[26.5rem] w-full flex flex-col p-6 gap-7 items-start self-stretch rounded-lg bg-white'>
@@ -161,8 +177,8 @@ export default function AdminAnalytics() {
                 <div className='w-full bg-white h-full'>
                   <div className='p-6 w-full h-full flex'>
                     <div className='flex h-full w-full gap-3 flex-col justify-between items-start'>
-                      <h1 className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold text-2xl'>Recent Shifts</h1> 
-                      {!analyticsData ? <Spinner/> : <div className='flex flex-col w-full justify-between items-center'>
+                      <h1 className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold text-2xl'>Recent Shifts</h1>
+                      <div className='flex w-full flex-col items-center justify-between'>
                       <div className='grid grid-cols-[2fr_1fr_1fr_1fr] w-full p-[0.625rem]'>
                         <div className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold leading-5'>Name</div>
                         <div className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold leading-5'>Status</div>
@@ -170,7 +186,7 @@ export default function AdminAnalytics() {
                         <div className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold leading-5'>Date</div>
                       </div>
                       <div className='w-full rounded-lg border border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]'>
-                        {!analyticsData ? <Spinner/> : analyticsData?.recentShifts.map((shift: ShiftDummy, index: number) => {
+                        {(analyticsData.recentShifts ?? []).map((shift: ShiftDummy, index: number) => {
                         if (!shift.routeName) {
                           return (
                             <div key={index} className="grid grid-cols-[2fr_1fr_1fr_1fr] min-h-11  items-center p-[0.525rem] border-b last:border-b-0">  
@@ -208,7 +224,7 @@ export default function AdminAnalytics() {
                                     </div>
                                   </div>
                         )})}
-                        {Array.from({ length: Math.max(0, 10 - (analyticsData?.recentShifts?.length || 0)) }).map((_, index) => (
+                        {Array.from({ length: Math.max(0, 10 - (analyticsData.recentShifts ?? []).length) }).map((_, index) => (
                             <div 
                               key={`empty-shift-${index}`} 
                               className="grid grid-cols-[2fr_1fr_1fr_1fr] min-h-10 items-center p-[0.525rem] border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] last:border-b-0"
@@ -220,7 +236,7 @@ export default function AdminAnalytics() {
                             </div>
                           ))}
                         </div>
-                      </div> }
+                      </div>
                       <div className='flex w-full justify-end items-center '>
                         <button onClick={() => {router.push('/AdminNavView/DailyShiftDashboard')}} type='button' className='flex py-2 px-3 gap-[0.625rem] items-center border justify-center border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] rounded-[var(--8,0.5rem)] hover:bg-[var(--Bagel-Rescue-Light-Blue-2,#ECF2F9)]'>
                           <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-medium'>Show More</p>
@@ -237,36 +253,36 @@ export default function AdminAnalytics() {
                 <div className='flex flex-col items-start gap-2 self-stretch'>
                   <div className='flex p-4 flex-col justify-center items-center gap-1 self-stretch rounded-lg border-2 border-[var(--Bagel-Rescue-Light-Blue-2,#ECF2F9)]'>
                     <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] leading-5'>Total Volunteers</p>
-                    <h2 className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold text-2xl'>{loading ? <div>loading...</div> : volunteerData.totalVolunteers}</h2>
+                    <h2 className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold text-2xl'>{volunteerData.totalVolunteers}</h2>
                   </div>
                   <div className='flex p-4 flex-col justify-center items-center gap-1 self-stretch rounded-lg border-2 border-[var(--Bagel-Rescue-Light-Blue-2,#ECF2F9)]'>
                     <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] leading-5'>Active Volunteers</p>
-                    <h2 className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold text-2xl'>{loading ? <div>loading...</div> : volunteerData.activeVolunteers}</h2>
+                    <h2 className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold text-2xl'>{volunteerData.activeVolunteers}</h2>
                   </div>
                   <div className='flex p-4 flex-col justify-center items-center gap-1 self-stretch rounded-lg border-2 border-[var(--Bagel-Rescue-Light-Blue-2,#ECF2F9)]'>
                     <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] leading-5'>New Volunteers</p>
-                    <h2 className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold text-2xl'>{loading ? <div>loading...</div> : volunteerData.numberOfNewVolunteers}</h2>
+                    <h2 className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold text-2xl'>{volunteerData.numberOfNewVolunteers}</h2>
+                    {volunteerData.lastUpdatedAt ? (
                     <sub className='text-[var(--Bagel-Rescue-Text-Light,#8496B4)] font-normal leading-4'>&#40;{`since ${new Date(volunteerData.lastUpdatedAt).toLocaleDateString('en-US', {
                         month: 'numeric', 
                         day: 'numeric',
                         year: '2-digit',
                       })}`}&#41;</sub>
+                    ) : null}
                   </div>
                 </div>
               </div>
               <div className='flex bg-white h-full w-full p-6 justify-between items-center rounded-lg'>
                 <div className='flex flex-col items-start justify-between h-full w-full'>
                   <h1 className='h-16 text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold text-2xl'>New Volunteers</h1>
-                  {!analyticsData ? <Spinner/> : <div className='w-full'><div className='flex flex-col items-start w-full'>
+                  <div className='w-full'>
+                    <div className='flex w-full flex-col items-start'>
                     <div className='flex p-[0.625rem] justify-between items-center self-stretch'>
                       <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold leading-5'>Name</p>
                       <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold leading-5'>Date Joined</p>
                     </div>
-                    <div className='flex flex-col w-full items-start self-stretch rounded-lg border border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] last:border-b-0 '>
-                      { loading ? (
-                        <Spinner/>
-                          ) : (
-                                volunteerData.newVolunteers.map((volunteer: {firstName: string, lastName:string, createdAt: Date}, index: number) => (
+                    <div className='flex w-full flex-col items-start self-stretch rounded-lg border border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] last:border-b-0 '>
+                      {volunteerData.newVolunteers.map((volunteer: {firstName: string, lastName:string, createdAt: Date}, index: number) => (
 
                                   <div 
                                     key={index} 
@@ -276,8 +292,7 @@ export default function AdminAnalytics() {
                                    
                                     <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>{new Date(volunteer.createdAt).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' })}</p>
                                   </div>
-                                ))
-                            )}
+                                ))}
                             {Array.from({ length: Math.max(0, 5 - volunteerData.newVolunteers.length) }).map((_, index) => (
                               <div 
                                 key={`empty-${index}`} 
@@ -289,7 +304,8 @@ export default function AdminAnalytics() {
                             ))}
                         
                     </div>
-                  </div></div>}
+                  </div>
+                  </div>
                   <div className='flex w-full justify-end items-center flex-shrink-0'>
                       <button type='button' className='flex py-2 px-3 gap-[0.625rem] items-center border justify-center border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] rounded-[var(--8,0.5rem)] hover:bg-[var(--Bagel-Rescue-Light-Blue-2,#ECF2F9)]'>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-medium'>Show More</p>
@@ -300,7 +316,7 @@ export default function AdminAnalytics() {
               <div className='flex bg-white h-full w-full p-6 justify-between items-center rounded-lg'>
                 <div className='flex flex-col items-start justify-between h-full w-full'>
                   <h1 className='h-16 text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold text-2xl'>Multiple Shifts Volunteers</h1>
-                  {!analyticsData ? <Spinner/> :<div className='flex flex-col items-start w-full'>
+                  <div className='flex w-full flex-col items-start'>
                     <div className='flex p-[0.625rem] justify-between items-center self-stretch'>
                       <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold leading-5'>Name</p>
                       <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold leading-5'># of Shifts</p>
@@ -308,12 +324,7 @@ export default function AdminAnalytics() {
                     
                               
                     <div className='flex flex-col items-start self-stretch rounded-lg border border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] last:border-b-0'>
-                    { loading ? (
-                      <div className='flex h-10 p-[0.625rem] justify-center items-center self-stretch last:border-b-0'>
-                        <p>Loading...</p>
-                        </div>
-                        ): ( 
-                            volunteerData.volunteersWithMultipleShifts.map((volunteer: any, index: number) => (
+                            {volunteerData.volunteersWithMultipleShifts.map((volunteer: any, index: number) => (
                               <div 
                                 key={index} 
                                 className='flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] last:rounded-b-lg'
@@ -321,8 +332,7 @@ export default function AdminAnalytics() {
                                 <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>{`${volunteer.firstName} ${volunteer.lastName}`}</p>
                                 <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5'>{volunteer.shiftsCompleted.length}</p>
                               </div>
-                            ))
-                          )}
+                            ))}
 
               
                         {Array.from({ length: Math.max(0, 5 - volunteerData.volunteersWithMultipleShifts.length) }).map((_, index) => (
@@ -335,7 +345,7 @@ export default function AdminAnalytics() {
                           </div>
                         ))}
                     </div>
-                  </div>}
+                  </div>
                   <div className='flex w-full justify-end items-center flex-shrink-0'>
                       <button type='button' className='flex py-2 px-3 gap-[0.625rem] items-center border justify-center border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] rounded-[var(--8,0.5rem)] hover:bg-[var(--Bagel-Rescue-Light-Blue-2,#ECF2F9)]'>
                         <p className='text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-medium'>Show More</p>
@@ -346,6 +356,7 @@ export default function AdminAnalytics() {
             </div>
             
         </div>
+        )}
       </div>
     </div>
   );

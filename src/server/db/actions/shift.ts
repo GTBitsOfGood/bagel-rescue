@@ -8,7 +8,7 @@ import { RecurrenceModel, Shift, ShiftModel } from "../models/shift";
 import { UserShiftModel } from "../models/userShift";
 import { requireAdmin, requireUser } from "../auth/auth";
 import { Types } from "mongoose";
-import { normalizeDate } from "@/lib/dateHandler";
+import { normalizeDate, toUTCStartOfDay } from "@/lib/dateHandler";
 import { getCurrentUserId } from "./userShifts";
 import User from "../models/User";
 import { fullToDay, getDaysInRange } from "@/lib/dayHandler";
@@ -571,19 +571,32 @@ export async function getRecentShifts(
     throw new Error(`Error getting all shifts: ${err.message}`);
   }
 }
+
 export async function getShiftsByWeek(
   startDate: Date,
   endDate: Date,
 ): Promise<string | null> {
   await requireAdmin();
 
-  startDate = normalizeDate(startDate);
-  endDate = normalizeDate(endDate);
+  const normalizedStartDate = toUTCStartOfDay(startDate);
+  const normalizedEndDate = toUTCStartOfDay(endDate);
 
   try {
     await dbConnect();
 
-    const weekDaysArray = getDaysInRange(startDate, endDate);
+    // Build the set of weekday names that occur within the requested week.
+    // This must match the format stored in recurrenceDates.
+    const weekDays = new Set<string>();
+    const current = new Date(normalizedStartDate);
+
+    while (current <= normalizedEndDate) {
+      weekDays.add(
+        current.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase(),
+      );
+      current.setUTCDate(current.getUTCDate() + 1);
+    }
+
+    const weekDayArray = Array.from(weekDays);
 
     const commonPipeline = [
       {
@@ -595,6 +608,7 @@ export async function getShiftsByWeek(
         },
       },
       { $unwind: { path: "$route", preserveNullAndEmptyArrays: true } },
+
       {
         $lookup: {
           from: "usershifts",
@@ -603,6 +617,7 @@ export async function getShiftsByWeek(
           as: "usershifts",
         },
       },
+
       {
         $lookup: {
           from: "users",
@@ -611,6 +626,7 @@ export async function getShiftsByWeek(
           as: "volunteers",
         },
       },
+
       {
         $project: {
           _id: 1,
@@ -654,32 +670,35 @@ export async function getShiftsByWeek(
       },
     ];
 
-    // 1) Non-recurring shifts only
+    // Non-recurring shifts:
+    // - include explicit false
+    // - also include missing/empty legacy records via $ne: true
     const nonRecurringShifts = await ShiftModel.aggregate([
       {
         $match: {
           isRecurring: { $ne: true },
-          shiftStartDate: { $lte: endDate },
-          shiftEndDate: { $gte: startDate },
+          shiftStartDate: { $lte: normalizedEndDate },
+          shiftEndDate: { $gte: normalizedStartDate },
         },
       },
       ...commonPipeline,
     ]);
 
-    // 2) Recurring shifts only, but only if one of their recurrenceDates
-    // falls on a day that exists inside this week
+    // Recurring shifts:
+    // - ignore shiftEndDate as a real boundary
+    // - only include if the recurrence actually lands on a weekday in this week
     const recurringShifts = await ShiftModel.aggregate([
       {
         $match: {
           isRecurring: true,
-          shiftStartDate: { $lte: endDate },
-          recurrenceDates: { $in: weekDaysArray },
+          shiftStartDate: { $lte: normalizedEndDate },
+          recurrenceDates: { $in: weekDayArray },
         },
       },
       ...commonPipeline,
     ]);
 
-    // 3) Merge + dedupe by _id
+    // Merge + dedupe in case of messy legacy data
     const mergedMap = new Map<string, any>();
 
     [...nonRecurringShifts, ...recurringShifts].forEach((shift) => {
@@ -692,6 +711,7 @@ export async function getShiftsByWeek(
         new Date(b.shiftStartTime).getTime()
       );
     });
+
     return JSON.stringify(shifts);
   } catch (error) {
     const err = error as Error;
@@ -870,21 +890,17 @@ export async function updateShiftConfirmation(
 
 export async function getShiftsByDay(targetDate: Date): Promise<string | null> {
   await requireAdmin();
+
   try {
     await dbConnect();
 
-    const startOfDay = new Date(targetDate);
-    startOfDay.setHours(0, 0, 0, 0);
+    // targetDate is local time; normalize to UTC start of that day
+    const normalizedDay = toUTCStartOfDay(targetDate);
 
-    const endOfDay = new Date(targetDate);
-    endOfDay.setHours(23, 59, 59, 999);
-
-    const dayName =
-      fullToDay[
-        targetDate
-          .toLocaleDateString("en-US", { weekday: "long" })
-          .toLowerCase()
-      ];
+    // This must match the format stored in recurrenceDates
+    const dayName = targetDate
+      .toLocaleDateString("en-US", { weekday: "long" })
+      .toLowerCase();
 
     const commonPipeline = [
       {
@@ -962,8 +978,8 @@ export async function getShiftsByDay(targetDate: Date): Promise<string | null> {
       {
         $match: {
           isRecurring: { $ne: true },
-          shiftStartDate: { $lte: endOfDay },
-          shiftEndDate: { $gte: startOfDay },
+          shiftStartDate: { $lte: normalizedDay },
+          shiftEndDate: { $gte: normalizedDay },
         },
       },
       ...commonPipeline,
@@ -973,10 +989,8 @@ export async function getShiftsByDay(targetDate: Date): Promise<string | null> {
       {
         $match: {
           isRecurring: true,
-          shiftStartDate: { $lte: endOfDay },
-          recurrenceDates: {
-            $in: [dayName],
-          },
+          shiftStartDate: { $lte: normalizedDay },
+          recurrenceDates: { $in: [dayName] },
         },
       },
       ...commonPipeline,

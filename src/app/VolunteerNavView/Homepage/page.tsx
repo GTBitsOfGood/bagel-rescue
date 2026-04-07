@@ -286,17 +286,38 @@ const MyShiftsPage: React.FC = () => {
             endDate,
             pagination.page,
             pagination.limit
-          );
+          ); // returns all shifts whose date ranges overlap with the week at all (need additional filter)
           shifts = [];
+          let totalShifts = 0;
           shiftsData.shifts.map((shift) => {
+            // track number of shifts that should actually display for this shift
+            let numKeptShifts = 0;
+
             shift.recurrenceDates?.map((date) => {
-              shifts.push({
-                ...shift,
-                occurrenceDate: findDayInRange(date, startDate, endDate)!
-              })
+              const shiftDate = findDayInRange(date, startDate, endDate)
+              if (shiftDate == null) {
+                return
+              }
+
+              // ensure shift date is in the date range, not just in the week that overlaps with the date range
+              if (shiftDate >= new Date(shift.shiftStartDate!) && shiftDate <= new Date(shift.shiftEndDate!)) {
+                shifts.push({
+                  ...shift,
+                  occurrenceDate: shiftDate
+                })
+                numKeptShifts++;
+              }
             })
+
+            if (numKeptShifts > 0) { // if this shift has shift dates actually in the range
+              totalShifts += numKeptShifts;
+            }
+            
             return shift;
           })
+          // keep pagination consistent with newly filtered shifts
+          shiftsData.pagination.total = totalShifts;
+          shiftsData.pagination.totalPages = Math.ceil(totalShifts / shiftsData.pagination.limit)
         }
 
         shifts = shifts.filter((shift) => {
@@ -358,13 +379,13 @@ const MyShiftsPage: React.FC = () => {
             className={`${styles.tabButton} ${activeTab === "myShifts" ? styles.activeTab : ""}`}
             onClick={() => setActiveTab("myShifts")}
           >
-            My Shifts ({shifts.length})
+            {loading ? "Loading..." : `My Shifts (${shifts.length})`}
           </button>
           <button 
             className={`${styles.tabButton} ${activeTab === "openShifts" ? styles.activeTab : ""}`}
             onClick={() => setActiveTab("openShifts")}
           >
-            Open Shifts ({openShifts.length})
+            {loading ? "Loading..." : `Open Shifts (${openShifts.length})`}
           </button>
         </div>
 

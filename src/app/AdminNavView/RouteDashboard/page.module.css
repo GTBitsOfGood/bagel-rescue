@@ -3,17 +3,6 @@
     margin: 0 auto;
   }
 
-  .newRouteButton {
-    background-color: var(--Bagel-Rescue-Blue);
-    color: rgb(var(--background-rgb));
-    border: none;
-    padding: 10px 15px;
-    border-radius: 8px;
-    cursor: pointer;
-    max-height: 44px;
-
-  }
-
   .modal {
     position: relative;
     display: inline-block;
@@ -24,6 +13,7 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    flex-shrink: 0;
   }
 
   .filterControls {
@@ -62,7 +52,8 @@
 
   .tableContainer {
     margin-top: 20px;
-    height: 72vh;
+    min-height: 0;
+    flex: 1 1 auto;
     overflow-y: auto;
   }
 
@@ -161,9 +152,17 @@
 
   .searchIcon {
     color: var(--Bagel-Rescue-Blue);
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
+    font-size: 1rem;
+    box-sizing: content-box;
+    flex-shrink: 0;
+  }
+
+  .searchIcon svg {
+    width: 1rem !important;
+    height: 1rem !important;
+    max-width: 1rem;
+    max-height: 1rem;
+    display: block;
   }
 
   .searchInput {
