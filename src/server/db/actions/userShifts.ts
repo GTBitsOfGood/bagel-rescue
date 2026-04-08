@@ -37,6 +37,7 @@ export type UserShiftData = {
   canceledShifts?: string[];
   recurrenceDates?: string[];
   hasComment?: string[];
+  isRecurring?: boolean;
 };
 
 export type DetailedShiftData = {
@@ -62,6 +63,7 @@ export type DetailedShiftData = {
   additionalInfo: string;
   createdByUserId?: string;
   comments?: { [date: string]: string };
+  isRecurring?: boolean;
 };
 
 export type PaginatedResult = {
@@ -487,6 +489,7 @@ export async function getDetailedShiftInfo(
       routeId: userShift.routeId.toString(),
       additionalInfo: shift?.additionalInfo || "",
       comments: shift?.comments || {},
+      isRecurring: shift.isRecurring || false,
     };
   } catch (error) {
     console.error("Error fetching detailed shift info:", error);
@@ -569,6 +572,7 @@ export async function getDetailedOpenShiftInfo(
       routeId: shift.routeId.toString(),
       additionalInfo: shift.additionalInfo || "",
       createdByUserId: shift.createdByUserId?.toString(),
+      isRecurring: shift.isRecurring || false,
     };
   } catch (error) {
     console.error("Error fetching detailed open shift info:", error);
