@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import styles from "./EditProfileForm.module.css";
 import { useRouter } from 'next/navigation';
 import { auth } from '../server/db/firebase';
-import { signOut, verifyBeforeUpdateEmail, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
+import { verifyBeforeUpdateEmail, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { getUserByEmail, updateUser } from '../server/db/actions/User';
 import location from '../lib/locations'
 import { IUser } from '@/server/db/models/User';
@@ -14,9 +14,10 @@ interface EditProfileFormProps {
   togglePopup: () => void;
   setHasChanges: (hasChanges: boolean) => void;
   onNavigate: (path: string) => void;
+  onSignOut: () => void;
 }
 
-const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup, setHasChanges, onNavigate }) => {
+const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup, setHasChanges, onNavigate, onSignOut }) => {
   const router = useRouter();
   const [initialName, setInitialName] = useState('');
   const [locations, setLocations] = useState<string[]>([]);
@@ -69,20 +70,6 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup, setHasCh
     fetchUserData();
   }, [router]);
   
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-      await fetch("/api/logout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      })
-
-      router.push('/Login');
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
-
   if (loading) {
     return (
       <div className={styles.container}>
@@ -194,7 +181,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup, setHasCh
           >Password</li>
           <li 
             className={`${styles.menuItem} ${styles.signOut}`}
-            onClick={handleSignOut}
+            onClick={onSignOut}
           >
             Sign Out
           </li>
