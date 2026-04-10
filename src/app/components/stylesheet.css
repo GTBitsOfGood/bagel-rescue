@@ -27,7 +27,7 @@
 .volunteer-name {
   color: var(--Bagel-Rescue-Primary-Blue, #0F7AFF);
   /* Bagel Rescue/Body 2 */
-  font-family: Inter;
+  font-family: Inter, sans-serif;
   font-size: 16px;
   font-style: normal;
   font-weight: 700;
