@@ -49,7 +49,8 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({
 
   const handlePostShift = (shift: UserShiftData, e:any) => {
     e.stopPropagation();
-    router.push(`/VolunteerNavView/ConfirmationForm?userShiftId=${shift.id}&date=${date.toLocaleDateString("en-CA")}`);
+    const occurrenceDate = shift.occurrenceDate || date;
+    router.push(`/VolunteerNavView/ConfirmationForm?userShiftId=${shift.id}&date=${dateToString(occurrenceDate)}`);
   }
 
   const formatDate = (date: Date | undefined) => {
@@ -106,7 +107,7 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({
       {isSidebarOpen && (
         <ShiftDetailsSidebar
           selectedShift={selectedShift}
-          date={date}
+          date={selectedShift?.occurrenceDate || date}
           onCloseSidebar={handleCloseSidebar}
           isOpenShift={isOpenShifts}
           onShiftUpdated={onShiftUpdated}
