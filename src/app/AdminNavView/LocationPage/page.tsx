@@ -256,7 +256,7 @@ function LocationDashboardPage() {
                   className={styles.filterButton}
                   onClick={handleSortChange}
                 >
-                  Sort
+                  Filter
                 </button>
               </div>
             </div>

@@ -345,7 +345,9 @@ function RouteCreationPage() {
           <div className="route-creation-form">
             <div className="route-info">
               <div className="field-container">
-                <p className="field-title">Route Name</p>
+                <p className="text-[#072B68] font-bold text-lg">
+                    Route Name <span className="text-red-500">*</span>
+                  </p>
                 <input
                   className="field-input"
                   type="text"
@@ -355,7 +357,9 @@ function RouteCreationPage() {
                 />
               </div>
               <div className="field-container">
-                <p className="field-title">Route Area</p>
+                <p className="text-[#072B68] font-bold text-lg">
+                    Route Area
+                </p>
                 <input
                   className="field-input"
                   type="text"
@@ -368,7 +372,9 @@ function RouteCreationPage() {
                 />
               </div>
               <div className="field-container">
-                <p className="field-title">Additional Information</p>
+                <p className="text-[#072B68] font-bold text-lg">
+                    Additional Information
+                </p>
                 <textarea
                   className="field-input"
                   placeholder="Enter additional information here"
@@ -378,7 +384,9 @@ function RouteCreationPage() {
               </div>
             </div>
             <div className="locations field-container">
-              <p className="field-title">Locations</p>
+            <p className="text-[#072B68] font-bold text-lg"> 
+                    Locations <span className="text-red-500">*</span>
+                </p> 
               <div className="locations-box">
                 <div
                   className="location-input"
@@ -400,7 +408,7 @@ function RouteCreationPage() {
                 {locationCards()}
                 {searchLocationsList()}
                 <button
-                  className="add-location-btn"
+                  className="text-[#072B68] add-location-btn"
                   onClick={() => setIsAddingLocation(!isAddingLocation)}
                   style={{ display: isAddingLocation ? "none" : "flex" }}
                 >

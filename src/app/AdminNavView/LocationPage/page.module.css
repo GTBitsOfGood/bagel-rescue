@@ -58,18 +58,21 @@
 }
 
 .sortSelect {
+  background-color: rgb(var(--background-rgb));
   position: relative;
-  background-color: var(--background-rgb);
+  border: 1px solid var(--Bagel-Rescue-Blue);
+  border-radius: 8px;
+  padding: 0 44px 0 16px;
+  font-size: 16px;
+  outline: none;
+  color: var(--Bagel-Rescue-Dark-Blue);
   appearance: none;
   background-image: url('/dropdown_arrow.svg');
   background-repeat: no-repeat;
   background-position: 90% center;
-  border: 1px solid #0F7AFF;
-  border-radius: 8px;
-  height: 44px;
   width: auto;
   min-width: 167px;
-  padding: 0 44px 0 16px;
+  height: 44px;
 }
 
 .sortSelect select {
@@ -98,12 +101,12 @@
 
 
 .filterButton {
-  background-color: var(--background-rgb);
-  border: 1px solid #0F7AFF;
+  background-color: rgb(var(--background-rgb));
+  border: 1px solid var(--Bagel-Rescue-Blue);
   padding: 10px 15px;
   border-radius: 8px;
-  margin-left: 5px;
   cursor: pointer;
+  color: var(--Bagel-Rescue-Dark-Blue);
 }
 
 .tableContainer {
