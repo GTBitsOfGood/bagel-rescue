@@ -111,7 +111,7 @@ export default function LoginScreen() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && (e.target as HTMLElement).tagName === "INPUT") {
       handleLogin();
     }
   };
