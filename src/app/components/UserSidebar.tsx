@@ -90,6 +90,10 @@ const formatPhone = (phone?: string | null) => {
   return phone;
 };
 
+const isValidEmail = (email: string) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
+
 const convertUserToDetails = (userData: IUser | null): UserDetails => {
   if (!userData) {
     return null;
@@ -245,11 +249,14 @@ const UserSidebar = ({
     setError(null);
   };
   const saveEdit = async () => {
+    setSaving(true);
+
     try {
-      setSaving(true);
       if (!userId || !user || !draftUser) {
-        throw new Error("Missing user");
+        errorToast("Failed to save volunteer profile");
+        return;
       }
+
       const updates = getChangedFields(
         user as Record<string, unknown>,
         draftUser as Record<string, unknown>,
@@ -257,31 +264,60 @@ const UserSidebar = ({
 
       if (Object.keys(updates).length === 0) {
         setSidebarEditMode(false);
-        setSaving(false);
         return;
       }
 
-      await updateUser(userId, updates);
-      // await updateUser(userId, {
-      //   firstName: draftUser?.firstName ?? "",
-      //   lastName: draftUser?.lastName ?? "",
-      // });
+      const isEmpty = (value: unknown) => String(value ?? "").trim() === "";
 
-      setUser(structuredClone(draftUser));
+      if (updates.firstName !== undefined && isEmpty(updates.firstName)) {
+        errorToast("First name cannot be empty");
+        return;
+      }
+
+      if (updates.lastName !== undefined && isEmpty(updates.lastName)) {
+        errorToast("Last name cannot be empty");
+        return;
+      }
+      let normalizedDraftUser = draftUser;
+
+      if (updates.email !== undefined) {
+        const email = String(updates.email).trim().toLowerCase();
+
+        if (email === "") {
+          errorToast("Email cannot be empty");
+          return;
+        }
+
+        if (!isValidEmail(email)) {
+          errorToast("Please enter a valid email address");
+          return;
+        }
+
+        updates.email = email;
+        normalizedDraftUser = { ...draftUser, email };
+      }
+
+      await updateUser(userId, updates);
+
+      setUser(structuredClone(normalizedDraftUser));
+      setDraftUser(structuredClone(normalizedDraftUser));
       setSidebarEditMode(false);
       successToast("Volunteer profile updated successfully");
     } catch (err) {
       console.error(err);
+
+      const message = err instanceof Error ? err.message : "";
+
+      if (message === "EMAIL_ALREADY_TAKEN") {
+        errorToast("This email is already associated with another volunteer.");
+        return;
+      }
+
       errorToast("Failed to save volunteer profile");
     } finally {
       setSaving(false);
     }
   };
-
-  // const userHasChanges = useMemo(() => {
-  //   if (!user || !draftUser) return false;
-  //   return !deepEqual(user, draftUser);
-  // }, [user, draftUser]);
 
   const getChangedFields = <T extends Record<string, unknown>>(
     original: T,
@@ -346,185 +382,244 @@ const UserSidebar = ({
       </div>
 
       <div className={styles.content}>
-        {loading ? (
-          <p className={styles.loadingState}>Loading volunteer details…</p>
-        ) : null}
+        <div className="flex flex-col gap-[24px] pr-[12px]">
+          {loading ? (
+            <p className={styles.loadingState}>Loading volunteer details…</p>
+          ) : null}
 
-        {!loading && error ? (
-          <p className={styles.errorState}>{error}</p>
-        ) : null}
+          {!loading && error ? (
+            <p className={styles.errorState}>{error}</p>
+          ) : null}
 
-        {!loading && !error && user ? (
-          <>
-            <span className={styles.userName}>{fullName}</span>
+          {!loading && !error && user ? (
+            <>
+              <span className={styles.userName}>{fullName}</span>
 
-            <section className={styles.section}>
-              <h3 className={styles.sectionTitle}>Location</h3>
-              {user.locations && user.locations.length > 0 ? (
-                <div className={styles.chipList}>
-                  {user.locations.map((location) => (
-                    <span className={styles.chip} key={location}>
-                      {location}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className={styles.supportText}>
-                  This volunteer has not selected preferred locations yet.
-                </p>
-              )}
-            </section>
-
-            {user.status && (
               <section className={styles.section}>
-                <h3 className={styles.sectionTitle}>Status</h3>
-                {statusLabel ? (
-                  <div
-                    className={styles.statusChip}
-                    data-status={user.status.toLowerCase().replace(/\s+/g, "-")}
-                  >
-                    {statusLabel}
-                  </div>
-                ) : (
-                  <span className={styles.infoValue}>Not available</span>
-                )}
-              </section>
-            )}
-
-            <div className={styles.metrics}>
-              <div>
-                <section className={styles.section}>
-                  <h3 className={styles.sectionTitle}>Shifts</h3>
-                  <span className={styles.metricValue}>
-                    {/* {Sum of all shifts} */}
-                    {monthlyChartData.reduce(
-                      (total, data) => total + data.totalShifts,
-                      0,
-                    )}
-                  </span>
-                </section>
-
-                <section className={styles.section}>
-                  <h3 className={styles.sectionTitle}>Phone number</h3>
-                  <span className={styles.metricValue}>
-                    {formatPhone(user.phoneNumber)}
-                  </span>
-                </section>
-              </div>
-
-              <div>
-                <section className={styles.section}>
-                  <h3 className={styles.sectionTitle}>Volunteer Time</h3>
-                  <span className={styles.metricValue}>
-                    {Math.round(volunteerHoursTotal / 60)} hours
-                  </span>
-                </section>
-
-                <section className={styles.section}>
-                  <h3 className={styles.sectionTitle}>Email</h3>
-                  <span className={styles.metricValue}>
-                    {user.email || "Not provided"}
-                  </span>
-                </section>
-              </div>
-            </div>
-
-            <section className={styles.section}>
-              <h3 className={styles.sectionTitle}>Route preferences</h3>
-              {preferences.some((item) => item.active) ? (
-                <div className={styles.chipList}>
-                  {preferences
-                    .filter((item) => item.active)
-                    .map((item) => (
-                      <span className={styles.chip} key={item.label}>
-                        {item.label}
-                      </span>
-                    ))}
-                </div>
-              ) : (
-                <p className={styles.supportText}>
-                  No route preferences recorded yet.
-                </p>
-              )}
-            </section>
-
-            {hasData && (
-              <>
-                <section className={styles.section}>
-                  <BarChart
-                    title="Monthly Volunteer Time"
-                    legend="Volunteer time"
-                    units="hours"
-                    monthlyData={monthlyChartData.map((datum) => ({
-                      key: datum.monthLabel,
-                      value: datum.shiftTime / 60,
-                    }))}
-                  />
-                </section>
-
-                <section className={styles.section}>
-                  <LineChart
-                    title="Monthly Shifts"
-                    legend="Shift"
-                    units="shifts"
-                    monthlyData={monthlyChartData.map((datum) => ({
-                      key: datum.monthLabel,
-                      value: datum.totalShifts ?? 0,
-                    }))}
-                  />
-                </section>
-
-                <section className={styles.section}>
-                  <BarChart
-                    title="Monthly Bagels Rescued"
-                    legend="Bagels rescued"
-                    units="bagels"
-                    monthlyData={monthlyChartData.map((datum) => ({
-                      key: datum.monthLabel,
-                      value: datum.bagelsDelivered + datum.bagelsReceived,
-                    }))}
-                  />
-                </section>
-              </>
-            )}
-            {sidebarEditMode && (
-              <section className={styles.section}>
-                <div className="flex items-center justify-between">
+                <div className="flex items-start justify-between">
                   <div className="flex flex-col gap-2">
                     <h3 className={styles.sectionTitle}>First Name</h3>
-                    <input
-                      type="text"
-                      className={styles.inputField}
-                      value={draftUser?.firstName || ""}
-                      onChange={(e) => {
-                        const newFirstName = e.target.value;
-                        setDraftUser((prev) =>
-                          prev ? { ...prev, firstName: newFirstName } : prev,
-                        );
-                      }}
-                      placeholder="First Name"
-                    />
+                    <div className={styles.metricField}>
+                      {sidebarEditMode ? (
+                        <input
+                          type="text"
+                          className={styles.inputField}
+                          value={draftUser?.firstName || ""}
+                          onChange={(e) => {
+                            const newFirstName = e.target.value;
+                            setDraftUser((prev) =>
+                              prev
+                                ? { ...prev, firstName: newFirstName }
+                                : prev,
+                            );
+                          }}
+                          placeholder="First Name"
+                        />
+                      ) : (
+                        <span className={styles.metricValue}>
+                          {user.firstName || "Not provided"}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex flex-col gap-2">
                     <h3 className={styles.sectionTitle}>Last Name</h3>
-                    <input
-                      type="text"
-                      className={styles.inputField}
-                      value={draftUser?.lastName || ""}
-                      onChange={(e) => {
-                        const newLastName = e.target.value;
-                        setDraftUser((prev) =>
-                          prev ? { ...prev, lastName: newLastName } : prev,
-                        );
-                      }}
-                      placeholder="Last Name"
-                    />
+                    <div className={styles.metricField}>
+                      {sidebarEditMode ? (
+                        <input
+                          type="text"
+                          className={styles.inputField}
+                          value={draftUser?.lastName || ""}
+                          onChange={(e) => {
+                            const newLastName = e.target.value;
+                            setDraftUser((prev) =>
+                              prev ? { ...prev, lastName: newLastName } : prev,
+                            );
+                          }}
+                          placeholder="Last Name"
+                        />
+                      ) : (
+                        <span className={styles.metricValue}>
+                          {user.lastName || "Not provided"}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </section>
-            )}
-          </>
-        ) : null}
+
+              <section className={styles.section}>
+                <h3 className={styles.sectionTitle}>Location</h3>
+                {user.locations && user.locations.length > 0 ? (
+                  <div className={styles.chipList}>
+                    {user.locations.map((location) => (
+                      <span className={styles.chip} key={location}>
+                        {location}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className={styles.supportText}>
+                    This volunteer has not selected preferred locations yet.
+                  </p>
+                )}
+              </section>
+
+              {user.status && (
+                <section className={styles.section}>
+                  <h3 className={styles.sectionTitle}>Status</h3>
+                  {statusLabel ? (
+                    <div
+                      className={styles.statusChip}
+                      data-status={user.status
+                        .toLowerCase()
+                        .replace(/\s+/g, "-")}
+                    >
+                      {statusLabel}
+                    </div>
+                  ) : (
+                    <span className={styles.infoValue}>Not available</span>
+                  )}
+                </section>
+              )}
+
+              <section className={styles.section}>
+                <div className="flex items-start justify-between">
+                  <div className="flex flex-col gap-2">
+                    <h3 className={styles.sectionTitle}>Shifts</h3>
+                    <div className={styles.metricField}>
+                      <span className={styles.metricValue}>
+                        {/* {Sum of all shifts} */}
+                        {monthlyChartData.reduce(
+                          (total, data) => total + data.totalShifts,
+                          0,
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <h3 className={styles.sectionTitle}>Volunteer Time</h3>
+                    <div className={styles.metricField}>
+                      <span className={styles.metricValue}>
+                        {Math.round(volunteerHoursTotal / 60)} hours
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section className={styles.section}>
+                <div className="flex items-start justify-between">
+                  <div className="flex flex-col gap-2">
+                    <h3 className={styles.sectionTitle}>Phone Number</h3>
+                    <div className={styles.metricField}>
+                      {sidebarEditMode ? (
+                        <input
+                          type="tel"
+                          className={styles.inputField}
+                          value={draftUser?.phoneNumber || ""}
+                          onChange={(e) => {
+                            const newPhone = e.target.value;
+                            setDraftUser((prev) =>
+                              prev ? { ...prev, phoneNumber: newPhone } : prev,
+                            );
+                          }}
+                          placeholder="Phone number"
+                        />
+                      ) : (
+                        <span className={styles.metricValue}>
+                          {formatPhone(user.phoneNumber)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <h3 className={styles.sectionTitle}>Email</h3>
+                    <div className={styles.metricField}>
+                      {sidebarEditMode ? (
+                        <input
+                          type="email"
+                          className={styles.inputField}
+                          value={draftUser?.email || ""}
+                          onChange={(e) => {
+                            const newEmail = e.target.value;
+                            setDraftUser((prev) =>
+                              prev ? { ...prev, email: newEmail } : prev,
+                            );
+                          }}
+                          placeholder="Email"
+                        />
+                      ) : (
+                        <span className={styles.metricValue}>
+                          {user.email || "Not provided"}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section className={styles.section}>
+                <h3 className={styles.sectionTitle}>Route preferences</h3>
+                {preferences.some((item) => item.active) ? (
+                  <div className={styles.chipList}>
+                    {preferences
+                      .filter((item) => item.active)
+                      .map((item) => (
+                        <span className={styles.chip} key={item.label}>
+                          {item.label}
+                        </span>
+                      ))}
+                  </div>
+                ) : (
+                  <p className={styles.supportText}>
+                    No route preferences recorded yet.
+                  </p>
+                )}
+              </section>
+
+              {hasData && (
+                <>
+                  <section className={styles.section}>
+                    <BarChart
+                      title="Monthly Volunteer Time"
+                      legend="Volunteer time"
+                      units="hours"
+                      monthlyData={monthlyChartData.map((datum) => ({
+                        key: datum.monthLabel,
+                        value: datum.shiftTime / 60,
+                      }))}
+                    />
+                  </section>
+
+                  <section className={styles.section}>
+                    <LineChart
+                      title="Monthly Shifts"
+                      legend="Shift"
+                      units="shifts"
+                      monthlyData={monthlyChartData.map((datum) => ({
+                        key: datum.monthLabel,
+                        value: datum.totalShifts ?? 0,
+                      }))}
+                    />
+                  </section>
+
+                  <section className={styles.section}>
+                    <BarChart
+                      title="Monthly Bagels Rescued"
+                      legend="Bagels rescued"
+                      units="bagels"
+                      monthlyData={monthlyChartData.map((datum) => ({
+                        key: datum.monthLabel,
+                        value: datum.bagelsDelivered + datum.bagelsReceived,
+                      }))}
+                    />
+                  </section>
+                </>
+              )}
+            </>
+          ) : null}
+        </div>
       </div>
     </div>
   );
