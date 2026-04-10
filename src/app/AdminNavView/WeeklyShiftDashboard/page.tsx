@@ -343,6 +343,13 @@ function WeeklyShiftDashboard() {
                                 handleShiftCardClick(shift, new Date(shiftDate))
                             }
                             onDeleteShift={handleDeleteShift}
+                            isSelected={
+                                selectedItem != null &&
+                                String(selectedItem.shift._id) ===
+                                    String(shift._id) &&
+                                dateToString(selectedItem.shiftDate) ===
+                                    dateToString(new Date(shiftDate))
+                            }
                         />
                     );
                 })

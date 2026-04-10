@@ -224,6 +224,13 @@ function DailyShiftDashboardPage() {
                             year: "numeric",
                         })}
                         onOpenSidebar={() => handleShiftCardClick(shift)}
+                        isSelected={
+                            selectedItem != null &&
+                            String(selectedItem.shift._id) ===
+                                String(shift._id) &&
+                            dateToString(selectedItem.shiftDate) ===
+                                dateToString(date)
+                        }
                     />
                 );
             })

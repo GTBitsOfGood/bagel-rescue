@@ -30,6 +30,7 @@ interface ShiftCardProps {
     returnRoute: string;
     onOpenSidebar: () => void;
     onDeleteShift: (shift: Shift) => void;
+    isSelected?: boolean;
 }
 
 const DAY_MAP: Record<string, number> = {
@@ -57,6 +58,7 @@ export default function ShiftCard({
     returnRoute,
     onOpenSidebar,
     onDeleteShift,
+    isSelected = false,
 }: ShiftCardProps) {
     const [volunteerDisplay, setVolunteerDisplay] = useState("");
     const [timeRange, setTimeRange] = useState("");
@@ -136,7 +138,10 @@ export default function ShiftCard({
     }, [startTime, endTime, recurrenceDates]);
 
     return (
-        <div className="shift-card" onClick={onOpenSidebar}>
+        <div
+            className={`shift-card${isSelected ? " shift-card--selected" : ""}`}
+            onClick={onOpenSidebar}
+        >
             {/* Header Section */}
             <div className="shift-card-header">
                 <div className="shift-card-header-content">
