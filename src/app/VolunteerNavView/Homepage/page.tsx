@@ -19,6 +19,8 @@ import { handleAuthError } from "@/lib/authErrorHandler";
 import { auth } from "@/server/db/firebase";
 import { dateToString, getTodayDate } from "@/lib/dateHandler";
 import { findDayInRange } from "@/lib/dateRangeHandler";
+import LoadingFallback from "@/app/components/LoadingFallback";
+import { VOLUNTEER_DASHBOARD_VIEW, VOLUNTEER_DASHBOARD_DATE } from "@/lib/dashboardConstants";
 
 // Filter Icon Component
 const FilterIcon = () => (
@@ -53,8 +55,43 @@ const MyShiftsPage: React.FC = () => {
   const [openShifts, setOpenShifts] = useState<UserShiftData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentDate, setCurrentDate] = useState<Date>(getTodayDate());
-  const [viewMode, setViewMode] = useState<ViewMode>("Day");
+  const [isDateReady, setIsDateReady] = useState(false);
+  const [currentDate, setCurrentDate] = useState<Date>(() => getTodayDate());
+  const [viewMode, setViewMode] = useState<ViewMode>(() => "Day");
+
+  const getDateFromStorage = (): Date => {
+    if (typeof window === "undefined") {
+      return getTodayDate();
+    }
+    const storedDate = localStorage.getItem(VOLUNTEER_DASHBOARD_DATE);
+    if (!storedDate) {
+      return getTodayDate();
+    }
+    const parsedDate = new Date(storedDate);
+    if (isNaN(parsedDate.getTime())) {
+        const today = getTodayDate();
+        localStorage.setItem(VOLUNTEER_DASHBOARD_DATE, today.toISOString());
+        return today;
+    }
+
+    return parsedDate;
+  };
+
+  const getViewModeFromStorage = (): ViewMode => {
+    if (typeof window === "undefined") {
+      return "Day";
+    }
+    const stored = localStorage.getItem(VOLUNTEER_DASHBOARD_VIEW);
+    return (stored === "Week" ? "Week" : "Day");
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setCurrentDate(getDateFromStorage());
+    setViewMode(getViewModeFromStorage());
+    setIsDateReady(true);
+  }, []);
+
   const [activeTab, setActiveTab] = useState<"myShifts" | "openShifts">("myShifts");
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [firebaseReady, setFirebaseReady] = useState<boolean>(false);
@@ -111,7 +148,7 @@ const MyShiftsPage: React.FC = () => {
 
   //fetches open shifts during on tab change
   useEffect(() => {
-    if (!firebaseReady || activeTab !== "openShifts") return;
+    if (!firebaseReady || !isDateReady || activeTab !== "openShifts") return;
 
     const fetchOpenShifts = async () => {
       try {
@@ -148,7 +185,7 @@ const MyShiftsPage: React.FC = () => {
     };
 
     fetchOpenShifts();
-  }, [firebaseReady, activeTab, currentDate, viewMode, openShiftsPagination.page, refreshTrigger]);
+  }, [firebaseReady, isDateReady, activeTab, currentDate, viewMode, openShiftsPagination.page, refreshTrigger]);
 
   // Function to get start and end dates for day view
   const getDayRange = (date: Date) => {
@@ -186,6 +223,7 @@ const MyShiftsPage: React.FC = () => {
       newDate.setDate(newDate.getDate() - 7);
     }
     setCurrentDate(newDate);
+    localStorage.setItem(VOLUNTEER_DASHBOARD_DATE, newDate.toISOString());
   };
 
   // Navigate to next day/week
@@ -197,11 +235,13 @@ const MyShiftsPage: React.FC = () => {
       newDate.setDate(newDate.getDate() + 7);
     }
     setCurrentDate(newDate);
+    localStorage.setItem(VOLUNTEER_DASHBOARD_DATE, newDate.toISOString());
   };
 
   // Handle view mode change
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode);
+    localStorage.setItem(VOLUNTEER_DASHBOARD_VIEW, mode);
     // Reset pagination when view changes
     setPagination(prev => ({ ...prev, page: 1 }));
   };
@@ -213,7 +253,7 @@ const MyShiftsPage: React.FC = () => {
 
   // Fetch shifts when dependencies change
   useEffect(() => {
-    if (!firebaseReady) return;
+    if (!firebaseReady || !isDateReady) return;
     if (userEmail === null) return;
 
     const fetchShifts = async () => {
@@ -246,17 +286,38 @@ const MyShiftsPage: React.FC = () => {
             endDate,
             pagination.page,
             pagination.limit
-          );
+          ); // returns all shifts whose date ranges overlap with the week at all (need additional filter)
           shifts = [];
+          let totalShifts = 0;
           shiftsData.shifts.map((shift) => {
+            // track number of shifts that should actually display for this shift
+            let numKeptShifts = 0;
+
             shift.recurrenceDates?.map((date) => {
-              shifts.push({
-                ...shift,
-                occurrenceDate: findDayInRange(date, startDate, endDate)!
-              })
+              const shiftDate = findDayInRange(date, startDate, endDate)
+              if (shiftDate == null) {
+                return
+              }
+
+              // ensure shift date is in the date range, not just in the week that overlaps with the date range
+              if (shiftDate >= new Date(shift.shiftStartDate!) && shiftDate <= new Date(shift.shiftEndDate!)) {
+                shifts.push({
+                  ...shift,
+                  occurrenceDate: shiftDate
+                })
+                numKeptShifts++;
+              }
             })
+
+            if (numKeptShifts > 0) { // if this shift has shift dates actually in the range
+              totalShifts += numKeptShifts;
+            }
+            
             return shift;
           })
+          // keep pagination consistent with newly filtered shifts
+          shiftsData.pagination.total = totalShifts;
+          shiftsData.pagination.totalPages = Math.ceil(totalShifts / shiftsData.pagination.limit)
         }
 
         shifts = shifts.filter((shift) => {
@@ -278,7 +339,23 @@ const MyShiftsPage: React.FC = () => {
     };
 
     fetchShifts();
-  }, [userEmail, firebaseReady, currentDate, viewMode, pagination.page, pagination.limit, refreshTrigger]);
+  }, [userEmail, firebaseReady, isDateReady, currentDate, viewMode, pagination.page, pagination.limit, refreshTrigger]);
+
+  if (!isDateReady) {
+    return (
+      <div className={styles.container}>
+        <Sidebar />
+        <div className={styles.mainContent}>
+          <div className={styles.header}>
+            <h1 className={styles.pageTitle}>My Shifts</h1>
+          </div>
+          <div className={styles.filterContainer}>
+            <LoadingFallback />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
@@ -302,13 +379,13 @@ const MyShiftsPage: React.FC = () => {
             className={`${styles.tabButton} ${activeTab === "myShifts" ? styles.activeTab : ""}`}
             onClick={() => setActiveTab("myShifts")}
           >
-            My Shifts ({shifts.length})
+            {loading ? "Loading..." : `My Shifts (${shifts.length})`}
           </button>
           <button 
             className={`${styles.tabButton} ${activeTab === "openShifts" ? styles.activeTab : ""}`}
             onClick={() => setActiveTab("openShifts")}
           >
-            Open Shifts ({openShifts.length})
+            {loading ? "Loading..." : `Open Shifts (${openShifts.length})`}
           </button>
         </div>
 

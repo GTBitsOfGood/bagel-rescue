@@ -9,11 +9,13 @@ import { TbBrandGoogleAnalytics } from "react-icons/tb";
 import { CiRoute, CiLocationOn } from "react-icons/ci";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faRoute } from "@fortawesome/free-solid-svg-icons";
+import { onAuthStateChanged, type User } from 'firebase/auth';
 import { auth } from '../server/db/firebase';
 import { getUserByEmail } from '../server/db/actions/User';
 import { FaPeopleLine } from "react-icons/fa6";
 import Image from 'next/image';
 import bagelsLogo from '@/app/icon.png';
+import { ADMIN_DASHBOARD_VIEW } from "@/lib/dashboardConstants";
 
 interface NavItem {
   name: string;
@@ -40,32 +42,44 @@ const AdminSidebar: React.FC = () => {
   });
 
   useEffect(() => {
-    const fetchUserData = async () => {
+    async function loadProfileFromMongo(email: string) {
       try {
-        const currentUser = auth.currentUser;
-        if (currentUser && currentUser.email) {
-          const mongoUser = await getUserByEmail(currentUser.email);
-          if (mongoUser) {
-            setUserData({
-              firstName: mongoUser.firstName || '',
-              lastName: mongoUser.lastName || '',
-              role: mongoUser.isAdmin ? 'Admin' : 'User'
-            });
-          }
-        }
+        const mongoUser = await getUserByEmail(email);
+        if (!mongoUser) return;
+
+        setUserData({
+          firstName: mongoUser.firstName || '',
+          lastName: mongoUser.lastName || '',
+          role: mongoUser.isAdmin ? 'Admin' : 'User',
+        });
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
-    };
+    }
 
-    fetchUserData();
+    function handleAuthUser(firebaseUser: User | null) {
+      const email = firebaseUser?.email;
+      if (!email) {
+        setUserData({ firstName: '', lastName: '', role: 'Admin' });
+        return;
+      }
+      void loadProfileFromMongo(email);
+    }
+
+    return onAuthStateChanged(auth, handleAuthUser);
   }, []);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
+  const [dashboardLink, setDashboardLink] = useState('/AdminNavView/DailyShiftDashboard');
+
+  useEffect(() => {
+    setDashboardLink(localStorage.getItem(ADMIN_DASHBOARD_VIEW) === 'weekly' ? '/AdminNavView/WeeklyShiftDashboard': '/AdminNavView/DailyShiftDashboard');
+  }, []);
+
   return (
     <div className={`${styles.sidebar} ${isOpen ? styles.open : styles.closed}`}>
-      <Link href="/AdminNavView/DailyShiftDashboard">
+      <Link href={dashboardLink}>
       <div className={styles.navHeader}>
         <Image src={bagelsLogo} className={styles.navIcon} alt="Bagels Logo" />
         <div className={styles.navHeaderText}>Bagel Rescue</div>
@@ -76,18 +90,21 @@ const AdminSidebar: React.FC = () => {
       </Link>
       
       <nav className={styles.nav}>
-        {navItems.map((item) => (
-          <Link key={item.name} href={item.href}>
+        {navItems.map((item) => {
+          const href = item.name === 'Dashboard' ? dashboardLink : item.href;
+          return (
+          <Link key={item.name} href={href}>
             <div
               className={`${styles.navItem} ${
-                pathname === item.href ? styles.active : ''
+                (item.name === 'Dashboard' ? pathname === '/AdminNavView/DailyShiftDashboard' || pathname === '/AdminNavView/WeeklyShiftDashboard' : pathname === item.href) ? styles.active : ''
               }`}
             >
               <div className={styles.icon}>{item.icon}</div>
               {isOpen && <span className={styles.navText}>{item.name}</span>}
             </div>
           </Link>
-        ))}
+          );
+      })}
       </nav>
       <hr className={styles.line} />
       <Link href="/AdminNavView/AdminProfile">

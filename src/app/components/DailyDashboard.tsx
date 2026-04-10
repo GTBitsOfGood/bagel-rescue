@@ -7,22 +7,25 @@ import {
   faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/navigation";
+import { ADMIN_DASHBOARD_VIEW } from "@/lib/dashboardConstants";
 
 interface DashboardHeaderProps {
   date: Date;
   AddDays: (days: number) => void;
+  isDateReady: boolean;
 }
 
-const DashboardHeader: React.FC<DashboardHeaderProps> = ({ date, AddDays }) => {
+const DashboardHeader: React.FC<DashboardHeaderProps> = ({ date, AddDays, isDateReady }) => {
   const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [timeFrame, setTimeFrame] = useState("Day");
-
   const handleTimeFrameChange = (newTimeFrame: string) => {
     setTimeFrame(newTimeFrame);
     if (newTimeFrame === 'Day') {
+      localStorage.setItem(ADMIN_DASHBOARD_VIEW, 'daily');
       router.push('/AdminNavView/DailyShiftDashboard');
     } else {
+      localStorage.setItem(ADMIN_DASHBOARD_VIEW, 'weekly');
       router.push('/AdminNavView/WeeklyShiftDashboard');
     }
   };
@@ -30,80 +33,86 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ date, AddDays }) => {
   const debouncedAddDays = useCallback(debounce(AddDays, 300), [AddDays]);
 
   return (
-    <div className="flex flex-row justify-between p-9 border-b-[1px] border-b-[#D3D8DE] sticky top-0 bg-white z-50">      <span className="text-[#072B68] mt-2 font-[700] text-4xl">Dashboard</span>
-      <div className="flex gap-6">
-        <div className="flex justify-between gap-4">
-          <div className="flex border justify-between p-[.8rem] px-4 rounded-xl gap-5">
-            <button title="adddays" onClick={() => debouncedAddDays(-1)}>
-              <FontAwesomeIcon
-                icon={faAngleLeft}
-                className="mt-1 cursor-pointer"
-              />
-            </button>
-            <span className="font-[700]">
-              {date.toLocaleDateString("en-us", {
-                month: "long",
-                day: "2-digit",
-                year: "numeric",
-              })}
-            </span>
-            <button title="adddays" onClick={() => debouncedAddDays(1)}>
-              <FontAwesomeIcon
-                icon={faAngleRight}
-                className="mt-1 cursor-pointer"
-              />
-            </button>
+    <div className="flex min-w-0 w-full flex-row flex-wrap items-center justify-between gap-y-4 p-9 border-b-[1px] border-b-[#D3D8DE] sticky top-0 bg-white z-50">
+      <span className="text-[#072B68] mt-2 font-[700] text-4xl shrink-0">Dashboard</span>
+      <div className="flex min-w-0 flex-wrap items-center gap-6">
+        {isDateReady ? (
+          <div className="flex justify-between gap-4">
+            <div className="flex border justify-between p-[.8rem] px-4 rounded-xl gap-5">
+              <button title="adddays" type="button" onClick={() => debouncedAddDays(-1)}>
+                <FontAwesomeIcon
+                  icon={faAngleLeft}
+                  className="mt-1 cursor-pointer"
+                />
+              </button>
+              <span className="font-[700]">
+                {date.toLocaleDateString("en-us", {
+                  month: "long",
+                  day: "2-digit",
+                  year: "numeric",
+                })}
+              </span>
+              <button title="adddays" type="button" onClick={() => debouncedAddDays(1)}>
+                <FontAwesomeIcon
+                  icon={faAngleRight}
+                  className="mt-1 cursor-pointer"
+                />
+              </button>
+            </div>
+            <div className="flex border justify-between p-[.8rem] px-4 rounded-xl relative">
+              <button
+                type="button"
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="mr-6 flex items-center"
+              >
+                {timeFrame}
+                <FontAwesomeIcon icon={faAngleDown} className="ml-2 mt-1" />
+              </button>
+              {dropdownOpen && (
+                <div className="absolute top-full mt-2 bg-white border rounded shadow-lg">
+                  {timeFrame === "Day" ? (
+                    <>
+                      <div
+                        onClick={() => handleTimeFrameChange("Day")}
+                        className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+                      >
+                        Day
+                      </div>
+                      <div
+                        onClick={() => handleTimeFrameChange("Week")}
+                        className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+                      >
+                        Week
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div
+                        onClick={() => handleTimeFrameChange("Week")}
+                        className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+                      >
+                        Week
+                      </div>
+                      <div
+                        onClick={() => handleTimeFrameChange("Day")}
+                        className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+                      >
+                        Day
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-          <div className="flex border justify-between p-[.8rem] px-4 rounded-xl relative">
-            <button
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="mr-6 flex items-center"
-            >
-              {timeFrame}
-              <FontAwesomeIcon icon={faAngleDown} className="ml-2 mt-1" />
-            </button>
-            {dropdownOpen && (
-              <div className="absolute top-full mt-2 bg-white border rounded shadow-lg">
-                {timeFrame === "Day" ? (
-                  <>
-                    <div
-                      onClick={() => handleTimeFrameChange("Day")}
-                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
-                    >
-                      Day
-                    </div>
-                    <div
-                      onClick={() => handleTimeFrameChange("Week")}
-                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
-                    >
-                      Week
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div
-                      onClick={() => handleTimeFrameChange("Week")}
-                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
-                    >
-                      Week
-                    </div>
-                    <div
-                      onClick={() => handleTimeFrameChange("Day")}
-                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
-                    >
-                      Day
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-        <div 
-          className="bg-[#0F7AFF] text-[#FFFFFF] font-[700] p-[.8rem] px-5 gap-2 rounded-xl hover:bg-[#005bb5] cursor-pointer"
+        ) : (
+          <div className="h-12 min-w-0 flex-1" aria-hidden />
+        )}
+        <div
+          className="inline-flex grow-0 shrink-0 flex-nowrap items-center gap-2 whitespace-nowrap rounded-xl bg-[#0F7AFF] p-[.8rem] px-5 font-[700] text-[#FFFFFF] hover:bg-[#005bb5] cursor-pointer min-w-max"
           onClick={() => router.push('/AdminNavView/NewShiftPage')}
         >
-          <FontAwesomeIcon icon={faPlus} className="mr-3" />
+          <FontAwesomeIcon icon={faPlus} className="h-4 w-4 shrink-0" />
           <span>New Shift</span>
         </div>
       </div>

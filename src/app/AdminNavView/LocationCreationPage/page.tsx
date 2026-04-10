@@ -9,6 +9,7 @@ import { Location } from "@/server/db/models/location";
 import { Address } from "@/server/db/models/location";
 import { createLocation } from "@/server/db/actions/location";
 import { useRouter } from "next/navigation";
+import BackButton from "@/app/components/BackButton";
 
 import locations from "@/lib/locations";
 import { errorToast, successToast } from "@/lib/toastConfig";
@@ -89,10 +90,7 @@ function LocationCreationPage() {
       <AdminSidebar />
       <div className="flex flex-col flex-1">
         <div className="container">
-          <button className="back-btn" onClick={() => window.history.back()}>
-            <FontAwesomeIcon icon={faAngleLeft} />
-            <p>Back</p>
-          </button>
+          <BackButton onClick={() => window.history.back()} />
           <div className="header">
             <p className="header-text">Create a New Location</p>
             <button

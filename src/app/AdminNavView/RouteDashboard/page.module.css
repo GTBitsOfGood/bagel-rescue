@@ -2,18 +2,7 @@
     max-width: 1200px;
     margin: 0 auto;
   }
-  
-  .newRouteButton {
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 8px;
-    cursor: pointer;
-    max-height: 44px;
-    
-  }
-  
+
   .modal {
     position: relative;
     display: inline-block;
@@ -24,19 +13,20 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    flex-shrink: 0;
   }
-  
+
   .filterControls {
     display: flex;
     gap: 10px;
     align-items: center;
     color: var(--Bagel-Rescue-Dark-Blue);
   }
-  
+
   .sortSelect {
     background-color: rgb(var(--background-rgb));
     position: relative;
-    border: 1px solid #0F7AFF;
+    border: 1px solid var(--Bagel-Rescue-Blue);
     border-radius: 8px;
     padding: 0 44px 0 16px;
     font-size: 16px;
@@ -50,25 +40,26 @@
     min-width: 167px;
     height: 44px;
   }
-  
+
   .filterButton {
     background-color: rgb(var(--background-rgb));
-    border: 1px solid #0F7AFF;
+    border: 1px solid var(--Bagel-Rescue-Blue);
     padding: 10px 15px;
     border-radius: 8px;
     cursor: pointer;
     color: var(--Bagel-Rescue-Dark-Blue);
   }
-  
+
   .tableContainer {
     margin-top: 20px;
-    height: 72vh;
+    min-height: 0;
+    flex: 1 1 auto;
     overflow-y: auto;
   }
-  
+
   .tableHeader {
     display: grid;
-    grid-template-columns: 2fr 1.5fr 1fr 3fr 0.5fr;
+    grid-template-columns: 2fr 1.5fr 1.1fr 3fr 0.3fr;
     background-color: #C6E3FF;
     border-radius: 8px;
     padding: 16px;
@@ -77,17 +68,17 @@
     margin-bottom: 10px;
     padding-left: 20px;
   }
-  
+
   .columnHeader {
     padding: 5px 10px;
   }
-  
+
   .routeList {
     display: flex;
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .routeCard {
     background-color: rgb(var(--background-rgb));
     border: 1px solid #C6E3FF;
@@ -95,14 +86,14 @@
     padding: 10px;
     color: var(--Bagel-Rescue-Dark-Blue);
   }
-  
+
   .routeDetails {
     display: grid;
     grid-template-columns: 2fr 1.5fr 1fr 3fr 0.5fr;
     gap: 16px;
     align-items: center;
   }
-  
+
   .routeInfo {
     display: flex;
     flex-direction: column;
@@ -111,7 +102,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  
+
   .moreOptionsButton {
     background: none;
     border: none;
@@ -119,19 +110,18 @@
     font-size: 23px;
     transform: scaleX(0.9);
   }
-  
+
   .contextMenu {
     display: flex;
     flex-direction: column;
     position: absolute;
     top: 100%;
     background-color: rgb(var(--background-rgb));
-    border: 1px solid #0F7AFF;
+    border: 1px solid var(--Bagel-Rescue-Blue);
     border-radius: 12px;
     gap: 6px;
     padding: 15px 15px 9px 15px;
     width: 11em;
-    height: 5em;
     right: 0;
     z-index: 10;
   }
@@ -147,30 +137,270 @@
   .modalDeleteRoute {
     color: #810000;
   }
-  
+
   .searchInputContainer {
     display: flex;
     align-items: center;
     padding-left: 20px;
     width: 300px;
-    padding: 10px 15px; 
-    border: 1px solid #0F7AFF;
+    padding: 10px 15px;
+    border: 1px solid var(--Bagel-Rescue-Blue);
     border-radius: 69px;
     overflow: hidden;
     background-color: rgb(var(--background-rgb));
   }
-  
+
   .searchIcon {
-    color: #0F7AFF;
-    font-size: 20px;
-    width: 20px; 
-    height: 20px; 
+    color: var(--Bagel-Rescue-Blue);
+    font-size: 1rem;
+    box-sizing: content-box;
+    flex-shrink: 0;
   }
-  
+
+  .searchIcon svg {
+    width: 1rem !important;
+    height: 1rem !important;
+    max-width: 1rem;
+    max-height: 1rem;
+    display: block;
+  }
+
   .searchInput {
     border: none;
     outline: none;
     background-color: transparent;
     padding-left: 10px;
-    flex-grow: 1; 
+    flex-grow: 1;
+  }
+
+  .editOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+  }
+
+  .editModal {
+    background-color: rgb(var(--background-rgb));
+    border-radius: 16px;
+    padding: 32px;
+    width: 480px;
+    max-width: 90vw;
+    max-height: 85vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .editModalTitle {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--Bagel-Rescue-Dark-Blue);
+    margin: 0;
+  }
+
+  .editLabel {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--Bagel-Rescue-Dark-Blue);
+  }
+
+  .editInput {
+    border: 1px solid #C6E3FF;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    outline: none;
+    color: var(--Bagel-Rescue-Dark-Blue);
+  }
+
+  .editInput:focus {
+    border-color: var(--Bagel-Rescue-Blue);
+  }
+
+  .editTextarea {
+    border: 1px solid #C6E3FF;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    outline: none;
+    resize: vertical;
+    font-family: inherit;
+    color: var(--Bagel-Rescue-Dark-Blue);
+  }
+
+  .editTextarea:focus {
+    border-color: var(--Bagel-Rescue-Blue);
+  }
+
+  .editActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 4px;
+  }
+
+  .editCancelButton {
+    padding: 10px 20px;
+    border: 1px solid #C6E3FF;
+    border-radius: 8px;
+    background: none;
+    cursor: pointer;
+    color: var(--Bagel-Rescue-Dark-Blue);
+    font-size: 14px;
+  }
+
+  .editSaveButton {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--Bagel-Rescue-Blue);
+    color: rgb(var(--background-rgb));
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .editSaveButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Location editing in modal */
+
+  .editLocationsBox {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border: 1px solid #C6E3FF;
+    border-radius: 8px;
+    padding: 10px;
+    max-height: 250px;
+    overflow-y: auto;
+  }
+
+  .editLocationCard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    border: 1px solid #C6E3FF;
+    border-radius: 8px;
+    background-color: rgb(var(--background-rgb));
+  }
+
+  .editLocationInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+  }
+
+  .editLocationNumber {
+    font-weight: 600;
+    color: var(--Bagel-Rescue-Blue);
+    min-width: 20px;
+  }
+
+  .editLocationName {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .editLocationActions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .editPickUpToggle {
+    border: none;
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .editRemoveBtn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--Bagel-Rescue-Light-Text);
+    padding: 0 4px;
+    line-height: 1;
+  }
+
+  .editRemoveBtn:hover {
+    color: var(--Bagel-Rescue-Error-Red);
+  }
+
+  .editAddLocationBtn {
+    border: 1px dashed var(--Bagel-Rescue-Blue);
+    border-radius: 8px;
+    padding: 8px;
+    background: none;
+    color: var(--Bagel-Rescue-Blue);
+    cursor: pointer;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .editAddLocationBtn:hover {
+    background-color: var(--Bagel-Rescue-Light-Blue);
+  }
+
+  .editAddLocationSearch {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .editSearchRow {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .editSearchRow .editInput {
+    flex: 1;
+  }
+
+  .editSearchResults {
+    display: flex;
+    flex-direction: column;
+    max-height: 150px;
+    overflow-y: auto;
+  }
+
+  .editSearchItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .editSearchItem:hover {
+    background-color: var(--Bagel-Rescue-Light-Blue);
+  }
+
+  .editSearchItemType {
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 12px;
+    white-space: nowrap;
   }

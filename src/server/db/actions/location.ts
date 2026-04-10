@@ -140,6 +140,37 @@ export async function getAllLocationsById(
     }
 }
 
+export async function updateLocation(
+    id: string,
+    updatedLocation: string
+): Promise<{ success: boolean; message?: string; data?: string }> {
+    await requireAdmin();
+    await dbConnect();
+    try {
+        if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+            throw new Error("Invalid location ID format");
+        }
+
+        let parsedData;
+        try {
+            parsedData = JSON.parse(updatedLocation || "{}");
+        } catch (e) {
+            throw new Error("Invalid JSON format for location data");
+        }
+
+        validateLocationData(parsedData);
+
+        const result = await LocationModel.findByIdAndUpdate(id, parsedData, { new: true });
+        if (!result) {
+            return { success: false, message: "Location not found" };
+        }
+        return { success: true, data: JSON.stringify(result) };
+    } catch (error) {
+        const err = error as Error;
+        return { success: false, message: `Error updating location: ${err.message}` };
+    }
+}
+
 export async function getAllLocations(): Promise<string | null> {
     await requireAdmin();
     try {

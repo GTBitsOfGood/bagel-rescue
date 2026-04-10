@@ -14,8 +14,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import dayToNumber, { dayList } from "@/lib/dayHandler";
-import { combineDateAndTime, dateToString, normalizeDate, stringToDate } from "@/lib/dateHandler";
+import { combineDateAndTime, dateToString, toUTCStartOfDay, stringToDate } from "@/lib/dateHandler";
 import { errorToast, successToast } from "@/lib/toastConfig";
+import BackButton from "@/app/components/BackButton";
 
 export default function NewShiftPage() {
   const timeStartInputRef = useRef<HTMLInputElement>(null);
@@ -287,8 +288,7 @@ export default function NewShiftPage() {
   const findFirstDateAfterToday = (days: string[]): Date | null => {
     if (days.length === 0) return null;
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize to start of day
+    const today = toUTCStartOfDay(new Date); // Normalize to UTC start of day
     const currentDay = today.getDay();
 
     // Remove duplicates and convert to numbers
@@ -322,6 +322,25 @@ export default function NewShiftPage() {
 
     return null;
   };
+
+  const checkFormIncomplete = () => {
+    if (!(startTime.trim() && endTime.trim())) {
+      return false;
+    }
+    if (dateRange && (!startDate.trim() || !endDate.trim())) {
+      return false;
+    }
+    if (routes.length === 0) {
+      return false;
+    }
+    if (volunteers.length === 0) {
+      return false;
+    }
+    if (selectedDays.length === 0) {
+      return false;
+    }
+    return true;
+  }
 
   async function saveEdits() {
     // Prevent duplicate submissions
@@ -478,16 +497,7 @@ export default function NewShiftPage() {
       <div className="flex flex-col w-full min-h-screen">
         {/* this is the top bar */}
         <div className="flex flex-col p-4 space-y-2 border border-b-[#D3D8DE]">
-          <div
-            onClick={() => router.push("/AdminNavView/DailyShiftDashboard")}
-            className="flex space-x-2 cursor-pointer"
-          >
-            <FontAwesomeIcon
-              icon={faArrowLeft}
-              className="text-[#6C7D93] size-5 mt-[.1rem]"
-            />
-            <span className="font-semibold text-base text-[#6C7D93]">Back</span>
-          </div>
+          <BackButton onClick={() => router.push("/AdminNavView/DailyShiftDashboard")}/>
           <div className="flex justify-between text-center align-middle">
             <div className="text-[#072B68] font-bold text-4xl content-center">
               New Shift
@@ -498,7 +508,7 @@ export default function NewShiftPage() {
                 disabled={isSubmitting}
                 className="font-bold text-white px-6 py-[.8rem] rounded-xl text-base"
                 style={{
-                  backgroundColor: isSubmitting ? "#CCCCCC" : "#A3A3A3",
+                  backgroundColor: isSubmitting ? "#CCCCCC" : checkFormIncomplete() ? "#0F7AFF" : "#A3A3A3",
                   cursor: isSubmitting ? "not-allowed" : "pointer",
                 }}
               >
@@ -593,6 +603,7 @@ export default function NewShiftPage() {
                       type="date"
                       placeholder="Enter additional information here"
                       value={startDate}
+                      disabled = {!dateRange}
                       onChange={(e) =>
                         dateRange ? setStartDate(e.target.value) : null
                       }
@@ -614,6 +625,7 @@ export default function NewShiftPage() {
                       type="date"
                       placeholder="Enter additional information here"
                       value={endDate}
+                      disabled = {!dateRange}
                       onChange={(e) =>
                         dateRange ? setEndDate(e.target.value) : null
                       }

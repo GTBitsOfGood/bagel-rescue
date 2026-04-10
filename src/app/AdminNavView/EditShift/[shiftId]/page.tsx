@@ -12,6 +12,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import dayToNumber, { dayList } from "@/lib/dayHandler";
+import BackButton from "@/app/components/BackButton";
 
 import { updateShift } from "@/server/db/actions/shift";
 import { deleteUserShift, updateUserShiftsRoute } from "@/server/db/actions/userShifts";
@@ -570,16 +571,7 @@ export default function EditShift() {
       <div className="flex flex-col w-full min-h-screen">
         {/* this is the top bar */}
         <div className="flex flex-col p-4 space-y-2 border border-b-[#D3D8DE]">
-          <div
-            onClick={() => router.push("/AdminNavView/DailyShiftDashboard")}
-            className="flex space-x-2 cursor-pointer"
-          >
-            <FontAwesomeIcon
-              icon={faArrowLeft}
-              className="text-[#6C7D93] size-5 mt-[.1rem]"
-            />
-            <span className="font-semibold text-base text-[#6C7D93]">Back</span>
-          </div>
+        <BackButton onClick={() => router.push("/AdminNavView/DailyShiftDashboard")} />
           <div className="flex justify-between text-center align-middle">
             <div className="text-[#072B68] font-bold text-4xl content-center">
               Edit Shift
