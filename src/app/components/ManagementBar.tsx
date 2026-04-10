@@ -62,22 +62,26 @@ function ManagementBar() {
 
     return (
         <>
-            <div className="flex flex-row justify-between p-9 border-b-[1px] border-b-[#D3D8DE] sticky top-0 bg-white h-[7.7rem]">
-                <span className="text-[#072B68] mt-2 font-[700] text-4xl">
+            <div className="sticky top-0 z-50 flex min-w-0 w-full flex-row flex-wrap items-center justify-between gap-y-4 border-b border-b-[#D3D8DE] bg-white p-9">
+                <span className="mt-2 shrink-0 text-4xl font-[700] text-[#072B68]">
                     Volunteer Management
                 </span>
-                <div className="flex gap-6">
-                    <div
-                        className="bg-[#0F7AFF] text-[#FFFFFF] font-[700] p-[.8rem] px-5 gap-2 rounded-xl hover:bg-[#005bb5] cursor-pointer"
+                <div className="flex min-w-0 flex-wrap items-center gap-6">
+                    <button
+                        type="button"
+                        className="inline-flex min-w-max shrink-0 cursor-pointer flex-nowrap items-center gap-2 whitespace-nowrap rounded-xl bg-[#0F7AFF] px-5 py-[0.8rem] font-[700] text-white hover:bg-[#005bb5]"
                         onClick={() =>
                             router.push(
                                 "/AdminNavView/ManagementPage/AddNewVolunteer"
                             )
                         }
                     >
-                        <FontAwesomeIcon icon={faPlus} className="mr-3" />
+                        <FontAwesomeIcon
+                            icon={faPlus}
+                            className="h-4 w-4 shrink-0"
+                        />
                         <span>Add New Volunteer</span>
-                    </div>
+                    </button>
                 </div>
             </div>
         </>

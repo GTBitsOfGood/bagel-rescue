@@ -3,7 +3,7 @@
 import "./stylesheet.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { Shift } from "@/server/db/models/shift";
@@ -24,7 +24,7 @@ import { getAllLocationsById } from "@/server/db/actions/location";
 import { Location } from "@/server/db/models/location";
 import { IRoute } from "@/server/db/models/Route";
 import { findDayInRange, getWeekRange } from "@/lib/dateRangeHandler";
-import { dateToString, normalizeDate } from "@/lib/dateHandler";
+import { dateToString, normalizeDate, toUTCStartOfDay } from "@/lib/dateHandler";
 import styles from "@/app/VolunteerNavView/Homepage/page.module.css";
 import LoadingFallback from "@/app/components/LoadingFallback";
 import { ADMIN_DASHBOARD_VIEW, ADMIN_DASHBOARD_DATE } from "@/lib/dashboardConstants";
@@ -66,11 +66,14 @@ function WeeklyShiftDashboard() {
     const [routeToLocationsMap, setRouteToLocationsMap] = useState<
         Map<string, Location[]>
     >(new Map());
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [isDateReady, setIsDateReady] = useState(false);
 
     const [date, setDate] = useState<Date>(() => new Date());
-    const { startOfWeek, endOfWeek } = getWeekRange(date);
+    const { startOfWeek, endOfWeek } = useMemo(
+        () => getWeekRange(date),
+        [date]
+    );
 
     const AddDays = (e: number) => {
         const newDate = new Date(date);
@@ -81,24 +84,24 @@ function WeeklyShiftDashboard() {
         localStorage.setItem(ADMIN_DASHBOARD_DATE, newDate.toISOString());
     };
 
-    const fetchWeeklyShifts = async (startDate: Date, endDate: Date) => {
-        try {
-            setIsLoading(true)
-            const weeklyShiftResponse = await getShiftsByWeek(
-                startDate,
-                endDate
-            );
-            const weeklyShiftData = JSON.parse(weeklyShiftResponse || "[]");
-            // canceledShift logic is done in routesList function
-            setWeeklyShiftData(weeklyShiftData);
-        } catch (error) {
-            console.error("Error fetching shifts:", error);
-        } finally {
-            setIsLoading(false)
-        }
-    };
+    const fetchWeeklyShifts = useCallback(
+        async (startDate: Date, endDate: Date) => {
+            try {
+                const weeklyShiftResponse = await getShiftsByWeek(
+                    startDate,
+                    endDate
+                );
+                const weeklyShiftData = JSON.parse(weeklyShiftResponse || "[]");
+                // canceledShift logic is done in routesList function
+                setWeeklyShiftData(weeklyShiftData);
+            } catch (error) {
+                console.error("Error fetching shifts:", error);
+            }
+        },
+        []
+    );
 
-    const fetchShifts = async () => {
+    const fetchShifts = useCallback(async () => {
         try {
             const shift_response = await getAllShifts();
             const shift_data: Shift[] = JSON.parse(shift_response || "[]");
@@ -117,7 +120,7 @@ function WeeklyShiftDashboard() {
             }
             console.error("Error fetching shifts:", error);
         }
-    };
+    }, [router]);
 
     const handleDeleteShift = async (shift: Shift) => {
         console.log("Delete shift:", shift);
@@ -161,9 +164,29 @@ function WeeklyShiftDashboard() {
 
     useEffect(() => {
         if (!isDateReady) return;
-        fetchShifts();
-        fetchWeeklyShifts(startOfWeek, endOfWeek);
-    }, [date, isDateReady]);
+        let cancelled = false;
+        (async () => {
+            setIsLoading(true);
+            try {
+                await Promise.all([
+                    fetchShifts(),
+                    fetchWeeklyShifts(startOfWeek, endOfWeek),
+                ]);
+            } finally {
+                if (!cancelled) setIsLoading(false);
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
+    }, [
+        date,
+        isDateReady,
+        fetchShifts,
+        fetchWeeklyShifts,
+        startOfWeek,
+        endOfWeek,
+    ]);
 
     useEffect(() => {
         const fetchVolunteers = async () => {
@@ -233,6 +256,17 @@ function WeeklyShiftDashboard() {
         });
     };
 
+    const searchShiftLocation = (shift: any) => {
+        const query = shiftSearchText.trim().toLowerCase();
+        if (!query) {
+            return true;
+        }
+        const routeName = String(shift["routeName"] ?? "").toLowerCase();
+        const locationDescription = String(shift["locationDescription"] ?? "").toLowerCase();
+        return routeName.includes(query) || locationDescription.includes(query);
+    };
+
+
     // TODO: Can definitely be made more efficient - probably not need
     // to pass entire volunteersPerShift into every Route card
     const routesList = () => {
@@ -243,6 +277,7 @@ function WeeklyShiftDashboard() {
                     ? shift.status === "open"
                     : shift.status === "assigned";
             if (!matchesStatus) return null;
+            if (!searchShiftLocation(shift)) return null;
 
             // Early return if no recurrence dates
             if (!shift["recurrenceDates"]?.length) {
@@ -254,10 +289,15 @@ function WeeklyShiftDashboard() {
                 .map((day: string, dateIndex: number) => {
                     const shiftDate = findDayInRange(
                         day,
-                        normalizeDate(startOfWeek),
-                        normalizeDate(endOfWeek)
-                    );
+                        startOfWeek,
+                        endOfWeek
+                    ); // shiftDate is UTC normalized
                     if (!shiftDate) return null;
+
+                    // ensure shift date is in the date range, not just in the week that overlaps with the date range
+                    if (shiftDate < new Date(shift.shiftStartDate) || shiftDate > new Date(shift.shiftEndDate)) {
+                        return null;
+                    }
 
                     if (
                         shift.canceledShifts
@@ -297,6 +337,7 @@ function WeeklyShiftDashboard() {
                                 month: "short",
                                 day: "numeric",
                                 year: "numeric",
+                                timeZone: "UTC",
                             })}
                             onOpenSidebar={() =>
                                 handleShiftCardClick(shift, new Date(shiftDate))
@@ -314,60 +355,81 @@ function WeeklyShiftDashboard() {
 
     // Calculate counts for tabs
     const assignedCount = weeklyShiftData.filter(
-        (shift: any) => shift.status === "assigned"
+        (shift: any) =>
+            shift.status === "assigned" && searchShiftLocation(shift)
     ).length;
     const openCount = weeklyShiftData.filter(
-        (shift: any) => shift.status === "open"
+        (shift: any) => shift.status === "open" && searchShiftLocation(shift)
     ).length;
 
     return (
         <div className="flex">
             <AdminSidebar />
-            <div className="flex flex-col flex-1 relative">
-                <WeeklyDashboardHeader date={date} AddDays={AddDays} />
+            <div className="flex flex-col flex-1 min-w-0 relative">
+                <WeeklyDashboardHeader date={date} AddDays={AddDays} isDateReady={isDateReady} />
                 <div className="container">
-                    <div className="search-settings">
-                        <button className="sort-by-btn">
-                            <FilterIcon />
-                            <p>Sort by</p>
-                        </button>
-                        <input
-                            className="shift-search-input"
-                            type="text"
-                            placeholder="Search for a shift"
-                            onChange={(e) => setShiftSearchText(e.target.value)}
-                        />
-                        <FontAwesomeIcon
-                            icon={faMagnifyingGlass}
-                            className="shift-search-icon"
-                        />
-                    </div>
-
-                    <div className="flex mt-6">
-                        <button
-                            className={`${styles.tabButton} ${
-                                activeTab === "assigned" ? styles.activeTab : ""
-                            }`}
-                            onClick={() => setActiveTab("assigned")}
-                        >
-                            Shifts ({assignedCount})
-                        </button>
-                        <button
-                            className={`${styles.tabButton} ${
-                                activeTab === "open" ? styles.activeTab : ""
-                            }`}
-                            onClick={() => setActiveTab("open")}
-                        >
-                            Open Shifts ({openCount})
-                        </button>
-                    </div>
-                    
-                    {isLoading ? (
-                        <>
-                            <LoadingFallback/>
-                        </>
+                    {!isDateReady ? (
+                        <div className="admin-dashboard-loading">
+                            <LoadingFallback />
+                        </div>
                     ) : (
-                        <div className="shift-container">{routesList()}</div>
+                        <>
+                            <div className="search-settings">
+                                <button className="sort-by-btn">
+                                    <FilterIcon />
+                                    <p>Sort by</p>
+                                </button>
+                                <input
+                                    className="shift-search-input"
+                                    type="text"
+                                    placeholder="Search for shift by location"
+                                    value={shiftSearchText}
+                                    onChange={(e) =>
+                                        setShiftSearchText(e.target.value)
+                                    }
+                                />
+                                <FontAwesomeIcon
+                                    icon={faMagnifyingGlass}
+                                    className="shift-search-icon"
+                                />
+                            </div>
+
+                            <div className="flex mt-6">
+                                <button
+                                    className={`${styles.tabButton} ${
+                                        activeTab === "assigned"
+                                            ? styles.activeTab
+                                            : ""
+                                    }`}
+                                    onClick={() => setActiveTab("assigned")}
+                                >
+                                    {isLoading
+                                        ? "Loading..."
+                                        : `Shifts (${assignedCount})`}
+                                </button>
+                                <button
+                                    className={`${styles.tabButton} ${
+                                        activeTab === "open"
+                                            ? styles.activeTab
+                                            : ""
+                                    }`}
+                                    onClick={() => setActiveTab("open")}
+                                >
+                                    {isLoading
+                                        ? "Loading..."
+                                        : `Open Shifts (${openCount})`}
+                                </button>
+                            </div>
+                            {isLoading ? (
+                                <div className="admin-dashboard-loading">
+                                    <LoadingFallback />
+                                </div>
+                            ) : (
+                                <div className="shift-container">
+                                    {routesList()}
+                                </div>
+                            )}
+                        </>
                     )}
                     
                     {selectedItem && (
