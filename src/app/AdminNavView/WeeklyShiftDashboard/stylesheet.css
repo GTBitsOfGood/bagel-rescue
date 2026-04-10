@@ -144,6 +144,5 @@
 }
 
 .shift-container > *:nth-child(n + 2) {
-  border-top: 1px solid;
-  border-color: var(--Bagel-Rescue-Light-Grey);
+  border-top: 1px solid var(--Bagel-Rescue-Light-Grey);
 }

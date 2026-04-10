@@ -309,6 +309,13 @@ function WeeklyShiftDashboard() {
                         return null;
                     }
 
+                    const isSelected =
+                        selectedItem !== null &&
+                        String((selectedItem.shift as any)?._id) ===
+                            String(shift["_id"]) &&
+                        dateToString(new Date(selectedItem.shiftDate)) ===
+                            dateToString(shiftDate);
+
                     return (
                         <ShiftCard
                             shift={shift}
@@ -343,6 +350,7 @@ function WeeklyShiftDashboard() {
                                 handleShiftCardClick(shift, new Date(shiftDate))
                             }
                             onDeleteShift={handleDeleteShift}
+                            isSelected={isSelected}
                         />
                     );
                 })
