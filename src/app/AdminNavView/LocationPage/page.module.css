@@ -136,7 +136,7 @@
 }
 
 .locationCard {
-  background-color: var(--background-rgb);
+  background-color: white;
   border: 1px solid #ddd;
   border-radius: 16px;
   border-color: #C6E3FF;
