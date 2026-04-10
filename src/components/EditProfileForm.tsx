@@ -11,13 +11,13 @@ import { IUser } from '@/server/db/models/User';
 import LoadingFallback from '@/app/components/LoadingFallback';
 
 interface EditProfileFormProps {
-  togglePopup: () => void;
+  onCancel: () => void;
   setHasChanges: (hasChanges: boolean) => void;
   onNavigate: (path: string) => void;
   onSignOut: () => void;
 }
 
-const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup, setHasChanges, onNavigate, onSignOut }) => {
+const EditProfileForm: React.FC<EditProfileFormProps> = ({ onCancel, setHasChanges, onNavigate, onSignOut }) => {
   const router = useRouter();
   const [initialName, setInitialName] = useState('');
   const [locations, setLocations] = useState<string[]>([]);
@@ -195,7 +195,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup, setHasCh
             <p className={styles.role}>{userData.role}</p>
           </div>
           <div className={styles.save}>
-            <button className={styles.cancel} onClick={togglePopup}>Cancel</button>
+            <button className={styles.cancel} onClick={onCancel}>Cancel</button>
             <button className={styles.button} onClick={updateInformation}>Save Profile</button>
           </div>
         </div>

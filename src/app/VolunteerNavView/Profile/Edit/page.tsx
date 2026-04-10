@@ -86,7 +86,7 @@ const EditProfile: React.FC = () => {
           </div>
         </div>
         <div className={styles.backDrop}>
-          <EditProfileForm togglePopup={handleCancel} setHasChanges={setHasChanges} onNavigate={handleNavigate} onSignOut={handleSignOutRequest} />
+          <EditProfileForm onCancel={handleCancel} setHasChanges={setHasChanges} onNavigate={handleNavigate} onSignOut={handleSignOutRequest} />
         </div>
       </div>
 
