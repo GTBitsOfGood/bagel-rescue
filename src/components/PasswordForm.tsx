@@ -94,6 +94,7 @@ const PasswordForm: React.FC<PasswordFormProps> = ({ setHasChanges, onNavigate, 
             setCorrectPassword(false);
             setSeePassword(false);
             setSeeNewPassword(false);
+            setHasChanges(false)
         }).catch((error) => {
             console.error('Error changing password:', error);
         });
@@ -152,8 +153,6 @@ const PasswordForm: React.FC<PasswordFormProps> = ({ setHasChanges, onNavigate, 
                             onChange={(e) => {
                               setPassword(e.target.value)
                               setHasChanges(e.target.value.length > 0 || newPassword.length > 0)
-                              console.log("pass ", e.target.value)
-                              console.log("new pass ", newPassword)
                             }}
                             onBlur={checkPassword}
                         />
@@ -184,8 +183,6 @@ const PasswordForm: React.FC<PasswordFormProps> = ({ setHasChanges, onNavigate, 
                           onChange={(e) => {
                             setNewPassword(e.target.value)
                             setHasChanges(password.length > 0 || e.target.value.length > 0)
-                            console.log("pass ", password.length)
-                            console.log("new pass ", e.target.value.length)
                           }}
                         />
                         <button type="button" className={styles.eyeButton}
