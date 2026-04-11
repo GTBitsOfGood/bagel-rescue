@@ -66,6 +66,56 @@ export default function LoginScreen() {
     checkUserAuth();
   }, [router]);
 
+  const handleLogin = async () => {
+    setLoading(true);
+    setErrorBannerMsg("");
+    const isValid = await trigger(undefined, {
+      shouldFocus: true,
+    });
+    if (!isValid) {
+      setLoading(false);
+      return;
+    }
+
+    const { email, password } = getValues();
+
+    try {
+      const auth = getAuth();
+      const persistenceType = keepLoggedIn
+        ? browserLocalPersistence
+        : browserSessionPersistence;
+
+      await setPersistence(auth, persistenceType);
+
+      const res = await loginWithCredentials(email, password);
+      if (res.success) {
+        if ("isAdmin" in res) {
+          router.push(
+            res.isAdmin === "admin"
+              ? getAdminDashboardPath()
+              : "/VolunteerNavView/Homepage"
+          );
+          return;
+        }
+      } else {
+        setErrorBannerMsg(res.error);
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error(err);
+      setErrorBannerMsg(
+        "An unknown error occurred logging in. Please check your internet connection and try again."
+      );
+      setLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && (e.target as HTMLElement).tagName === "INPUT") {
+      handleLogin();
+    }
+  };
+
   return (
     <div className="flex absolute bg-[#D6E9FF]">
       <div className="h-screen w-screen">
@@ -93,7 +143,7 @@ export default function LoginScreen() {
                   Enter your email and password to sign in!
                 </p>
               </div>
-              <div className="flex flex-col w-full sm:order-2">
+              <div className="flex flex-col w-full sm:order-2" onKeyDown={handleKeyDown}>
                 <TextInput
                   label="Email"
                   placeholder="example@email.com"
@@ -173,50 +223,7 @@ export default function LoginScreen() {
                     icon={loading ? <MiniSpinner /> : undefined}
                     label="Continue"
                     disabled={loading}
-                    onClick={async () => {
-                      setLoading(true);
-                      setErrorBannerMsg("");
-                      const isValid = await trigger(undefined, {
-                        shouldFocus: true,
-                      });
-                      if (!isValid) {
-                        setLoading(false);
-                        return;
-                      }
-
-                      const { email, password } = getValues();
-
-                      try {
-                        // Set the persistence based on user choice
-                        const auth = getAuth();
-                        const persistenceType = keepLoggedIn
-                          ? browserLocalPersistence
-                          : browserSessionPersistence;
-
-                        await setPersistence(auth, persistenceType);
-
-                        const res = await loginWithCredentials(email, password);
-                        if (res.success) {
-                          if ("isAdmin" in res) {
-                            router.push(
-                              res.isAdmin === "admin"
-                                ? getAdminDashboardPath()
-                                : "/VolunteerNavView/Homepage"
-                            );
-                            return;
-                          }
-                        } else {
-                          setErrorBannerMsg(res.error);
-                          setLoading(false);
-                        }
-                      } catch (err) {
-                        console.error(err);
-                        setErrorBannerMsg(
-                          "An unknown error occurred logging in. Please check your internet connection and try again."
-                        );
-                        setLoading(false);
-                      }
-                    }}
+                    onClick={handleLogin}
                   />
                 </div>
                 <div className="mb-1 flex justify-center items-center"></div>
