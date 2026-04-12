@@ -52,6 +52,9 @@ export default function TextInput({
           }}
           onChange={(event) => {
             setValue(event.target.value);
+            if (formValue.onChange) {
+              formValue.onChange(event);
+            }
             if (onChange) {
               onChange(event.target.value);
             }
