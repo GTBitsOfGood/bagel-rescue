@@ -34,8 +34,6 @@ function initJuno() {
   initialized = true;
 }
 
-initJuno();
-
 export async function sendVolunteerSignupEmail(userId: string) {
   await requireAdmin();
   await dbConnect();
@@ -66,10 +64,11 @@ export async function sendVolunteerSignupEmail(userId: string) {
 
   try {
     const loginLink = `${process.env.BASE_URL}/activate?token=${activationToken}`;
-    
+    initJuno()
+
     await juno.email.sendEmail({
       sender: {
-        email: "hello@bitsofgood.org",
+        email: process.env.BAGELS_EMAIL!,
         name: "Bagel Rescue Team",
       },
       recipients: [
@@ -141,6 +140,8 @@ export async function sendVolunteerSignupEmails(emails: string[]) {
   await requireAdmin(); // Only admins should be able to send invite emails
   try {
     await dbConnect();
+    initJuno()
+    
     const expirationDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
     for (const email of emails) {
