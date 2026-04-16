@@ -223,6 +223,23 @@ async function updateUser(
     throw new Error("You are not authorized to update this user");
   }
 
+  const normalizedEmail =
+    typeof updated.email === "string"
+      ? updated.email.trim().toLowerCase()
+      : null;
+
+  if (normalizedEmail) {
+    const existingUser = await User.findOne({
+      email: normalizedEmail,
+      _id: { $ne: new mongoose.Types.ObjectId(id) },
+    }).lean();
+
+    if (existingUser) {
+      throw new Error("EMAIL_ALREADY_TAKEN");
+    }
+    updated.email = normalizedEmail;
+  }
+
   const document = await User.findByIdAndUpdate(
     new mongoose.Types.ObjectId(id),
     { $set: updated },
