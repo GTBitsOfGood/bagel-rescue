@@ -197,6 +197,11 @@ function DailyShiftDashboardPage() {
                 if (!matchesStatus) return null;
                 if (!searchShiftLocation(shift)) return null;
 
+                const isSelected =
+                    selectedItem !== null &&
+                    String((selectedItem.shift as any)?._id) ===
+                        String(shift["_id"]);
+
                 return (
                     <ShiftCard
                         key={`${shift["_id"]}-${shiftIndex}`}
@@ -224,6 +229,7 @@ function DailyShiftDashboardPage() {
                             year: "numeric",
                         })}
                         onOpenSidebar={() => handleShiftCardClick(shift)}
+                        isSelected={isSelected}
                     />
                 );
             })
