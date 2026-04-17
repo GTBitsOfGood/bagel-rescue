@@ -9,8 +9,12 @@ import User from "../models/User";
 import { requireUser, requireAdmin } from "../auth/auth";
 import { Shift, ShiftModel } from "../models/shift";
 import { getAllLocationsById } from "./location";
-import { getDaysInRange } from '@/lib/dayHandler';
-import { combineDateAndTime, dateToString, toUTCStartOfDay } from "@/lib/dateHandler";
+import { getDaysInRange } from "@/lib/dayHandler";
+import {
+  combineDateAndTime,
+  dateToString,
+  toUTCStartOfDay,
+} from "@/lib/dateHandler";
 import { getShift } from "./shift";
 import { cookies } from "next/headers";
 import { adminAuth } from "../firebase/admin/firebaseAdmin";
@@ -28,11 +32,12 @@ export type UserShiftData = {
   endTime: Date;
   shiftStartDate?: Date;
   shiftEndDate?: Date;
-  confirmationForms: { [date: string] : string};
+  confirmationForms: { [date: string]: string };
   occurrenceDate?: Date;
   canceledShifts?: string[];
   recurrenceDates?: string[];
   hasComment?: string[];
+  isRecurring?: boolean;
 };
 
 export type DetailedShiftData = {
@@ -45,7 +50,7 @@ export type DetailedShiftData = {
   shiftEndDate: Date;
   startTime: Date;
   endTime: Date;
-  confirmationForm: {[date: string] : string};
+  confirmationForm: { [date: string]: string };
   routeInfo: {
     routeName: string;
     locationDescription: string;
@@ -57,7 +62,8 @@ export type DetailedShiftData = {
   routeId: string;
   additionalInfo: string;
   createdByUserId?: string;
-  comments?: { [date: string] : string};
+  comments?: { [date: string]: string };
+  isRecurring?: boolean;
 };
 
 export type PaginatedResult = {
@@ -70,9 +76,10 @@ export type PaginatedResult = {
   };
 };
 
-
-
-export async function deleteUserShift(userId: string, shiftId: string): Promise<void> {
+export async function deleteUserShift(
+  userId: string,
+  shiftId: string,
+): Promise<void> {
   await requireUser();
   await dbConnect();
 
@@ -84,23 +91,23 @@ export async function deleteUserShift(userId: string, shiftId: string): Promise<
     if (!shiftId || !mongoose.Types.ObjectId.isValid(shiftId)) {
       throw new Error("Invalid shiftId format");
     }
-    
+
     // Get current user and verify authorization
     const currentUserId = await getCurrentUserId();
     if (!currentUserId) {
       throw new Error("User not authenticated");
     }
-    
+
     const user = await User.findById(currentUserId);
     if (!user) {
       throw new Error("User not found");
     }
-    
+
     // Only allow users to delete their own shifts, or admins to delete any shift
     if (currentUserId !== userId && !user.isAdmin) {
       throw new Error("You do not have permission to delete this user shift");
     }
-    
+
     await UserShiftModel.findOneAndDelete({
       userId: new mongoose.Types.ObjectId(userId),
       shiftId: new mongoose.Types.ObjectId(shiftId),
@@ -122,7 +129,7 @@ export async function getCurrentUserId(): Promise<string | null> {
     // Get the auth token from cookies
     const cookieStore = cookies();
     const authToken = cookieStore.get("authToken");
-    
+
     if (!authToken) {
       console.warn("No auth token found in cookies");
       return null;
@@ -141,7 +148,7 @@ export async function getCurrentUserId(): Promise<string | null> {
     await dbConnect();
     const mongoUser = await User.findOne({ email: userEmail }).lean();
 
-    if (!mongoUser || !('_id' in mongoUser)) {
+    if (!mongoUser || !("_id" in mongoUser)) {
       console.warn(`No MongoDB user found for email: ${userEmail}`);
       return null;
     }
@@ -154,169 +161,169 @@ export async function getCurrentUserId(): Promise<string | null> {
   }
 }
 
-/**
- * Gets shifts for a user within a specific date range
- * 
- * @param userId The user's ID
- * @param startDate Start of date range
- * @param endDate End of date range
- * @param page Page number for pagination
- * @param limit Number of items per page
- * @returns Paginated array of user shifts within date range
- */
 export async function getUserShiftsByDateRange(
   userId: string,
   startDate: Date,
   endDate: Date,
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
 ): Promise<PaginatedResult> {
-  // Note: when used with week start / end date, this actually just checks if the week overlaps with the shift date range at all: 
-  // e.g. if the shift start date is Friday of week 1 and the shift end date is Friday of week 2, and the recurrence day is Monday, 
-  // it returns the shift for both Monday week 1 and Monday week 2, but it should just be Monday week 2
-
   await requireUser();
   await dbConnect();
 
   try {
-    // Validate inputs
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
       throw new Error("Invalid userId format");
     }
-    
+
     if (!(startDate instanceof Date) || isNaN(startDate.getTime())) {
       throw new Error("startDate must be a valid Date");
     }
     if (!(endDate instanceof Date) || isNaN(endDate.getTime())) {
       throw new Error("endDate must be a valid Date");
     }
-    
+
     if (typeof page !== "number" || page < 1 || !Number.isInteger(page)) {
       throw new Error("page must be a positive integer");
     }
     if (typeof limit !== "number" || limit < 1 || !Number.isInteger(limit)) {
       throw new Error("limit must be a positive integer");
     }
-    
-    // Get current user and verify authorization
+
     const currentUserId = await getCurrentUserId();
     if (!currentUserId) {
       throw new Error("User not authenticated");
     }
-    
+
     const user = await User.findById(currentUserId);
     if (!user) {
       throw new Error("User not found");
     }
-    
-    // Only allow users to view their own shifts, or admins to view any user's shifts
+
     if (currentUserId !== userId && !user.isAdmin) {
       throw new Error("You do not have permission to view this user's shifts");
     }
-    
+
     const skip = (page - 1) * limit;
 
     const startAbsDate = toUTCStartOfDay(startDate);
     const endAbsDate = toUTCStartOfDay(endDate);
+    const daysInRange = getDaysInRange(startAbsDate, endAbsDate);
 
-    // Get UserShift documents within date range
-    const userShifts = await UserShiftModel.find({
+    const baseQuery = {
       userId: new mongoose.Types.ObjectId(userId),
+    };
+
+    const nonRecurringUserShifts = await UserShiftModel.find({
+      ...baseQuery,
+      isRecurring: { $ne: true },
       shiftDate: { $lte: endAbsDate },
       shiftEndDate: { $gte: startAbsDate },
-      recurrenceDates: { $in: getDaysInRange(startDate, endDate) }
-    })
-      .skip(skip)
-      .limit(limit)
-      .lean();
+    }).lean();
 
-    userShifts.sort((a, b) => new Date(a.shiftDate).getTime() - new Date(b.shiftDate).getTime());
-    
-    // Get total count for pagination
-    const total = await UserShiftModel.countDocuments({
-      userId: new mongoose.Types.ObjectId(userId),
+    const recurringUserShifts = await UserShiftModel.find({
+      ...baseQuery,
+      isRecurring: true,
       shiftDate: { $lte: endAbsDate },
-      shiftEndDate: { $gte: startAbsDate },
-      recurrenceDates: { $in: getDaysInRange(startDate, endDate) }
+      recurrenceDates: { $in: daysInRange },
+    }).lean();
+
+    const mergedMap = new Map<string, any>();
+
+    [...nonRecurringUserShifts, ...recurringUserShifts].forEach((usershift) => {
+      mergedMap.set(usershift._id.toString(), usershift);
     });
-    
-    // Get unique route and shift IDs
-    const routeIds = Array.from(new Set(userShifts.map(shift => shift.routeId)));
-    const shiftIds = Array.from(new Set(userShifts.map(shift => shift.shiftId)));
 
-    // Get route details
+    const mergedUserShifts = Array.from(mergedMap.values()).sort(
+      (a, b) =>
+        new Date(a.shiftDate).getTime() - new Date(b.shiftDate).getTime(),
+    );
+
+    const total = mergedUserShifts.length;
+    const userShifts = mergedUserShifts.slice(skip, skip + limit);
+
+    const routeIds = Array.from(
+      new Set(userShifts.map((shift) => shift.routeId)),
+    );
+    const shiftIds = Array.from(
+      new Set(userShifts.map((shift) => shift.shiftId)),
+    );
+
     const routes = await RouteModel.find({
-      _id: { $in: routeIds }
+      _id: { $in: routeIds },
     }).lean();
 
-    // Get shift details for comments
     const shifts = await ShiftModel.find({
-      _id: { $in: shiftIds }
+      _id: { $in: shiftIds },
     }).lean();
 
-    // Create a map of route IDs to route details
     const routeMap = new Map();
-    routes.forEach(route => {
+    routes.forEach((route) => {
       if (route._id) {
         const routeId = route._id.toString();
         routeMap.set(routeId, {
           routeName: route.routeName || "Unknown Route",
-          locationDescription: route.locationDescription || ""
+          locationDescription: route.locationDescription || "",
         });
       }
     });
-    
+
     const shiftCommentsMap = new Map();
-    shifts.forEach(shift => {
+    shifts.forEach((shift) => {
       if (shift._id) {
         const shiftId = shift._id.toString();
         shiftCommentsMap.set(shiftId, shift.comments || {});
       }
     });
 
+    const transformedShifts = (
+      await Promise.all(
+        userShifts.map(async (usershift) => {
+          const route = routeMap.get(usershift.routeId.toString()) || {
+            routeName: "Unknown Route",
+            locationDescription: "",
+          };
 
-    const transformedShifts = (await Promise.all(
-      userShifts.map(async (usershift) => {
-        const route = routeMap.get(usershift.routeId.toString()) || {
-          routeName: "Unknown Route",
-          locationDescription: ""
-        };
+          const shift = (
+            await getShift(usershift.shiftId.toString())
+          )?.toObject();
+          if (!shift) {
+            return null;
+          }
 
-        const shift = (await getShift(usershift.shiftId.toString()))?.toObject();
-        if (!shift) {
-          return null;
-        }
+          const confirmationForms: { [date: string]: string } = {};
+          shift?.confirmationForm.forEach((objectId: any, dateKey: any) => {
+            confirmationForms[dateKey] = objectId.toString();
+          });
 
-        const confirmationForms: { [date: string]: string; } = {};
-        shift?.confirmationForm.forEach((objectId: any, dateKey: any) => {
-          confirmationForms[dateKey] = objectId.toString();
-        });
+          return {
+            id: usershift._id.toString(),
+            routeName: route.routeName,
+            area: route.locationDescription,
+            startTime: new Date(shift.shiftStartTime),
+            endTime: new Date(shift.shiftEndTime),
+            shiftStartDate: new Date(shift.shiftStartDate),
+            shiftEndDate: new Date(shift.shiftEndDate),
+            confirmationForms,
+            canceledShifts: usershift.canceledShifts,
+            recurrenceDates: usershift.recurrenceDates,
+            isRecurring: !!usershift.isRecurring,
+            hasComment: Object.keys(
+              shiftCommentsMap.get(usershift.shiftId.toString()) || {},
+            ),
+          };
+        }),
+      )
+    ).filter((shift) => shift !== null);
 
-        
-        return {
-          id: usershift._id.toString(),
-          routeName: route.routeName,
-          area: route.locationDescription,
-          startTime: new Date(shift.shiftStartTime),
-          endTime: new Date(shift.shiftEndTime),
-          shiftStartDate: new Date(shift.shiftStartDate),
-          shiftEndDate: new Date(shift.shiftEndDate),
-          confirmationForms: confirmationForms,
-          canceledShifts: usershift.canceledShifts,
-          recurrenceDates: usershift.recurrenceDates,
-          hasComment: Object.keys(shiftCommentsMap.get(usershift.shiftId.toString()))
-        };
-      })
-    )).filter((shift) => shift !== null);
-    
     return {
       shifts: transformedShifts,
       pagination: {
         total,
         page,
         limit,
-        totalPages: Math.ceil(total / limit)
-      }
+        totalPages: Math.ceil(total / limit),
+      },
     };
   } catch (error) {
     console.error("Error fetching user shifts by date range:", error);
@@ -326,57 +333,57 @@ export async function getUserShiftsByDateRange(
 
 /**
  * Updates the status of a user shift
- * 
+ *
  * @param shiftId The user shift ID
  * @param status The new status
  * @returns The updated shift
  */
 export async function updateUserShiftStatus(
   shiftId: string,
-  status: "Complete" | "Incomplete"
+  status: "Complete" | "Incomplete",
 ): Promise<UserShift | null> {
   await requireUser();
 
   await dbConnect();
-  
+
   try {
     // Validate inputs
     if (!shiftId || !mongoose.Types.ObjectId.isValid(shiftId)) {
       throw new Error("Invalid shiftId format");
     }
-    
+
     if (!["Complete", "Incomplete"].includes(status)) {
       throw new Error("status must be 'Complete' or 'Incomplete'");
     }
-    
+
     // Get current user and verify authorization
     const currentUserId = await getCurrentUserId();
     if (!currentUserId) {
       throw new Error("User not authenticated");
     }
-    
+
     // Get the userShift to check ownership
     const userShift = await UserShiftModel.findById(shiftId);
     if (!userShift) {
       throw new Error("User shift not found");
     }
-    
+
     const user = await User.findById(currentUserId);
     if (!user) {
       throw new Error("User not found");
     }
-    
+
     // Only allow users to update their own shifts, or admins to update any shift
     if (userShift.userId.toString() !== currentUserId && !user.isAdmin) {
       throw new Error("You do not have permission to update this user shift");
     }
-    
+
     const updatedShift = await UserShiftModel.findByIdAndUpdate(
       shiftId,
       { status },
-      { new: true }
+      { new: true },
     );
-    
+
     return updatedShift;
   } catch (error) {
     const err = error as Error;
@@ -387,11 +394,13 @@ export async function updateUserShiftStatus(
 
 /**
  * Gets detailed information for a specific user shift
- * 
+ *
  * @param userShiftId The user shift's ID
  * @returns Detailed shift information including route and location details
  */
-export async function getDetailedShiftInfo(userShiftId: string): Promise<DetailedShiftData | null> {
+export async function getDetailedShiftInfo(
+  userShiftId: string,
+): Promise<DetailedShiftData | null> {
   await requireUser();
   await dbConnect();
 
@@ -400,24 +409,24 @@ export async function getDetailedShiftInfo(userShiftId: string): Promise<Detaile
     if (!userShiftId || !mongoose.Types.ObjectId.isValid(userShiftId)) {
       throw new Error("Invalid userShiftId format");
     }
-    
+
     // Get current user and verify authorization
     const currentUserId = await getCurrentUserId();
     if (!currentUserId) {
       throw new Error("User not authenticated");
     }
-    
+
     // Get the UserShift document
     const userShift = await UserShiftModel.findById(userShiftId).lean();
     if (!userShift) {
       throw new Error("User shift not found");
     }
-    
+
     const user = await User.findById(currentUserId);
     if (!user) {
       throw new Error("User not found");
     }
-    
+
     // Only allow users to view their own shifts, or admins to view any shift
     if (userShift.userId.toString() !== currentUserId && !user.isAdmin) {
       throw new Error("You do not have permission to view this user shift");
@@ -431,16 +440,21 @@ export async function getDetailedShiftInfo(userShiftId: string): Promise<Detaile
 
     // Get the original Shift details for recurrence rule
     const shift = (await getShift(userShift.shiftId))?.toObject();
-    
+
     // Get location names
     let locationNames: string[] = [];
     if (route.locations && route.locations.length > 0) {
       try {
-        const locationIds = route.locations.map(loc => loc.location.toString());
+        const locationIds = route.locations.map((loc) =>
+          loc.location.toString(),
+        );
         const locationsData = await getAllLocationsById(locationIds);
         if (locationsData) {
           const parsedLocations = JSON.parse(locationsData);
-          locationNames = parsedLocations.map((loc: any) => (loc.locationName + " - " + loc.area) || "Unknown Location");
+          locationNames = parsedLocations.map(
+            (loc: any) =>
+              loc.locationName + " - " + loc.area || "Unknown Location",
+          );
         }
       } catch (error) {
         console.error("Error fetching location names:", error);
@@ -448,7 +462,7 @@ export async function getDetailedShiftInfo(userShiftId: string): Promise<Detaile
       }
     }
 
-    const confirmationForms: { [date: string]: string; } = {};
+    const confirmationForms: { [date: string]: string } = {};
     shift?.confirmationForm.forEach((objectId: any, dateKey: any) => {
       confirmationForms[dateKey] = objectId.toString();
     });
@@ -468,22 +482,24 @@ export async function getDetailedShiftInfo(userShiftId: string): Promise<Detaile
         routeName: route.routeName || "Unknown Route",
         locationDescription: route.locationDescription || "",
         additionalInfo: route.additionalInfo || "",
-        locations: locationNames
+        locations: locationNames,
       },
       recurrenceDates: shift?.recurrenceDates || [],
       shiftId: userShift.shiftId.toString(),
       routeId: userShift.routeId.toString(),
       additionalInfo: shift?.additionalInfo || "",
-      comments: shift?.comments || {}
+      comments: shift?.comments || {},
+      isRecurring: shift.isRecurring || false,
     };
-    
   } catch (error) {
     console.error("Error fetching detailed shift info:", error);
     throw new Error("Failed to fetch detailed shift info");
   }
 }
 
-export async function getDetailedOpenShiftInfo(shiftId: string): Promise<DetailedShiftData | null> {
+export async function getDetailedOpenShiftInfo(
+  shiftId: string,
+): Promise<DetailedShiftData | null> {
   await requireUser();
   await dbConnect();
 
@@ -492,12 +508,12 @@ export async function getDetailedOpenShiftInfo(shiftId: string): Promise<Detaile
     if (!shiftId || !mongoose.Types.ObjectId.isValid(shiftId)) {
       throw new Error("Invalid shiftId format");
     }
-    
+
     const shift = (await getShift(shiftId))?.toObject();
     if (!shift) {
       throw new Error("Shift not found");
     }
-    
+
     // Verify that the shift is open (getShift already checks permissions, but we need to verify it's open)
     if (shift.status !== "open") {
       throw new Error("This shift is not open for sub-request");
@@ -511,11 +527,16 @@ export async function getDetailedOpenShiftInfo(shiftId: string): Promise<Detaile
     let locationNames: string[] = [];
     if (route.locations && route.locations.length > 0) {
       try {
-        const locationIds = route.locations.map(loc => loc.location.toString());
+        const locationIds = route.locations.map((loc) =>
+          loc.location.toString(),
+        );
         const locationsData = await getAllLocationsById(locationIds);
         if (locationsData) {
           const parsedLocations = JSON.parse(locationsData);
-          locationNames = parsedLocations.map((loc: any) => (loc.locationName + " - " + loc.area) || "Unknown Location");
+          locationNames = parsedLocations.map(
+            (loc: any) =>
+              loc.locationName + " - " + loc.area || "Unknown Location",
+          );
         }
       } catch (error) {
         console.error("Error fetching location names:", error);
@@ -523,7 +544,7 @@ export async function getDetailedOpenShiftInfo(shiftId: string): Promise<Detaile
       }
     }
 
-    const confirmationForms: { [date: string]: string; } = {};
+    const confirmationForms: { [date: string]: string } = {};
     shift?.confirmationForm.forEach((objectId: any, dateKey: any) => {
       confirmationForms[dateKey] = objectId.toString();
     });
@@ -543,7 +564,7 @@ export async function getDetailedOpenShiftInfo(shiftId: string): Promise<Detaile
         routeName: route.routeName || "Unknown Route",
         locationDescription: route.locationDescription || "",
         additionalInfo: route.additionalInfo || "",
-        locations: locationNames
+        locations: locationNames,
       },
       recurrenceDates: shift.recurrenceDates || [],
       comments: shift.comments || {},
@@ -551,6 +572,7 @@ export async function getDetailedOpenShiftInfo(shiftId: string): Promise<Detaile
       routeId: shift.routeId.toString(),
       additionalInfo: shift.additionalInfo || "",
       createdByUserId: shift.createdByUserId?.toString(),
+      isRecurring: shift.isRecurring || false,
     };
   } catch (error) {
     console.error("Error fetching detailed open shift info:", error);
@@ -560,7 +582,7 @@ export async function getDetailedOpenShiftInfo(shiftId: string): Promise<Detaile
 
 /**
  * Gets shifts for the currently logged-in user within a specific date range
- * 
+ *
  * @param startDate Start of date range
  * @param endDate End of date range
  * @param page Page number for pagination
@@ -571,11 +593,11 @@ export async function getCurrentUserShiftsByDateRange(
   startDate: Date,
   endDate: Date,
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
 ): Promise<PaginatedResult> {
   await requireUser();
   const userId = await getCurrentUserId();
-  
+
   if (!userId) {
     console.error("No authenticated user found");
     return {
@@ -584,18 +606,18 @@ export async function getCurrentUserShiftsByDateRange(
         total: 0,
         page,
         limit,
-        totalPages: 0
-      }
+        totalPages: 0,
+      },
     };
   }
-  
+
   return getUserShiftsByDateRange(userId, startDate, endDate, page, limit);
 }
 
 // Get unique routes for a user
 // For Volunteer Analystics Page
 export async function getUserUniqueRoutes(
-  userId: string
+  userId: string,
 ): Promise<UserRoute[]> {
   await requireUser();
   await dbConnect();
@@ -609,29 +631,29 @@ export async function getUserUniqueRoutes(
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
       throw new Error("Invalid userId format");
     }
-    
+
     // Get current user and verify authorization
     const currentUserId = await getCurrentUserId();
     if (!currentUserId) {
       throw new Error("User not authenticated");
     }
-    
+
     const user = await User.findById(currentUserId);
     if (!user) {
       throw new Error("User not found");
     }
-    
+
     // Only allow users to view their own routes, or admins to view any user's routes
     if (currentUserId !== userId && !user.isAdmin) {
       throw new Error("You do not have permission to view this user's routes");
     }
-    
+
     const userShifts = await UserShiftModel.find({
       userId: new mongoose.Types.ObjectId(userId),
       shiftDate: { $gte: sixMonthsAgo },
     })
-    .sort({ shiftDate: -1 }) 
-    .lean(); 
+      .sort({ shiftDate: -1 })
+      .lean();
 
     if (!userShifts || userShifts.length === 0) {
       console.log(`No shifts found for user ${userId} in the last 6 months`);
@@ -646,22 +668,26 @@ export async function getUserUniqueRoutes(
     // Type assert userShifts to have the expected structure
     const typedShifts = userShifts as UserShiftDocument[];
 
-    const routeIdSet = new Set(typedShifts.map(shift => 
-      shift.routeId ? shift.routeId.toString() : ''
-    ).filter(id => id !== ''));
+    const routeIdSet = new Set(
+      typedShifts
+        .map((shift) => (shift.routeId ? shift.routeId.toString() : ""))
+        .filter((id) => id !== ""),
+    );
     const routeIds = Array.from(routeIdSet);
-    
+
     interface RouteDocument {
       _id: mongoose.Types.ObjectId | string;
       routeName?: string;
     }
-    
-    const routes = await RouteModel.find({
-      _id: { $in: routeIds.map(id => new mongoose.Types.ObjectId(id.toString())) }
-    }).lean() as RouteDocument[];
-    
+
+    const routes = (await RouteModel.find({
+      _id: {
+        $in: routeIds.map((id) => new mongoose.Types.ObjectId(id.toString())),
+      },
+    }).lean()) as RouteDocument[];
+
     const routeMap = new Map<string, string>();
-    routes.forEach(route => {
+    routes.forEach((route) => {
       if (route._id) {
         const routeId = route._id.toString();
         routeMap.set(routeId, route.routeName || "Unknown Route");
@@ -669,15 +695,15 @@ export async function getUserUniqueRoutes(
     });
 
     const uniqueRoutes = new Map<string, UserRoute>();
-    
+
     typedShifts.forEach((shift) => {
       if (shift.routeId) {
         const routeId = shift.routeId.toString();
         const routeName = routeMap.get(routeId) || "Unknown Route";
-        
+
         if (shift.shiftDate) {
           const shiftDate = new Date(shift.shiftDate);
-          
+
           // Format the date as MM-DD-YY
           const formattedDate = shiftDate
             .toLocaleDateString("en-US", {
@@ -686,7 +712,7 @@ export async function getUserUniqueRoutes(
               year: "2-digit",
             })
             .replace(/\//g, "-");
-          
+
           if (!uniqueRoutes.has(routeId)) {
             uniqueRoutes.set(routeId, {
               name: routeName,
@@ -704,14 +730,16 @@ export async function getUserUniqueRoutes(
     return [];
   }
 }
+
 /**
- * Gets all open shifts (ones with status "open")
+ * Gets all open shifts within date range (ones with status "open"),
+ * including recurring shifts.
  */
 export async function getOpenShifts(
   startDate: Date,
   endDate: Date,
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
 ): Promise<PaginatedResult> {
   await requireUser();
   await dbConnect();
@@ -719,40 +747,93 @@ export async function getOpenShifts(
   try {
     const skip = (page - 1) * limit;
 
-    // Find open shifts in date range
-    const openShifts = await ShiftModel.find({
-      status: "open",
-      shiftStartDate: { $gte: startDate, $lte: endDate }
-    })
-      .skip(skip)
-      .limit(limit)
-      .lean();
+    const startAbsDate = new Date(
+      startDate.getFullYear(),
+      startDate.getMonth(),
+      startDate.getDate(),
+      0,
+      0,
+      0,
+      0,
+    );
 
-    const total = await ShiftModel.countDocuments({
+    const endAbsDate = new Date(
+      endDate.getFullYear(),
+      endDate.getMonth(),
+      endDate.getDate(),
+      23,
+      59,
+      59,
+      999,
+    );
+
+    const daysInRange = getDaysInRange(startDate, endDate);
+
+    const nonRecurringOpenShifts = await ShiftModel.find({
       status: "open",
-      shiftStartDate: { $gte: startDate, $lte: endDate }
+      isRecurring: false,
+      $or: [
+        {
+          shiftStartDate: { $gte: startAbsDate, $lte: endAbsDate },
+        },
+        {
+          shiftEndDate: { $gte: startAbsDate, $lte: endAbsDate },
+        },
+        {
+          shiftStartDate: { $lte: startAbsDate },
+          shiftEndDate: { $gte: endAbsDate },
+        },
+        {
+          shiftStartDate: { $gte: startAbsDate },
+          shiftEndDate: { $lte: endAbsDate },
+        },
+      ],
+    }).lean();
+
+    const recurringOpenShifts = await ShiftModel.find({
+      status: "open",
+      isRecurring: true,
+      shiftStartDate: { $lte: endAbsDate },
+      recurrenceDates: { $in: daysInRange },
+    }).lean();
+
+    const mergedMap = new Map<string, any>();
+
+    [...nonRecurringOpenShifts, ...recurringOpenShifts].forEach((shift) => {
+      mergedMap.set(shift._id.toString(), shift);
     });
 
-    const routeIds = openShifts.map(shift => shift.routeId);
+    const mergedOpenShifts = Array.from(mergedMap.values()).sort(
+      (a, b) =>
+        new Date(a.shiftStartTime).getTime() -
+        new Date(b.shiftStartTime).getTime(),
+    );
+
+    const total = mergedOpenShifts.length;
+    const paginatedOpenShifts = mergedOpenShifts.slice(skip, skip + limit);
+
+    const routeIds = Array.from(
+      new Set(paginatedOpenShifts.map((shift) => shift.routeId.toString())),
+    );
+
     const routes = await RouteModel.find({
-      _id: { $in: routeIds }
+      _id: { $in: routeIds },
     }).lean();
 
     const routeMap = new Map();
-    routes.forEach(route => {
+    routes.forEach((route) => {
       if (route._id) {
         routeMap.set(route._id.toString(), {
           routeName: route.routeName || "Unknown Route",
-          locationDescription: route.locationDescription || ""
+          locationDescription: route.locationDescription || "",
         });
       }
     });
 
-    // transform to UserShiftData
-    const transformedShifts = openShifts.map(shift => {
+    const transformedShifts = paginatedOpenShifts.map((shift) => {
       const route = routeMap.get(shift.routeId.toString()) || {
         routeName: "Unknown Route",
-        locationDescription: ""
+        locationDescription: "",
       };
 
       return {
@@ -762,7 +843,11 @@ export async function getOpenShifts(
         startTime: new Date(shift.shiftStartTime),
         endTime: new Date(shift.shiftEndTime),
         confirmationForms: {},
-        status: "Incomplete" as const // open shifts are not yet completed
+        status: "Incomplete" as const,
+        recurrenceDates: shift.recurrenceDates || [],
+        isRecurring: !!shift.isRecurring,
+        shiftStartDate: shift.shiftStartDate,
+        shiftEndDate: shift.shiftEndDate,
       };
     });
 
@@ -772,8 +857,8 @@ export async function getOpenShifts(
         total,
         page,
         limit,
-        totalPages: Math.ceil(total / limit)
-      }
+        totalPages: Math.ceil(total / limit),
+      },
     };
   } catch (error) {
     console.error("Error fetching open shifts:", error);
@@ -797,7 +882,6 @@ export async function getCurrentUserUniqueRoutes(): Promise<UserRoute[]> {
   return getUserUniqueRoutes(userId);
 }
 
-
 export async function getShiftUsers(shiftIds: string[]) {
   await requireUser();
   await dbConnect();
@@ -807,69 +891,77 @@ export async function getShiftUsers(shiftIds: string[]) {
     if (!Array.isArray(shiftIds)) {
       throw new Error("shiftIds must be an array");
     }
-    
+
     if (shiftIds.length === 0) {
       throw new Error("shiftIds array cannot be empty");
     }
-    
+
     // Validate all ObjectIds
-    const validShiftIds = shiftIds.filter(id => mongoose.Types.ObjectId.isValid(id));
+    const validShiftIds = shiftIds.filter((id) =>
+      mongoose.Types.ObjectId.isValid(id),
+    );
     if (validShiftIds.length === 0) {
       throw new Error("No valid shift IDs provided");
     }
-    
+
     // Get current user and verify authorization
     const currentUserId = await getCurrentUserId();
     if (!currentUserId) {
       throw new Error("User not authenticated");
     }
-    
+
     const user = await User.findById(currentUserId);
     if (!user) {
       throw new Error("User not found");
     }
-    
+
     // For non-admins, verify they have access to at least one of the shifts
     if (!user.isAdmin) {
       const userShifts = await UserShiftModel.find({
         userId: new mongoose.Types.ObjectId(currentUserId),
-        shiftId: { $in: validShiftIds.map(id => new mongoose.Types.ObjectId(id)) }
+        shiftId: {
+          $in: validShiftIds.map((id) => new mongoose.Types.ObjectId(id)),
+        },
       });
-      
+
       // Also check if any of the shifts are open
       const openShifts = await ShiftModel.find({
-        _id: { $in: validShiftIds.map(id => new mongoose.Types.ObjectId(id)) },
-        status: "open"
+        _id: {
+          $in: validShiftIds.map((id) => new mongoose.Types.ObjectId(id)),
+        },
+        status: "open",
       });
-      
+
       if (userShifts.length === 0 && openShifts.length === 0) {
-        throw new Error("You do not have permission to view users for these shifts");
+        throw new Error(
+          "You do not have permission to view users for these shifts",
+        );
       }
     }
 
-    const newShiftIds = validShiftIds.map(id => new ObjectId(id));
+    const newShiftIds = validShiftIds.map((id) => new ObjectId(id));
 
     const results = await UserShiftModel.aggregate([
       { $match: { shiftId: { $in: newShiftIds } } },
       {
         $lookup: {
-          from: "users",          
+          from: "users",
           localField: "userId",
           foreignField: "_id",
-          as: "user"
-        }
+          as: "user",
+        },
       },
       { $unwind: "$user" }, // since each shift has exactly 1 user
       {
         $project: {
           _id: 0,
-          shiftId: { $toString: "$shiftId" },   // 👈 convert to string
+          shiftId: { $toString: "$shiftId" }, // 👈 convert to string
           userId: { $toString: "$user._id" },
           fullName: {
-            $concat: ["$user.firstName", " ", "$user.lastName"]
-          }
-        }
-      }
+            $concat: ["$user.firstName", " ", "$user.lastName"],
+          },
+        },
+      },
     ]);
 
     return results;
@@ -886,35 +978,51 @@ export async function createUserShift(userShiftData: {
   recurrenceDates: string[];
   shiftDate: Date | string;
   shiftEndDate: Date | string;
+  isRecurring: boolean;
 }): Promise<string> {
   await requireUser();
   try {
     await dbConnect();
-    
+
     // Validate inputs
-    if (!userShiftData.userId || !mongoose.Types.ObjectId.isValid(userShiftData.userId)) {
+    if (
+      !userShiftData.userId ||
+      !mongoose.Types.ObjectId.isValid(userShiftData.userId)
+    ) {
       throw new Error("Invalid userId format");
     }
-    if (!userShiftData.shiftId || !mongoose.Types.ObjectId.isValid(userShiftData.shiftId)) {
+    if (
+      !userShiftData.shiftId ||
+      !mongoose.Types.ObjectId.isValid(userShiftData.shiftId)
+    ) {
       throw new Error("Invalid shiftId format");
     }
-    if (!userShiftData.routeId || !mongoose.Types.ObjectId.isValid(userShiftData.routeId)) {
+    if (
+      !userShiftData.routeId ||
+      !mongoose.Types.ObjectId.isValid(userShiftData.routeId)
+    ) {
       throw new Error("Invalid routeId format");
     }
     if (!Array.isArray(userShiftData.recurrenceDates)) {
       throw new Error("recurrenceDates must be an array");
     }
-    
-    const shiftDate = userShiftData.shiftDate instanceof Date ? userShiftData.shiftDate : new Date(userShiftData.shiftDate);
-    const shiftEndDate = userShiftData.shiftEndDate instanceof Date ? userShiftData.shiftEndDate : new Date(userShiftData.shiftEndDate);
-    
+
+    const shiftDate =
+      userShiftData.shiftDate instanceof Date
+        ? userShiftData.shiftDate
+        : new Date(userShiftData.shiftDate);
+    const shiftEndDate =
+      userShiftData.shiftEndDate instanceof Date
+        ? userShiftData.shiftEndDate
+        : new Date(userShiftData.shiftEndDate);
+
     if (isNaN(shiftDate.getTime())) {
       throw new Error("shiftDate must be a valid date");
     }
     if (isNaN(shiftEndDate.getTime())) {
       throw new Error("shiftEndDate must be a valid date");
     }
-    
+
     const newUserShift = new UserShiftModel({
       userId: userShiftData.userId,
       shiftId: userShiftData.shiftId,
@@ -924,6 +1032,7 @@ export async function createUserShift(userShiftData: {
       shiftEndDate: shiftEndDate,
       status: "Incomplete",
       canceledShifts: [],
+      isRecurring: userShiftData.isRecurring,
     });
 
     await newUserShift.save();
@@ -937,23 +1046,22 @@ export async function createUserShift(userShiftData: {
 
 /**
  * Request sub for a shift on a given date
- * 
+ *
  * 1. Adds date to shift's canceledShifts array
  * 2. Creates new shift with "open" status on given date
- * 
+ *
  * @param userShiftId the user that is requesting a sub
  * @param specificDate the date that is being requested for a sub
  * @returns message indicating success
  */
 export async function requestSubForShift(
   userShiftId: string,
-  specificDate: Date
+  specificDate: Date,
 ): Promise<string> {
   await requireUser();
   await dbConnect();
 
   try {
-
     const userId = await getCurrentUserId();
     if (!userId) {
       throw new Error("No authenticated user found");
@@ -979,7 +1087,7 @@ export async function requestSubForShift(
     // duplicate check
     const dateString = dateToString(specificDate);
     const alreadyCanceled = originalShift.canceledShifts.some(
-      (date) => dateToString(new Date(date)) === dateString
+      (date) => dateToString(new Date(date)) === dateString,
     );
 
     if (!alreadyCanceled) {
@@ -997,8 +1105,10 @@ export async function requestSubForShift(
       throw new Error("Route not found");
     }
 
-    const dayOfWeek = specificDate.toLocaleString('en-US', { weekday: 'short' }).toLowerCase().substring(0, 2);
-
+    const dayOfWeek = specificDate
+      .toLocaleString("en-US", { weekday: "short" })
+      .toLowerCase()
+      .substring(0, 2);
 
     // new shift with "open" status
     const newOpenShift = new ShiftModel({
@@ -1034,11 +1144,11 @@ export async function requestSubForShift(
 
 /**
  * Pick up open shift
- * 
+ *
  * 1. Gets current user
  * 2. Creates new UserShift that links user to the new shift
  * 3. Updates shift status from "open" to "assigned"
- * 
+ *
  * @param shiftId the shift to pick up
  * @returns message if successful
  */
@@ -1067,7 +1177,7 @@ export async function pickUpShift(shiftId: string): Promise<string> {
     const existingUserShift = await UserShiftModel.findOne({
       userId: new mongoose.Types.ObjectId(userId),
       shiftId: shift._id,
-      shiftDate: shift.shiftStartDate
+      shiftDate: shift.shiftStartDate,
     });
 
     if (existingUserShift) {
@@ -1097,7 +1207,7 @@ export async function pickUpShift(shiftId: string): Promise<string> {
   } catch (error) {
     console.error("Error picking up shift:", error);
     if (error instanceof Error) {
-      throw error; 
+      throw error;
     }
     throw new Error("Failed to pick up shift");
   }
@@ -1105,14 +1215,14 @@ export async function pickUpShift(shiftId: string): Promise<string> {
 
 /**
  * Requests sub for current user's shift
- * 
+ *
  * @param userShiftId the user making the sub request
  * @param specificDate the date to request a sub for
  * @returns message if successful
  */
 export async function requestSubForCurrentUserShift(
   userShiftId: string,
-  specificDate: Date
+  specificDate: Date,
 ): Promise<string> {
   await requireUser();
 
@@ -1121,7 +1231,7 @@ export async function requestSubForCurrentUserShift(
     throw new Error("No authenticated user found");
   }
 
-  // make sure UserShift is current user's 
+  // make sure UserShift is current user's
   const userShift = await UserShiftModel.findById(userShiftId).lean();
   if (!userShift) {
     throw new Error("Shift not found");
@@ -1132,12 +1242,11 @@ export async function requestSubForCurrentUserShift(
   }
 
   return requestSubForShift(userShiftId, specificDate);
-
 }
 
 /**
  * Undo a sub request by recreating usershift and removig open shift
- * 
+ *
  * @param openShiftId the open shift id to undo
  * @returns message if successful
  */
@@ -1160,23 +1269,28 @@ export async function undoSubRequest(openShiftId: string): Promise<string> {
     // grab user shift
     const userShift = await UserShiftModel.findOne({
       shiftId: openShift.parentShiftId,
-      userId: new mongoose.Types.ObjectId(userId)
-    })
+      userId: new mongoose.Types.ObjectId(userId),
+    });
     if (!userShift) {
       throw new Error("User shift not found");
     }
 
     // make sure this user created it (only they can undo)
-    if (!openShift.createdByUserId || openShift.createdByUserId.toString() !== userId) {
+    if (
+      !openShift.createdByUserId ||
+      openShift.createdByUserId.toString() !== userId
+    ) {
       throw new Error("You can only undo your own sub requests");
     }
 
     if (openShift.status !== "open") {
       throw new Error("This shift is not an open shift");
     }
-    
+
     // remove canceledShift from UserShift
-    userShift.canceledShifts = userShift.canceledShifts.filter(shift => shift !== dateToString(openShift.shiftStartDate));
+    userShift.canceledShifts = userShift.canceledShifts.filter(
+      (shift) => shift !== dateToString(openShift.shiftStartDate),
+    );
     await userShift.save();
 
     // get the parent shift ID (the original shift this was created from)
@@ -1187,7 +1301,7 @@ export async function undoSubRequest(openShiftId: string): Promise<string> {
       // Remove this date from canceledShifts
       const dateToRemove = dateToString(openShift.shiftStartDate);
       parentShift.canceledShifts = parentShift.canceledShifts.filter(
-        (date) => dateToString(new Date(date)) !== dateToRemove
+        (date) => dateToString(new Date(date)) !== dateToRemove,
       );
       await parentShift.save();
     }
@@ -1205,14 +1319,17 @@ export async function undoSubRequest(openShiftId: string): Promise<string> {
   }
 }
 
-export async function updateUserShiftsRoute(shiftId: string, newRouteId: string): Promise<void> {
+export async function updateUserShiftsRoute(
+  shiftId: string,
+  newRouteId: string,
+): Promise<void> {
   await requireAdmin();
   try {
     await dbConnect();
-    
+
     await UserShiftModel.updateMany(
       { shiftId: shiftId },
-      { $set: { routeId: newRouteId } }
+      { $set: { routeId: newRouteId } },
     );
   } catch (error) {
     const err = error as Error;
@@ -1220,7 +1337,9 @@ export async function updateUserShiftsRoute(shiftId: string, newRouteId: string)
   }
 }
 
-export async function getUserShift(shiftId: string | Types.ObjectId): Promise<UserShift | null> {
+export async function getUserShift(
+  shiftId: string | Types.ObjectId,
+): Promise<UserShift | null> {
   await dbConnect();
   await requireUser();
 
@@ -1231,9 +1350,12 @@ export async function getUserShift(shiftId: string | Types.ObjectId): Promise<Us
   }
 
   try {
-    const objectId = typeof shiftId === "string" ? new mongoose.Types.ObjectId(shiftId) : shiftId;
+    const objectId =
+      typeof shiftId === "string"
+        ? new mongoose.Types.ObjectId(shiftId)
+        : shiftId;
     const data = await UserShiftModel.findById(objectId);
-    
+
     if (data?.userId.toString() !== userId && !user.isAdmin) {
       throw new Error("You do not have access to this user shift");
     }
@@ -1241,6 +1363,8 @@ export async function getUserShift(shiftId: string | Types.ObjectId): Promise<Us
     return data;
   } catch (error) {
     const err = error as Error;
-    throw new Error(`Error has occurred when getting user shift: ${err.message}`);
+    throw new Error(
+      `Error has occurred when getting user shift: ${err.message}`,
+    );
   }
 }

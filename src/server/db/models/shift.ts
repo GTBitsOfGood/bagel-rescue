@@ -24,6 +24,7 @@ interface Shift extends Document {
   canceledShifts: Date[];
   comments: { [date: string]: string };
   creationDate: Date;
+  isRecurring: boolean;
 
   // used for undo sub request functionality
   createdByUserId?: mongoose.Types.ObjectId; // help track who created open shift
@@ -110,6 +111,10 @@ const shiftSchema: Schema = new Schema({
   },
   creationDate: {
     type: Date,
+  },
+  isRecurring: {
+    type: Boolean,
+    default: false,
   },
 
   // Old Schema
