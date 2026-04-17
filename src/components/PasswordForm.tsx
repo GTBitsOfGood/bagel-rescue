@@ -4,13 +4,19 @@ import { useEffect, useState } from 'react';
 import styles from "./PasswordForm.module.css";
 import { useRouter } from 'next/navigation';
 import { auth } from '../server/db/firebase';
-import { signOut, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
+import { EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { getUserByEmail } from '../server/db/actions/User';
 import { updatePassword } from "firebase/auth";
 import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 import LoadingFallback from '@/app/components/LoadingFallback';
 
-const PasswordForm: React.FC = () => {
+interface PasswordFormProps {
+  setHasChanges: (hasChanges: boolean) => void;
+  onNavigate: (path: string) => void;
+  onSignOut: () => void;
+}
+
+const PasswordForm: React.FC<PasswordFormProps> = ({ setHasChanges, onNavigate, onSignOut }) => {
   const router = useRouter();
   const [userData, setUserData] = useState({
     firstName: '',
@@ -79,20 +85,6 @@ const PasswordForm: React.FC = () => {
     }
   }
 
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-      await fetch("/api/logout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      })
-
-      router.push('/Login');
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
-
   const handleChangePassword = async () => {
     if (auth && auth.currentUser) {
         updatePassword(auth.currentUser, newPassword).then(() => {
@@ -102,6 +94,7 @@ const PasswordForm: React.FC = () => {
             setCorrectPassword(false);
             setSeePassword(false);
             setSeeNewPassword(false);
+            setHasChanges(false)
         }).catch((error) => {
             console.error('Error changing password:', error);
         });
@@ -120,11 +113,11 @@ const PasswordForm: React.FC = () => {
     <div className={styles.container}>
       <div className={styles.sidebar}>
         <ul className={styles.menu}>
-          <li className={styles.menuItem} onClick={() => router.back()}>Profile</li>
+          <li className={styles.menuItem} onClick={() => onNavigate('/VolunteerNavView/Profile')}>Profile</li>
           <li className={`${styles.menuItem} ${styles.active}`}>Password</li>
           <li 
             className={`${styles.menuItem} ${styles.signOut}`}
-            onClick={handleSignOut}
+            onClick={onSignOut}
             style={{ cursor: 'pointer' }}
           >
             Sign Out
@@ -157,7 +150,10 @@ const PasswordForm: React.FC = () => {
                             name="password"
                             value={password}
                             className={`${styles.fieldInput} ${correctPassword ? styles.correct : password.length != 0 ? styles.incorrect : ''}`}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={(e) => {
+                              setPassword(e.target.value)
+                              setHasChanges(e.target.value.length > 0 || newPassword.length > 0)
+                            }}
                             onBlur={checkPassword}
                         />
                         <button type="button" className={styles.eyeButton}
@@ -184,7 +180,10 @@ const PasswordForm: React.FC = () => {
                           name="newPassword"
                           className={styles.fieldInput}
                           value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
+                          onChange={(e) => {
+                            setNewPassword(e.target.value)
+                            setHasChanges(password.length > 0 || e.target.value.length > 0)
+                          }}
                         />
                         <button type="button" className={styles.eyeButton}
                           onClick={() => setSeeNewPassword(!seeNewPassword)} >

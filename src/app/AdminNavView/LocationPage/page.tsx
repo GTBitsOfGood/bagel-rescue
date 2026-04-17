@@ -271,7 +271,7 @@ function LocationDashboardPage() {
                   <div className={styles.columnHeader}>Address</div>
                   <div className={styles.columnHeader}>Type</div>
                   <div className={styles.columnHeader}>Bags</div>
-                  <div className={styles.columnHeader}>Additional notes</div>
+                  <div className={styles.columnHeader}>Additional Information</div>
                   <div className={styles.columnHeader}></div>
                 </div>
                 <div className={styles.locationList}>

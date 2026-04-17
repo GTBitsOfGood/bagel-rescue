@@ -2,25 +2,29 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { auth } from '../../../../server/db/firebase';
+import { signOut } from 'firebase/auth';
 import EditProfileForm from '../../../../components/EditProfileForm';
 import Sidebar from "../../../../components/Sidebar";
 import styles from "./page.module.css";
 import BackButton from '@/app/components/BackButton';
+import UnsavedChangesModal from '@/app/components/UnsavedChangesModal';
 
 const EditProfile: React.FC = () => {
   const router = useRouter();
   const [popup, setPopup] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
+  const [pendingSignOut, setPendingSignOut] = useState(false);
 
   const togglePopup = () => {
     setPopup(!popup);
-    if (popup) setPendingNavigation(null);
   }
 
   const handleCancel = () => {
     if (hasChanges) {
       setPendingNavigation(null);
+      setPendingSignOut(false);
       togglePopup();
     } else {
       window.history.back();
@@ -30,14 +34,40 @@ const EditProfile: React.FC = () => {
   const handleNavigate = (path: string) => {
     if (hasChanges) {
       setPendingNavigation(path);
+      setPendingSignOut(false);
       setPopup(true);
     } else {
       router.push(path);
     }
   }
 
+  const doSignOut = async () => {
+    try {
+      await signOut(auth);
+      await fetch("/api/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      router.push('/Login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  }
+
+  const handleSignOutRequest = () => {
+    if (hasChanges) {
+      setPendingNavigation(null);
+      setPendingSignOut(true);
+      setPopup(true);
+    } else {
+      doSignOut();
+    }
+  }
+
   const handleLoseChanges = () => {
-    if (pendingNavigation) {
+    if (pendingSignOut) {
+      doSignOut();
+    } else if (pendingNavigation) {
       router.push(pendingNavigation);
     } else {
       window.history.back();
@@ -56,22 +86,15 @@ const EditProfile: React.FC = () => {
           </div>
         </div>
         <div className={styles.backDrop}>
-          <EditProfileForm togglePopup={handleCancel} setHasChanges={setHasChanges} onNavigate={handleNavigate} />
+          <EditProfileForm onCancel={handleCancel} setHasChanges={setHasChanges} onNavigate={handleNavigate} onSignOut={handleSignOutRequest} />
         </div>
       </div>
 
-      {popup && (
-        <div className={styles.popupBack}>
-          <div className={styles.popup}>
-            <h1 className={styles.question}>Are you sure you want to return?</h1>
-            <p className={styles.unsaved}>Your unsaved changes will be lost.</p>
-            <div className={styles.popupButtons}>
-              <button className={styles.loseChanges} onClick={handleLoseChanges}>Lose Changes</button>
-              <button className={styles.continueEdit} onClick={togglePopup}>Continue editing</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <UnsavedChangesModal
+        isOpen={popup}
+        onConfirm={handleLoseChanges}
+        onCancel={togglePopup}
+      />
     </div>
   );
 };

@@ -14,7 +14,7 @@ import { getRoute } from "@/server/db/actions/Route";
 import { deleteShift, getShiftsByDay } from "@/server/db/actions/shift";
 import ShiftCard from "../WeeklyShiftDashboard/ShiftCard";
 import styles from "@/app/VolunteerNavView/Homepage/page.module.css";
-import "../WeeklyShiftDashboard/stylesheet.css";
+import weeklyStyles from "../WeeklyShiftDashboard/stylesheet.module.css";
 import { dateToString, getTodayDate, normalizeDate } from "@/lib/dateHandler";
 import { Shift } from "@/server/db/models/shift";
 import LoadingFallback from "@/app/components/LoadingFallback";
@@ -69,10 +69,8 @@ function DailyShiftDashboardPage() {
   };
 
   const handleDeleteShift = async (shift: Shift) => {
-    // You can add confirmation dialog here
     if (confirm("Are you sure you want to delete this shift?")) {
       await deleteShift(shift._id);
-      // Can change later to reloading just the array instead of the whole window.
       window.location.reload();
     }
   };
@@ -132,12 +130,10 @@ function DailyShiftDashboardPage() {
     fetchDailyShifts(date);
   }, [date, isDateReady]);
 
-  // Function to handle shift card click
   const handleShiftCardClick = async (shift: any) => {
     let route;
     const routeId = String(shift["routeId"]);
 
-    // Get or fetch route
     if (shiftToRouteMap.has(routeId)) {
       route = shiftToRouteMap.get(routeId);
     } else {
@@ -152,7 +148,6 @@ function DailyShiftDashboardPage() {
       return;
     }
 
-    // Get or fetch locations
     let locationList;
     if (routeToLocationsMap.has(routeId)) {
       locationList = routeToLocationsMap.get(routeId);
@@ -192,13 +187,16 @@ function DailyShiftDashboardPage() {
   const shiftCardsList = () => {
     return dailyShiftData
       .map((shift: any, shiftIndex) => {
-        // Filter by status
         const matchesStatus =
           activeTab === "open"
             ? shift.status === "open"
             : shift.status === "assigned";
         if (!matchesStatus) return null;
         if (!searchShiftLocation(shift)) return null;
+
+        const isSelected =
+          selectedItem !== null &&
+          String((selectedItem.shift as any)?._id) === String(shift["_id"]);
 
         return (
           <ShiftCard
@@ -228,13 +226,13 @@ function DailyShiftDashboardPage() {
               year: "numeric",
             })}
             onOpenSidebar={() => handleShiftCardClick(shift)}
+            isSelected={isSelected}
           />
         );
       })
       .filter(Boolean);
   };
 
-  // Calculate counts for tabs
   const assignedCount = dailyShiftData.filter(
     (shift: any) => shift.status === "assigned" && searchShiftLocation(shift),
   ).length;
@@ -251,20 +249,20 @@ function DailyShiftDashboardPage() {
           AddDays={AddDays}
           isDateReady={isDateReady}
         />
-        <div className="container">
+        <div className={weeklyStyles.container}>
           {!isDateReady ? (
-            <div className="admin-dashboard-loading">
+            <div className={weeklyStyles["admin-dashboard-loading"]}>
               <LoadingFallback />
             </div>
           ) : (
             <>
-              <div className="search-settings">
-                <button className="sort-by-btn">
+              <div className={weeklyStyles["search-settings"]}>
+                <button className={weeklyStyles["sort-by-btn"]}>
                   <FilterIcon />
                   <p>Sort by</p>
                 </button>
                 <input
-                  className="shift-search-input"
+                  className={weeklyStyles["shift-search-input"]}
                   type="text"
                   placeholder="Search for shift by location"
                   value={shiftSearchText}
@@ -272,7 +270,7 @@ function DailyShiftDashboardPage() {
                 />
                 <FontAwesomeIcon
                   icon={faMagnifyingGlass}
-                  className="shift-search-icon"
+                  className={weeklyStyles["shift-search-icon"]}
                 />
               </div>
 
@@ -295,11 +293,13 @@ function DailyShiftDashboardPage() {
                 </button>
               </div>
               {isLoading ? (
-                <div className="admin-dashboard-loading">
+                <div className={weeklyStyles["admin-dashboard-loading"]}>
                   <LoadingFallback />
                 </div>
               ) : (
-                <div className="shift-container">{shiftCardsList()}</div>
+                <div className={weeklyStyles["shift-container"]}>
+                  {shiftCardsList()}
+                </div>
               )}
             </>
           )}
