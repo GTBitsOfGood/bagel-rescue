@@ -4,19 +4,20 @@ import { useEffect, useState } from 'react';
 import styles from "./EditProfileForm.module.css";
 import { useRouter } from 'next/navigation';
 import { auth } from '../server/db/firebase';
-import { signOut, verifyBeforeUpdateEmail, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
+import { verifyBeforeUpdateEmail, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { getUserByEmail, updateUser } from '../server/db/actions/User';
 import location from '../lib/locations'
 import { IUser } from '@/server/db/models/User';
 import LoadingFallback from '@/app/components/LoadingFallback';
 
 interface EditProfileFormProps {
-  togglePopup: () => void;
+  onCancel: () => void;
   setHasChanges: (hasChanges: boolean) => void;
   onNavigate: (path: string) => void;
+  onSignOut: () => void;
 }
 
-const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup, setHasChanges, onNavigate }) => {
+const EditProfileForm: React.FC<EditProfileFormProps> = ({ onCancel, setHasChanges, onNavigate, onSignOut }) => {
   const router = useRouter();
   const [initialName, setInitialName] = useState('');
   const [locations, setLocations] = useState<string[]>([]);
@@ -69,20 +70,6 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup, setHasCh
     fetchUserData();
   }, [router]);
   
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-      await fetch("/api/logout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      })
-
-      router.push('/Login');
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
-
   if (loading) {
     return (
       <div className={styles.container}>
@@ -194,7 +181,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup, setHasCh
           >Password</li>
           <li 
             className={`${styles.menuItem} ${styles.signOut}`}
-            onClick={handleSignOut}
+            onClick={onSignOut}
           >
             Sign Out
           </li>
@@ -208,7 +195,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ togglePopup, setHasCh
             <p className={styles.role}>{userData.role}</p>
           </div>
           <div className={styles.save}>
-            <button className={styles.cancel} onClick={togglePopup}>Cancel</button>
+            <button className={styles.cancel} onClick={onCancel}>Cancel</button>
             <button className={styles.button} onClick={updateInformation}>Save Profile</button>
           </div>
         </div>

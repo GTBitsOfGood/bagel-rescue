@@ -49,7 +49,8 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({
 
   const handlePostShift = (shift: UserShiftData, e:any) => {
     e.stopPropagation();
-    router.push(`/VolunteerNavView/ConfirmationForm?userShiftId=${shift.id}&date=${date.toLocaleDateString("en-CA")}`);
+    const occurrenceDate = shift.occurrenceDate || date;
+    router.push(`/VolunteerNavView/ConfirmationForm?userShiftId=${shift.id}&date=${dateToString(occurrenceDate)}`);
   }
 
   const formatDate = (date: Date | undefined) => {
@@ -106,7 +107,7 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({
       {isSidebarOpen && (
         <ShiftDetailsSidebar
           selectedShift={selectedShift}
-          date={date}
+          date={selectedShift?.occurrenceDate || date}
           onCloseSidebar={handleCloseSidebar}
           isOpenShift={isOpenShifts}
           onShiftUpdated={onShiftUpdated}
@@ -130,7 +131,7 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({
         {shifts.map((shift: UserShiftData) => {
           const status = shift.confirmationForms[shift.occurrenceDate ? dateToString(shift.occurrenceDate) : ""] ? "Complete" : "Incomplete";
           return (
-          <div key={shift.id} className={styles.tableRow} onClick={() => handleRowClick(shift)}>
+          <div key={shift.id} className={`${styles.tableRow} ${isSidebarOpen && selectedShift?.id === shift.id ? styles.tableRowSelected : ''}`} onClick={() => handleRowClick(shift)}>
             <div className={styles.routeNameCell}>
               <div className="flex items-center gap-2.5">
                 {shift.hasComment?.includes(dateToString(date)) && (

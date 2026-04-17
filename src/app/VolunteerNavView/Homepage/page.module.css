@@ -416,10 +416,30 @@
   min-height: 3rem;
   color: #072B68;
   border-bottom: 1px solid #e5e7eb;
+  border-left: 0.3rem solid transparent;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.tableRow:not(.tableRowSelected) {
+  border-left-color: transparent;
+}
+
+.tableRow:not(.tableRowSelected):hover {
+  background-color: var(--Bagel-Rescue-Surface-Hover);
 }
 
 .tableRow:last-child {
   border-bottom: none;
+}
+
+.tableRowSelected {
+  border-left-color: var(--Bagel-Rescue-Blue);
+  background-color: var(--Bagel-Rescue-Surface-Selected);
+}
+
+.tableRowSelected:hover {
+  background-color: var(--Bagel-Rescue-Surface-Selected-Hover);
 }
 
 .formContainer {

@@ -60,22 +60,20 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({
 
   const [volunteers, setVolunteers] = useState<string[]>([]);
   useEffect(() => {
-      if (!hasLoaded) {
-          const comments = shift.comments;
-          if (
-              comments &&
-              typeof comments === "object" &&
-              Object.keys(comments).length > 0
-          ) {
-              const currentDateComment =
-                  comments[
-                      shiftSidebarInfo.shiftDate.toISOString().split("T")[0]
-                  ];
-              setComment(currentDateComment || "");
-              setDraft(currentDateComment || "");
-          }
-          setHasLoaded(true);
+    if (!hasLoaded) {
+      const comments = shift.comments;
+      if (
+        comments &&
+        typeof comments === "object" &&
+        Object.keys(comments).length > 0
+      ) {
+        const currentDateComment =
+          comments[shiftSidebarInfo.shiftDate.toISOString().split("T")[0]];
+        setComment(currentDateComment || "");
+        setDraft(currentDateComment || "");
       }
+      setHasLoaded(true);
+    }
   }, [shift._id, hasLoaded, shift.comments]);
 
   useEffect(() => {
@@ -178,7 +176,7 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({
                           shiftId: shift._id.toString(),
                           date: dateKey,
                           comment: draft,
-                        })
+                        }),
                       );
 
                       setComment(draft);
@@ -239,12 +237,12 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({
             </div>
           )}
         </div>
-        
+
         {shift.additionalInfo && (
-            <div className="sidebar-content-header">
-                <h3> Additional Information </h3>
-                <p>{shift.additionalInfo}</p>
-            </div>
+          <div className="sidebar-content-header">
+            <h3> Additional Information </h3>
+            <p>{shift.additionalInfo}</p>
+          </div>
         )}
 
         <div className="sidebar-content-header">
@@ -262,8 +260,10 @@ const ShiftSidebar: React.FC<ShiftSidebarProps> = ({
         <div className="sidebar-content-header">
           <h3> Date Range</h3>
           <p>
-              {formattedDateFull(new Date(shift.shiftStartDate))}{" "}
-              - {formattedDateFull(new Date(shift.shiftEndDate))}
+            {formattedDateFull(new Date(shift.shiftStartDate))} -{" "}
+            {shift.isRecurring
+              ? "Recurring"
+              : formattedDateFull(new Date(shift.shiftEndDate))}
           </p>
         </div>
         <div className="sidebar-content-header">
