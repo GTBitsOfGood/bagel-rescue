@@ -57,8 +57,8 @@ export function getDaysInRange(startDate: Date, endDate: Date): string[] {
   const current = new Date(startDate);
 
   while (current <= endDate) {
-    daysSet.add(current.getDay());
-    current.setDate(current.getDate() + 1);
+    daysSet.add(current.getUTCDay());
+    current.setUTCDate(current.getUTCDate() + 1);
   }
 
   return Array.from(daysSet).map((num) => numberToDay[num]);

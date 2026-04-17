@@ -120,6 +120,9 @@ function DailyShiftDashboardPage() {
             .includes(dateToString(targetDate));
         });
         setDailyShiftData(dailyShiftData);
+        console.log(
+          dailyShiftData.filter((shift: any) => shift.isRecurring === true),
+        );
       } catch (error) {
         console.error("Error fetching shifts:", error);
       } finally {

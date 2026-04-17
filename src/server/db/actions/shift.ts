@@ -584,19 +584,7 @@ export async function getShiftsByWeek(
   try {
     await dbConnect();
 
-    // Build the set of weekday names that occur within the requested week.
-    // This must match the format stored in recurrenceDates.
-    const weekDays = new Set<string>();
-    const current = new Date(normalizedStartDate);
-
-    while (current <= normalizedEndDate) {
-      weekDays.add(
-        current.toLocaleDateString("en-US", { weekday: "long" }).toLowerCase(),
-      );
-      current.setUTCDate(current.getUTCDate() + 1);
-    }
-
-    const weekDayArray = Array.from(weekDays);
+    const weekDayArray = getDaysInRange(normalizedStartDate, normalizedEndDate);
 
     const commonPipeline = [
       {
@@ -898,9 +886,11 @@ export async function getShiftsByDay(targetDate: Date): Promise<string | null> {
     const normalizedDay = toUTCStartOfDay(targetDate);
 
     // This must match the format stored in recurrenceDates
-    const dayName = targetDate
+    const dayNameFull = targetDate
       .toLocaleDateString("en-US", { weekday: "long" })
       .toLowerCase();
+
+    const dayCode = fullToDay[dayNameFull];
 
     const commonPipeline = [
       {
@@ -990,7 +980,7 @@ export async function getShiftsByDay(targetDate: Date): Promise<string | null> {
         $match: {
           isRecurring: true,
           shiftStartDate: { $lte: normalizedDay },
-          recurrenceDates: { $in: [dayName] },
+          recurrenceDates: { $in: [dayCode] },
         },
       },
       ...commonPipeline,

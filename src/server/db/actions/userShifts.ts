@@ -208,7 +208,7 @@ export async function getUserShiftsByDateRange(
 
     const startAbsDate = toUTCStartOfDay(startDate);
     const endAbsDate = toUTCStartOfDay(endDate);
-    const daysInRange = getDaysInRange(startDate, endDate);
+    const daysInRange = getDaysInRange(startAbsDate, endAbsDate);
 
     const baseQuery = {
       userId: new mongoose.Types.ObjectId(userId),
