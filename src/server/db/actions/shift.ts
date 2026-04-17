@@ -787,6 +787,13 @@ export async function updateShift(
       throw new Error("timeSpecific must be a boolean");
     }
 
+    if (
+      updateData.isRecurring !== undefined &&
+      typeof updateData.isRecurring !== "boolean"
+    ) {
+      throw new Error("isRecurring must be a boolean");
+    }
+
     // Build update object with only provided fields
     const updateFields: any = {};
     if (updateData.routeId !== undefined)
@@ -807,6 +814,8 @@ export async function updateShift(
       updateFields.additionalInfo = updateData.additionalInfo;
     if (updateData.currSignedUp !== undefined)
       updateFields.currSignedUp = updateData.currSignedUp;
+    if (updateData.isRecurring !== undefined)
+      updateFields.isRecurring = updateData.isRecurring;
 
     // Find and update the shift
     const updatedShift = await ShiftModel.findByIdAndUpdate(
