@@ -23,6 +23,7 @@ import BackButton from "@/app/components/BackButton";
 function RouteCreationPage() {
   const [routeName, setRouteName] = useState<string>("");
   const [routeArea, setRouteArea] = useState<{ [key: string]: number }>({});
+  const [manualRouteArea, setManualRouteArea] = useState<string | null>(null);
   const [additionalInfo, setAdditionalInfo] = useState<string>("");
   const [searchText, setSearchText] = useState<string>("");
   const [isAddingLocation, setIsAddingLocation] = useState<boolean>(false);
@@ -131,6 +132,8 @@ function RouteCreationPage() {
 
     routeArea[locToAdd.area] = (routeArea[locToAdd.area] ?? 0) + 1;
 
+    setManualRouteArea(null);
+
     const newIsPickUp = new Map(locationsIsPickUp);
     newIsPickUp.set(
       String(locToAdd._id),
@@ -155,6 +158,8 @@ function RouteCreationPage() {
       delete routeArea[removed.area];
     }
 
+    setManualRouteArea(null);
+
     const newIsPickUp = new Map(locationsIsPickUp);
     newIsPickUp.delete(String(removed._id));
     setLocationsIsPickUp(newIsPickUp);
@@ -172,7 +177,7 @@ function RouteCreationPage() {
 
     const route = {
       routeName: routeName,
-      locationDescription: areas.join(", "),
+      locationDescription: manualRouteArea !== null ? manualRouteArea : areas.join(", "),
       additionalInfo: additionalInfo,
       locations: locs,
     };
@@ -349,7 +354,7 @@ function RouteCreationPage() {
                 <input
                   className="field-input"
                   type="text"
-                  placeholder="Add a Route Name Here"
+                  placeholder="Enter a route name here"
                   value={routeName}
                   onChange={(e) => setRouteName(e.target.value)}
                 />
@@ -359,12 +364,17 @@ function RouteCreationPage() {
                 <input
                   className="field-input"
                   type="text"
-                  value={(() => {
-                    const areas = Object.keys(routeArea);
-                    areas.sort();
-                    return areas.join(", ");
-                  })()}
-                  disabled
+                  placeholder="Enter route area here"
+                  value={
+                    manualRouteArea !== null
+                      ? manualRouteArea
+                      : (() => {
+                          const areas = Object.keys(routeArea);
+                          areas.sort();
+                          return areas.join(", ");
+                        })()
+                  }
+                  onChange={(e) => setManualRouteArea(e.target.value)}
                 />
               </div>
               <div className="field-container">
