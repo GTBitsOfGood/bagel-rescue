@@ -35,6 +35,7 @@ function RouteCreationPage() {
     Map<string, boolean>
   >(new Map());
   const [prefilled, setPrefilled] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const router = useRouter();
 
@@ -162,6 +163,10 @@ function RouteCreationPage() {
   }
 
   function completeRoute(): void {
+    if (isSaving || routeName === "" || locations.length === 0) {
+      return;
+    }
+
     const locs: ILocation[] = locations.map((item) => ({
       location: new mongoose.Types.ObjectId(item["_id"]!),
       type: locationsIsPickUp.get(String(item["_id"])) ? "pickup" : "dropoff",
@@ -176,12 +181,16 @@ function RouteCreationPage() {
       additionalInfo: additionalInfo,
       locations: locs,
     };
+    setIsSaving(true);
     createRoute(JSON.stringify(route))
       .then(() => {
         successToast("Route created successfully!");
         router.push("/AdminNavView/RouteDashboard");
       })
-      .catch(() => errorToast("Failed to create route."));
+      .catch(() => {
+        errorToast("Failed to create route.");
+        setIsSaving(false);
+      });
   }
 
   function locationCards() {
@@ -327,35 +336,43 @@ function RouteCreationPage() {
             <button
               className="complete-route-btn"
               onClick={completeRoute}
+              disabled={isSaving || routeName === "" || locations.length === 0}
               style={{
                 backgroundColor:
-                  routeName != "" && locations.length > 0
+                  !isSaving && routeName != "" && locations.length > 0
                     ? "#3d97ff"
                     : "#a3a3a3",
                 cursor:
-                  routeName != "" && locations.length > 0
+                  !isSaving && routeName != "" && locations.length > 0
                     ? "pointer"
                     : "default",
               }}
             >
-              Complete Route
+              {isSaving ? "Saving..." : "Save Route"}
             </button>
           </div>
           <hr className="separator" />
           <div className="route-creation-form">
             <div className="route-info">
               <div className="field-container">
-                <p className="field-title">Route Name</p>
+                <p className="field-title">
+                  Route Name<span className="text-red-500">*</span>
+                </p>
                 <input
                   className="field-input"
                   type="text"
                   placeholder="Add a Route Name Here"
                   value={routeName}
                   onChange={(e) => setRouteName(e.target.value)}
+                  required
+                  aria-required="true"
                 />
               </div>
               <div className="field-container">
-                <p className="field-title">Route Area</p>
+                <p className="field-title">
+                  Route Area{" "}
+                  <span className="optional-label">(optional)</span>
+                </p>
                 <input
                   className="field-input"
                   type="text"
@@ -368,17 +385,22 @@ function RouteCreationPage() {
                 />
               </div>
               <div className="field-container">
-                <p className="field-title">Additional Information</p>
+                <p className="field-title">
+                  Additional Information{" "}
+                  <span className="optional-label">(optional)</span>
+                </p>
                 <textarea
                   className="field-input"
-                  placeholder="Enter additional information here"
+                  placeholder="Enter additional information here (optional)"
                   value={additionalInfo}
                   onChange={(e) => setAdditionalInfo(e.target.value)}
                 />
               </div>
             </div>
             <div className="locations field-container">
-              <p className="field-title">Locations</p>
+              <p className="field-title">
+                Locations<span className="text-red-500">*</span>
+              </p>
               <div className="locations-box">
                 <div
                   className="location-input"

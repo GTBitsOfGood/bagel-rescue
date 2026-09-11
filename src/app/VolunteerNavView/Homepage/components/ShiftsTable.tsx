@@ -117,6 +117,7 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({
         />
       )}
 
+      <div className={styles.tableScroll}>
       {/* Separate header section */}
       <div className={styles.tableHeader}>
         <div className={styles.headerCell}>Shift Name</div>
@@ -181,6 +182,7 @@ const ShiftsTable: React.FC<ShiftsTableProps> = ({
             </div>
           </div>
         )})}
+      </div>
       </div>
     </div>
   );

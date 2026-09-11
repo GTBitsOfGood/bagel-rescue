@@ -246,13 +246,14 @@ function ManagementPage() {
             />
           )}
 
-          <div className="flex min-h-0 w-full flex-1 flex-col gap-4 pb-4">
+          <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col gap-4 pb-4">
             {isLoading ? (
               <div className="flex min-h-[12rem] flex-1 flex-col items-center justify-center py-12">
                 <LoadingFallback />
               </div>
             ) : (
-              <>
+              <div className="min-w-0 overflow-x-auto">
+                <div className="mb-10 flex min-w-[64rem] flex-col gap-4">
             <div className="flex w-full flex-row items-center gap-x-12 rounded-lg bg-blue-200 px-[2rem] py-4 text-[var(--Bagel-Rescue-Dark-Blue-2,#072b68)]">
               <p className="w-[10rem]">Name</p>
               <p className="w-[17rem]">Locations</p>
@@ -261,7 +262,7 @@ function ManagementPage() {
               <p className="w-[10rem]">Volunteer Time</p>
             </div>
 
-            <div className="mb-10 flex h-full w-full flex-col gap-4">
+            <div className="flex h-full w-full flex-col gap-4">
               {filteredVolunteers.map((volunteer, index) => (
                 <div
                   key={volunteer._id?.toString() ?? index}
@@ -270,7 +271,7 @@ function ManagementPage() {
                     setOpenSidebarInEditMode(false);
                     setSelectedVolunteer(volunteer._id.toString());
                   }}
-                  className="w-full flex flex-row justify-start items-center py-4 px-[2rem] gap-x-12 border-2 rounded-lg border-[var(--Bagel-Rescue-Light-Grey-2,#d3d8de)] bg-white text-[var(--Bagel-Rescue-Dark-Blue-2,#072b68)]"
+                  className="table-row-hover flex w-full cursor-pointer flex-row items-center justify-start gap-x-12 rounded-lg border-2 border-[var(--Bagel-Rescue-Light-Grey-2,#d3d8de)] bg-white px-[2rem] py-4 text-[var(--Bagel-Rescue-Dark-Blue-2,#072b68)]"
                 >
                   <p className="w-[10rem] flex justify-start items-center text-start">
                     {volunteer.firstName} {volunteer.lastName}
@@ -412,7 +413,8 @@ function ManagementPage() {
                 </div>
               ))}
             </div>
-              </>
+                </div>
+              </div>
             )}
           </div>
 

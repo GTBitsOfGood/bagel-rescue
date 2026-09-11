@@ -10,6 +10,7 @@
 
 .mainContent {
   flex: 1;
+  min-width: 0;
   padding: 0;
   background-color: #F6F9FC;
   overflow-y: auto;
@@ -170,10 +171,14 @@
 .routeNameCell {
   padding: 0.75rem 1rem;
   font-weight: normal;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .timeCell {
   padding: 0.75rem 1rem;
+  min-width: 0;
 }
 
 .areaCell {
@@ -379,14 +384,20 @@
 /* New styles for the shifts table */
 
 /* Header section */
+.tableScroll {
+  min-width: 0;
+  overflow-x: auto;
+}
+
 .tableHeader {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 0.5fr;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.5fr);
   background-color: #C6E3F9;
   border-radius: 0.5rem;
   margin: 1rem 2rem 0 2rem;
   padding: 0.25rem 0;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  min-width: 40rem;
 }
 
 .headerCell {
@@ -407,11 +418,12 @@
   overflow-y: auto;
   color: #072B68;
   font-weight: 300;
+  min-width: 40rem;
 }
 
 .tableRow {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 0.5fr;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.5fr);
   align-items: center;
   min-height: 3rem;
   color: #072B68;

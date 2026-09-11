@@ -465,7 +465,7 @@ function LocationDashboardPage() {
                 onClick={handleSaveEdit}
                 disabled={isSaving}
               >
-                {isSaving ? "Saving..." : "Save"}
+                {isSaving ? "Saving..." : "Save Location"}
               </button>
             </div>
           </div>

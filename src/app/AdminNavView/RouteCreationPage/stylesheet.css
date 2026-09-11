@@ -60,6 +60,12 @@
   font-weight: bold;
 }
 
+.optional-label {
+  font-size: 0.8em;
+  font-weight: 400;
+  color: var(--Bagel-Rescue-Light-Text);
+}
+
 .field-input {
   padding: 1em;
   border-radius: 12px;

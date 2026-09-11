@@ -547,7 +547,7 @@ export default function NewShiftPage() {
                   cursor: isSubmitting ? "not-allowed" : "pointer",
                 }}
               >
-                {isSubmitting ? "Creating..." : "Complete Shift"}
+                {isSubmitting ? "Saving..." : "Save Shift"}
               </button>
             </div>
           </div>

@@ -142,7 +142,7 @@ export default function AdminAnalytics() {
                   : ""}
               </p>
             </div>
-            <div className="flex px-9 items-start gap-6 self-stretch">
+            <div className="flex min-w-0 flex-wrap items-start gap-6 self-stretch px-9">
               <div className="max-w-[26.5rem] w-full flex flex-col p-6 gap-7 items-start self-stretch rounded-lg bg-white">
                 <div className="flex max-w-[23.5rem] max-h-8 w-full h-full justify-between items-center">
                   <h1 className="font-bold text-2xl w-full max-w-[7.1875rem] flex-shrink-0 text-[var(--Bagel-Rescue-Dark-Blue,#072B68)]">
@@ -226,14 +226,14 @@ export default function AdminAnalytics() {
                 </div>
                 <div className="flex h-[2.75rem] justify-end items-center"></div>
               </div>
-              <div className="w-full bg-white h-full">
-                <div className="p-6 w-full h-full flex">
-                  <div className="flex h-full w-full gap-3 flex-col justify-between items-start">
+              <div className="h-full min-w-0 w-full bg-white">
+                <div className="flex h-full w-full p-6">
+                  <div className="flex h-full w-full min-w-0 flex-col items-start justify-between gap-3">
                     <h1 className="text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold text-2xl">
                       Recent Shifts
                     </h1>
-                    <div className="flex w-full flex-col items-center justify-between">
-                      <div className="grid grid-cols-[2fr_1fr_1fr_1fr] w-full p-[0.625rem]">
+                    <div className="flex w-full min-w-0 flex-col items-center justify-between overflow-x-auto">
+                      <div className="grid w-full min-w-[36rem] grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] p-[0.625rem]">
                         <div className="text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold leading-5">
                           Name
                         </div>
@@ -247,23 +247,23 @@ export default function AdminAnalytics() {
                           Date
                         </div>
                       </div>
-                      <div className="w-full rounded-lg border border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]">
+                      <div className="w-full min-w-[36rem] rounded-lg border border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)]">
                         {(analyticsData.recentShifts ?? []).map(
                           (shift: ShiftDummy, index: number) => {
                             if (!shift.routeName) {
                               return (
                                 <div
                                   key={index}
-                                  className="grid grid-cols-[2fr_1fr_1fr_1fr] min-h-11  items-center p-[0.525rem] border-b last:border-b-0"
+                                  className="grid min-h-11 grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] items-center border-b p-[0.525rem] last:border-b-0"
                                 ></div>
                               );
                             }
                             return (
                               <div
                                 key={index}
-                                className="grid grid-cols-[2fr_1fr_1fr_1fr] min-h-10  items-center p-[0.525rem] border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] last:border-b-0"
+                                className="table-row-hover grid min-h-10 grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] items-center border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] p-[0.525rem] last:border-b-0"
                               >
-                                <div className="text-base leading-5 font-normal text-[var(--Bagel-Rescue-Dark-Blue,#072B68)]">
+                                <div className="min-w-0 truncate text-base font-normal leading-5 text-[var(--Bagel-Rescue-Dark-Blue,#072B68)]">
                                   {shift.routeName}
                                 </div>
 
@@ -310,7 +310,7 @@ export default function AdminAnalytics() {
                         }).map((_, index) => (
                           <div
                             key={`empty-shift-${index}`}
-                            className="grid grid-cols-[2fr_1fr_1fr_1fr] min-h-10 items-center p-[0.525rem] border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] last:border-b-0"
+                            className="grid min-h-10 grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] items-center border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] p-[0.525rem] last:border-b-0"
                           >
                             <div className="text-[var(--Bagel-Rescue-Text-Light,#8496B4)] font-normal leading-5">
                               &nbsp;
@@ -343,7 +343,7 @@ export default function AdminAnalytics() {
                 </div>
               </div>
             </div>
-            <div className="flex px-9 items-start gap-6 self-stretch w-full h-full">
+            <div className="flex h-full w-full min-w-0 flex-wrap items-start gap-6 self-stretch px-9">
               <div className="flex max-w-[17.5rem] w-full bg-white p-6 flex-col items-start gap-6 rounded-lg">
                 <h1 className="h-16 text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] flex-shrink-0 self-stretch font-bold text-2xl">
                   Volunteer Engagement
@@ -415,9 +415,9 @@ export default function AdminAnalytics() {
                           ) => (
                             <div
                               key={index}
-                              className="flex h-10 p-[0.625rem] pr-[2.17rem] w-full justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] last:rounded-b-lg"
+                              className="table-row-hover flex h-10 w-full items-center justify-between self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] p-[0.625rem] pr-[2.17rem] last:rounded-b-lg"
                             >
-                              <p className="text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5">{`${volunteer.firstName}  ${volunteer.lastName}`}</p>
+                              <p className="min-w-0 truncate text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5">{`${volunteer.firstName}  ${volunteer.lastName}`}</p>
 
                               <p className="text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5">
                                 {new Date(
@@ -484,9 +484,9 @@ export default function AdminAnalytics() {
                         (volunteer: any, index: number) => (
                           <div
                             key={index}
-                            className="flex h-10 p-[0.625rem] justify-between items-center self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] last:rounded-b-lg"
+                            className="table-row-hover flex h-10 items-center justify-between self-stretch border-b border-[var(--Bagel-Rescue-Light-Grey,#D3D8DE)] p-[0.625rem] last:rounded-b-lg"
                           >
-                            <p className="text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5">{`${volunteer.firstName} ${volunteer.lastName}`}</p>
+                            <p className="min-w-0 truncate text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5">{`${volunteer.firstName} ${volunteer.lastName}`}</p>
                             <p className="text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-normal leading-5">
                               {volunteer.shiftsCompleted.length}
                             </p>

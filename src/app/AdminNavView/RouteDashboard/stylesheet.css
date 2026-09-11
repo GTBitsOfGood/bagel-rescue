@@ -1,6 +1,7 @@
 .route-dash-container {
   padding: 1.5em 0em;
   background-color: var(--Bagel-Rescue-Background-Grey);
+  min-width: 0;
 }
 
 .route-dash-header {

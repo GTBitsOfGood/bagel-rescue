@@ -14,6 +14,7 @@ export default function AddNewVolunteer() {
     const router = useRouter();
     const formRef = useRef<HTMLFormElement | null>(null);
     const [isComplete, setIsComplete] = useState<boolean>(false);
+    const [isSaving, setIsSaving] = useState<boolean>(false);
     const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
 
     const options = locations.map((location) => {
@@ -28,8 +29,13 @@ export default function AddNewVolunteer() {
     }, []);
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        if (isSaving) {
+            return;
+        }
+
         try {
-            e.preventDefault();
+            setIsSaving(true);
 
             const formData = new FormData(e.currentTarget);
 
@@ -57,6 +63,7 @@ export default function AddNewVolunteer() {
             router.push("/AdminNavView/ManagementPage");
         } catch (e) {
             console.error(e);
+            setIsSaving(false);
         }
     }
 
@@ -71,7 +78,7 @@ export default function AddNewVolunteer() {
         <BackButton onClick={() => router.push('/AdminNavView/ManagementPage')} />
         <div className='flex justify-between items-center'>
             <h1 className="font-bold text-4xl text-[#072B68]">Add a Volunteer</h1>
-            <button onClick={() => formRef.current?.requestSubmit()} className={`font-bold text-white ${isComplete ? 'bg-[#0F7AFF] hover:opacity-75 active:opacity-100' : 'bg-[#A3A3A3] cursor-not-allowed'} p-4 rounded-xl`}>Complete Profile</button>
+            <button onClick={() => formRef.current?.requestSubmit()} disabled={isSaving || !isComplete} className={`font-bold text-white ${isComplete && !isSaving ? 'bg-[#0F7AFF] hover:opacity-75 active:opacity-100' : 'bg-[#A3A3A3] cursor-not-allowed'} p-4 rounded-xl`}>{isSaving ? "Saving..." : "Save Volunteer"}</button>
         </div>
         <hr className="border-[#CCE3FF]" />
         <form ref={formRef} onSubmit={handleSubmit} onInput={handleInputChange} className='flex gap-6'>

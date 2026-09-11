@@ -46,4 +46,12 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+
+  .table-row-hover {
+    transition: background-color 0.2s ease;
+  }
+
+  .table-row-hover:hover {
+    background-color: var(--Bagel-Rescue-Surface-Hover);
+  }
 }
