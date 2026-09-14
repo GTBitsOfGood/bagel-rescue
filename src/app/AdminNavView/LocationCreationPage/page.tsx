@@ -28,10 +28,15 @@ function LocationCreationPage() {
   const [area, setArea] = useState<string>("None");
 
   const [contact, setContact] = useState<string>("");
+  const [isSaving, setIsSaving] = useState(false);
 
   const router = useRouter();
 
   function saveLocation(): void {
+    if (isSaving) {
+      return;
+    }
+
     if (
       locName == "" ||
       streetName == "" ||
@@ -63,12 +68,16 @@ function LocationCreationPage() {
       area: area,
     };
 
+    setIsSaving(true);
     createLocation(JSON.stringify(location))
       .then(() => {
         successToast("Location created successfully!");
         router.push("/AdminNavView/LocationPage");
       })
-      .catch(() => errorToast("Failed to create location."));
+      .catch(() => {
+        errorToast("Failed to create location.");
+        setIsSaving(false);
+      });
   }
 
   const formatContact = (contact: string) => {
@@ -95,8 +104,10 @@ function LocationCreationPage() {
             <p className="header-text">Create a New Location</p>
             <button
               className="complete-location-btn"
+              disabled={isSaving}
               style={{
                 backgroundColor:
+                  !isSaving &&
                   locName != "" &&
                   streetName != "" &&
                   cityName != "" &&
@@ -106,6 +117,7 @@ function LocationCreationPage() {
                     ? "#3d97ff"
                     : "#a3a3a3",
                 cursor:
+                  !isSaving &&
                   locName != "" &&
                   streetName != "" &&
                   cityName != "" &&
@@ -117,7 +129,7 @@ function LocationCreationPage() {
               }}
               onClick={saveLocation}
             >
-              Save
+              {isSaving ? "Saving..." : "Save Location"}
             </button>
           </div>
           <hr className="separator" />

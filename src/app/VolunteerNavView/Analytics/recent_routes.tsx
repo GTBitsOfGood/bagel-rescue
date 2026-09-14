@@ -43,6 +43,7 @@ function RecentRoutes({ routes, itemsPerPage = 15 }: RecentRoutesProps) {
     <div className="analytics-card">
       <h2 className="section-title">Recent Routes</h2>
       
+      <div className="min-w-0 overflow-x-auto">
       <table className="routes-table">
         <thead>
           <tr>
@@ -60,6 +61,7 @@ function RecentRoutes({ routes, itemsPerPage = 15 }: RecentRoutesProps) {
           {emptyRows}
         </tbody>
       </table>
+      </div>
       
       <div className="pagination">
         <button 
