@@ -226,13 +226,13 @@ export default function AdminAnalytics() {
                 </div>
                 <div className="flex h-[2.75rem] justify-end items-center"></div>
               </div>
-              <div className="h-full min-w-0 w-full bg-white">
+              <div className="min-w-0 flex-1 basis-[28rem] self-stretch bg-white">
                 <div className="flex h-full w-full p-6">
                   <div className="flex h-full w-full min-w-0 flex-col items-start justify-between gap-3">
                     <h1 className="text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold text-2xl">
                       Recent Shifts
                     </h1>
-                    <div className="flex w-full min-w-0 flex-col items-center justify-between overflow-x-auto">
+                    <div className="flex w-full min-w-0 flex-col items-start justify-between overflow-x-auto">
                       <div className="grid w-full min-w-[36rem] grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] p-[0.625rem]">
                         <div className="text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold leading-5">
                           Name
@@ -388,7 +388,7 @@ export default function AdminAnalytics() {
                   </div>
                 </div>
               </div>
-              <div className="flex bg-white h-full w-full p-6 justify-between items-center rounded-lg">
+              <div className="flex bg-white min-w-0 flex-1 basis-[20rem] self-stretch p-6 justify-between items-center rounded-lg">
                 <div className="flex flex-col items-start justify-between h-full w-full">
                   <h1 className="h-16 text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold text-2xl">
                     New Volunteers
@@ -464,7 +464,7 @@ export default function AdminAnalytics() {
                   </div>
                 </div>
               </div>
-              <div className="flex bg-white h-full w-full p-6 justify-between items-center rounded-lg">
+              <div className="flex bg-white min-w-0 flex-1 basis-[20rem] self-stretch p-6 justify-between items-center rounded-lg">
                 <div className="flex flex-col items-start justify-between h-full w-full">
                   <h1 className="h-16 text-[var(--Bagel-Rescue-Dark-Blue,#072B68)] font-bold text-2xl">
                     Multiple Shifts Volunteers
