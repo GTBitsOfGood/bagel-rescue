@@ -560,7 +560,7 @@ export default function RouteDashboardPage() {
                 onClick={handleSaveEdit}
                 disabled={isSaving || !editRouteName.trim()}
               >
-                {isSaving ? "Saving..." : "Save"}
+                {isSaving ? "Saving..." : "Save Route"}
               </button>
             </div>
           </div>

@@ -246,22 +246,26 @@ function ManagementPage() {
             />
           )}
 
-          <div className="flex min-h-0 w-full flex-1 flex-col gap-4 pb-4">
+          <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col gap-4 pb-4">
             {isLoading ? (
               <div className="flex min-h-[12rem] flex-1 flex-col items-center justify-center py-12">
                 <LoadingFallback />
               </div>
             ) : (
-              <>
+              <div className="min-w-0 overflow-x-auto">
+                <div className="mb-10 flex min-w-[64rem] flex-col gap-4">
+            {/* min-w-0 on every cell makes each column shrink by the same ratio in
+                every row, so Status and Shifts line up no matter how wide a row's
+                content is. Keep the header and row cell widths in sync. */}
             <div className="flex w-full flex-row items-center gap-x-12 rounded-lg bg-blue-200 px-[2rem] py-4 text-[var(--Bagel-Rescue-Dark-Blue-2,#072b68)]">
-              <p className="w-[10rem]">Name</p>
-              <p className="w-[17rem]">Locations</p>
-              <p className="w-[14.5rem]">Status</p>
-              <p className="w-[7rem]">Shifts</p>
-              <p className="w-[10rem]">Volunteer Time</p>
+              <p className="w-[10rem] min-w-0">Name</p>
+              <p className="w-[17rem] min-w-0">Locations</p>
+              <p className="w-[14.5rem] min-w-0">Status</p>
+              <p className="w-[7rem] min-w-0">Shifts</p>
+              <p className="w-[10rem] min-w-0">Volunteer Time</p>
             </div>
 
-            <div className="mb-10 flex h-full w-full flex-col gap-4">
+            <div className="flex h-full w-full flex-col gap-4">
               {filteredVolunteers.map((volunteer, index) => (
                 <div
                   key={volunteer._id?.toString() ?? index}
@@ -270,13 +274,13 @@ function ManagementPage() {
                     setOpenSidebarInEditMode(false);
                     setSelectedVolunteer(volunteer._id.toString());
                   }}
-                  className="w-full flex flex-row justify-start items-center py-4 px-[2rem] gap-x-12 border-2 rounded-lg border-[var(--Bagel-Rescue-Light-Grey-2,#d3d8de)] bg-white text-[var(--Bagel-Rescue-Dark-Blue-2,#072b68)]"
+                  className="table-row-hover flex w-full cursor-pointer flex-row items-center justify-start gap-x-12 rounded-lg border-2 border-[var(--Bagel-Rescue-Light-Grey-2,#d3d8de)] bg-white px-[2rem] py-4 text-[var(--Bagel-Rescue-Dark-Blue-2,#072b68)]"
                 >
-                  <p className="w-[10rem] flex justify-start items-center text-start">
+                  <p className="w-[10rem] min-w-0 flex justify-start items-center text-start">
                     {volunteer.firstName} {volunteer.lastName}
                   </p>
 
-                  <div className="w-[17rem] flex flex-row justify-start items-center gap-1">
+                  <div className="w-[17rem] min-w-0 flex flex-row flex-wrap justify-start items-center gap-1">
                     {volunteer?.locations?.slice(0, 3).map((location, i) => (
                       <div
                         key={i}
@@ -292,7 +296,7 @@ function ManagementPage() {
                     )}
                   </div>
 
-                  <div className="w-[14.5rem]">
+                  <div className="w-[14.5rem] min-w-0">
                     <div
                       className={`w-[9rem] flex justify-center items-center text-[0.75rem] rounded-lg px-2 py-[0.2rem]
                       ${
@@ -363,7 +367,7 @@ function ManagementPage() {
                     </div>
                   </div>
 
-                  <p className="w-[7rem] flex justify-start items-center">
+                  <p className="w-[7rem] min-w-0 flex justify-start items-center">
                     {volunteer.monthlyShifts &&
                     Object.keys(volunteer.monthlyShifts).length > 0
                       ? volunteer.monthlyShifts[
@@ -374,7 +378,7 @@ function ManagementPage() {
                       : 0}
                   </p>
 
-                  <div className="w-[10rem] flex justify-between items-center gap-2">
+                  <div className="w-[10rem] min-w-0 flex justify-between items-center gap-2">
                     <p>
                       {volunteer.monthlyShifts &&
                       Object.keys(volunteer.monthlyShifts).length > 0
@@ -412,7 +416,8 @@ function ManagementPage() {
                 </div>
               ))}
             </div>
-              </>
+                </div>
+              </div>
             )}
           </div>
 

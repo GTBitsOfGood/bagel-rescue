@@ -376,7 +376,7 @@ const UserSidebar = ({
             onClick={sidebarEditMode ? saveEdit : startEdit}
             disabled={saving}
           >
-            {saving ? "Saving..." : sidebarEditMode ? "Done" : "Edit"}
+            {saving ? "Saving..." : sidebarEditMode ? "Save Volunteer" : "Edit"}
           </button>
         </div>
       </div>

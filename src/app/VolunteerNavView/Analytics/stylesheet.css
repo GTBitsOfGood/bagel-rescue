@@ -6,6 +6,7 @@
 
 .analytics-content-container {
   flex: 1;
+  min-width: 0;
   padding: 0;
   background-color: #F5F8FC;
 }
@@ -30,6 +31,7 @@
 
 .analytics-sections-container {
   display: flex;
+  min-width: 0;
   padding: 24px;
   gap: 24px;
 }
@@ -37,6 +39,7 @@
 /* Analytics cards */
 .analytics-card {
   flex: 1;
+  min-width: 0;
   background-color: #FFFFFF;
   border-radius: 8px;
   padding: 24px;
@@ -88,6 +91,7 @@
 /* Recent Routes */
 .routes-table {
   width: 100%;
+  min-width: 20rem;
   border-collapse: collapse;
   margin-bottom: 24px;
 }
@@ -106,6 +110,14 @@
   border-bottom: 1px solid #E2E8F0;
   color: #0A2559;
   font-size: 14px;
+}
+
+.routes-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.routes-table tbody tr:hover {
+  background-color: var(--Bagel-Rescue-Surface-Hover);
 }
 
 .routes-table tr:first-child td {

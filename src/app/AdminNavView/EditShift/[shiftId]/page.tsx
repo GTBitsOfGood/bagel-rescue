@@ -48,6 +48,7 @@ export default function EditShift() {
   const [originalVolunteers, setOriginalVolunteers] = useState<any[]>([]);
   const [originalRouteId, setOriginalRouteId] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   const findFirstDateAfterToday = (days: string[]): Date | null => {
     if (days.length === 0) return null;
@@ -454,6 +455,10 @@ export default function EditShift() {
   }
 
   async function saveEdits() {
+    if (isSaving) {
+      return;
+    }
+
     if (!originalShift) {
       errorToast("Original shift data not loaded.");
       return;
@@ -564,6 +569,7 @@ export default function EditShift() {
       (v) => !currIds.includes(v._id),
     );
 
+    setIsSaving(true);
     try {
       const updateResult = await updateShift(
         shiftId,
@@ -620,6 +626,7 @@ export default function EditShift() {
     } catch (error) {
       console.error("Error updating shift or user shifts:", error);
       errorToast("Error saving changes. Please try again.");
+      setIsSaving(false);
     }
   }
 
@@ -639,10 +646,13 @@ export default function EditShift() {
               <button
                 onClick={() => saveEdits()}
                 className="font-bold text-white px-6 py-[.8rem] rounded-xl text-base"
-                style={{ backgroundColor: isDirty ? "#0F7AFF" : "#A3A3A3" }}
-                disabled={!isDirty}
+                style={{
+                  backgroundColor:
+                    isDirty && !isSaving ? "#0F7AFF" : "#A3A3A3",
+                }}
+                disabled={!isDirty || isSaving}
               >
-                Save Changes
+                {isSaving ? "Saving..." : "Save Shift"}
               </button>
             </div>
           </div>
